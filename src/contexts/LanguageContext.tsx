@@ -1,0 +1,583 @@
+import { createContext, useContext, useState, ReactNode } from "react";
+
+type Lang = "en" | "es";
+
+interface LanguageContextType {
+  lang: Lang;
+  toggleLang: () => void;
+  t: (key: string) => string;
+}
+
+const translations: Record<string, Record<Lang, string>> = {
+  // Navbar
+  "nav.home": { en: "Home", es: "Inicio" },
+  "nav.services": { en: "Services", es: "Servicios" },
+  "nav.blog": { en: "Blog", es: "Blog" },
+  "nav.schedule": { en: "Schedule", es: "Agendar Cita" },
+
+  // Hero
+  "hero.tagline1": {
+    en: "Maid For Chico Service provides superior quality services at very competitive rates. Our standard cleaning includes everything you would expect from the highest caliber professional cleaning firms. We also do construction and renovation cleanup for contractors as well as special one time cleaning projects.",
+    es: "Maid For Chico ofrece servicios de calidad superior a precios muy competitivos. Nuestra limpieza estándar incluye todo lo que esperaría de las mejores empresas de limpieza profesional. También realizamos limpieza de construcción y renovación para contratistas, así como proyectos especiales de limpieza única.",
+  },
+  "hero.tagline2": {
+    en: "Concentrating on customer satisfaction and quality results our housekeepers make housecleaning a good experience for the clients, without the stress and anxiety.",
+    es: "Concentrándonos en la satisfacción del cliente y resultados de calidad, nuestros limpiadores hacen de la limpieza una buena experiencia para los clientes, sin estrés ni ansiedad.",
+  },
+  "hero.tagline3": {
+    en: "You deserve top quality cleaning service that meets your budget.",
+    es: "Usted merece un servicio de limpieza de primera calidad que se ajuste a su presupuesto.",
+  },
+  "hero.cta": { en: "Schedule an Appointment", es: "Agendar una Cita" },
+
+  // Services
+  "services.title": { en: "Our Services", es: "Nuestros Servicios" },
+  "services.subtitle": {
+    en: "Serving the Chico area with professional cleaning services for homes and businesses.",
+    es: "Sirviendo el área de Chico con servicios profesionales de limpieza para hogares y negocios.",
+  },
+  "services.commercial": { en: "Commercial Cleaning", es: "Limpieza Comercial" },
+  "services.commercial.desc": {
+    en: "Bathrooms, kitchens, break rooms, offices, vacuuming, and mopping. We keep your business spotless and professional.",
+    es: "Baños, cocinas, salas de descanso, oficinas, aspirado y trapeado. Mantenemos su negocio impecable y profesional.",
+  },
+  "services.residential": { en: "Residential Cleaning", es: "Limpieza Residencial" },
+  "services.residential.desc": {
+    en: "Flat-rate pricing available for weekly, bi-weekly, every 3 weeks, or monthly cleanings. Let us take care of your home.",
+    es: "Precios fijos disponibles para limpiezas semanales, quincenales, cada 3 semanas o mensuales. Déjenos cuidar de su hogar.",
+  },
+  "services.construction": { en: "Construction Cleanup", es: "Limpieza de Construcción" },
+  "services.construction.desc": {
+    en: "Post-construction and renovation cleanup to get your space ready for move-in or business operation.",
+    es: "Limpieza post-construcción y renovación para preparar su espacio para mudanza u operación comercial.",
+  },
+  "services.onetime": { en: "One-Time Cleaning", es: "Limpieza Única" },
+  "services.onetime.desc": {
+    en: "Special one-time deep cleaning projects — move-in/out, events, or whenever your space needs extra attention.",
+    es: "Proyectos especiales de limpieza profunda — mudanza, eventos, o cuando su espacio necesite atención extra.",
+  },
+
+  // Reviews
+  "reviews.title": { en: "What Our Clients Say", es: "Lo Que Dicen Nuestros Clientes" },
+  "reviews.subtitle": {
+    en: "Don't just take our word for it — hear from our satisfied customers.",
+    es: "No solo confíe en nuestra palabra — escuche a nuestros clientes satisfechos.",
+  },
+  "reviews.google": { en: "See Our Google Reviews", es: "Ver Reseñas en Google" },
+  "reviews.yelp": { en: "See Our Yelp Reviews", es: "Ver Reseñas en Yelp" },
+
+  // Gallery
+  "gallery.title": { en: "Our Work", es: "Nuestro Trabajo" },
+  "gallery.subtitle": {
+    en: "See the difference a professional clean makes.",
+    es: "Vea la diferencia que hace una limpieza profesional.",
+  },
+  "gallery.coming": {
+    en: "Photos coming soon — real before & after shots from our jobs!",
+    es: "Fotos próximamente — ¡fotos reales de antes y después de nuestros trabajos!",
+  },
+
+  // Trust & Areas
+  "trust.title": { en: "Your Trust, Our Priority", es: "Su Confianza, Nuestra Prioridad" },
+  "trust.licensed": { en: "Licensed", es: "Con Licencia" },
+  "trust.licensed.desc": {
+    en: "Fully licensed cleaning business operating in Butte County.",
+    es: "Negocio de limpieza con licencia completa operando en el Condado de Butte.",
+  },
+  "trust.insured": { en: "Insured", es: "Asegurado" },
+  "trust.insured.desc": {
+    en: "Comprehensive liability insurance protects your property and our team.",
+    es: "Seguro de responsabilidad integral protege su propiedad y a nuestro equipo.",
+  },
+  "trust.bonded": { en: "Bonded", es: "Con Fianza" },
+  "trust.bonded.desc": {
+    en: "Bonded for your peace of mind — your belongings are always safe with us.",
+    es: "Con fianza para su tranquilidad — sus pertenencias siempre están seguras con nosotros.",
+  },
+  "areas.title": { en: "Areas We Serve", es: "Áreas que Servimos" },
+  "areas.subtitle": {
+    en: "We proudly serve Chico and surrounding communities in Butte County.",
+    es: "Servimos con orgullo a Chico y comunidades cercanas en el Condado de Butte.",
+  },
+
+  // Why Choose Us
+  "why.title": { en: "Why Choose Us", es: "Por Qué Elegirnos" },
+  "why.satisfaction": { en: "Customer Satisfaction", es: "Satisfacción del Cliente" },
+  "why.satisfaction.desc": {
+    en: "Your satisfaction is our top priority. We don't stop until you're happy.",
+    es: "Su satisfacción es nuestra máxima prioridad. No paramos hasta que esté satisfecho.",
+  },
+  "why.quality": { en: "Quality Results", es: "Resultados de Calidad" },
+  "why.quality.desc": {
+    en: "Thorough, detail-oriented cleaning that leaves your space sparkling.",
+    es: "Limpieza minuciosa y detallada que deja su espacio reluciente.",
+  },
+  "why.stressfree": { en: "Stress-Free Experience", es: "Experiencia Sin Estrés" },
+  "why.stressfree.desc": {
+    en: "Reliable, trustworthy service so you can focus on what matters most.",
+    es: "Servicio confiable para que pueda enfocarse en lo que más importa.",
+  },
+  "why.budget": { en: "Budget-Friendly", es: "Económico" },
+  "why.budget.desc": {
+    en: "Competitive rates and flat-rate pricing options that fit your budget.",
+    es: "Tarifas competitivas y opciones de precio fijo que se ajustan a su presupuesto.",
+  },
+
+  // Footer
+  "footer.desc": {
+    en: "Professional cleaning services for homes and businesses in the Chico area. Quality you can trust.",
+    es: "Servicios profesionales de limpieza para hogares y negocios en el área de Chico. Calidad en la que puede confiar.",
+  },
+  "footer.contact": { en: "Contact", es: "Contacto" },
+  "footer.links": { en: "Quick Links", es: "Enlaces Rápidos" },
+  "footer.rights": { en: "All rights reserved.", es: "Todos los derechos reservados." },
+
+  // Schedule page
+  "schedule.title": { en: "Schedule an Appointment", es: "Agendar una Cita" },
+  "schedule.subtitle": {
+    en: "Fill out the form below and we'll get back to you with a quote.",
+    es: "Complete el formulario a continuación y le responderemos con una cotización.",
+  },
+  "schedule.contact": { en: "Contact Information", es: "Información de Contacto" },
+  "schedule.name": { en: "Full Name", es: "Nombre Completo" },
+  "schedule.email": { en: "Email", es: "Correo Electrónico" },
+  "schedule.phone": { en: "Phone", es: "Teléfono" },
+  "schedule.address": { en: "Service Address", es: "Dirección del Servicio" },
+  "schedule.street": { en: "Street Address", es: "Dirección" },
+  "schedule.city": { en: "City", es: "Ciudad" },
+  "schedule.zip": { en: "Zip Code", es: "Código Postal" },
+  "schedule.details": { en: "Service Details", es: "Detalles del Servicio" },
+  "schedule.type": { en: "Service Type", es: "Tipo de Servicio" },
+  "schedule.residential": { en: "Residential", es: "Residencial" },
+  "schedule.commercial": { en: "Commercial", es: "Comercial" },
+  "schedule.construction": { en: "Construction Cleanup", es: "Limpieza de Construcción" },
+  "schedule.onetime": { en: "One-Time Cleaning", es: "Limpieza Única" },
+  "schedule.other": { en: "Custom / Other", es: "Personalizado / Otro" },
+  "schedule.otherDesc": { en: "Please let us know what type of service you're looking for", es: "Por favor, díganos qué tipo de servicio está buscando" },
+  "schedule.sqft": { en: "Approx. Sq Ft", es: "Pies Cuad. Aprox." },
+  "schedule.bedrooms": { en: "Bedrooms", es: "Habitaciones" },
+  "schedule.bathrooms": { en: "Bathrooms", es: "Baños" },
+  "schedule.frequency": { en: "Cleaning Frequency", es: "Frecuencia de Limpieza" },
+  "schedule.freq.onetime": { en: "One-Time", es: "Una Vez" },
+  "schedule.freq.weekly": { en: "Weekly", es: "Semanal" },
+  "schedule.freq.biweekly": { en: "Bi-Weekly", es: "Quincenal" },
+  "schedule.freq.3weeks": { en: "Every 3 Weeks", es: "Cada 3 Semanas" },
+  "schedule.freq.monthly": { en: "Monthly", es: "Mensual" },
+  "schedule.scheduling": { en: "Scheduling", es: "Programación" },
+  "schedule.date": { en: "Preferred Date", es: "Fecha Preferida" },
+  "schedule.pickdate": { en: "Pick a date", es: "Seleccionar fecha" },
+  "schedule.time": { en: "Preferred Time", es: "Hora Preferida" },
+  "schedule.morning": { en: "Morning (8am–12pm)", es: "Mañana (8am–12pm)" },
+  "schedule.afternoon": { en: "Afternoon (12pm–4pm)", es: "Tarde (12pm–4pm)" },
+  "schedule.evening": { en: "Evening (4pm–7pm)", es: "Noche (4pm–7pm)" },
+  "schedule.notes": { en: "Special Requests / Notes", es: "Solicitudes Especiales / Notas" },
+  "schedule.notes.placeholder": {
+    en: "Any specific areas of concern, pets, access instructions...",
+    es: "Áreas específicas de interés, mascotas, instrucciones de acceso...",
+  },
+  "schedule.submit": { en: "Submit Request", es: "Enviar Solicitud" },
+  "schedule.thanks": { en: "Thank You!", es: "¡Gracias!" },
+  "schedule.thanks.msg": {
+    en: "Your service request has been submitted. We'll be in touch shortly to confirm your appointment.",
+    es: "Su solicitud de servicio ha sido enviada. Nos pondremos en contacto pronto para confirmar su cita.",
+  },
+  "schedule.another": { en: "Submit Another Request", es: "Enviar Otra Solicitud" },
+  "schedule.select": { en: "Select", es: "Seleccionar" },
+  "schedule.selectfreq": { en: "Select frequency", es: "Seleccionar frecuencia" },
+  "schedule.selecttime": { en: "Select time", es: "Seleccionar hora" },
+
+  // Schedule – How It Works
+  "schedule.howitworks": { en: "How It Works", es: "Cómo Funciona" },
+  "schedule.step1.label": { en: "Submit Request", es: "Enviar Solicitud" },
+  "schedule.step1.desc": { en: "Fill out the form below", es: "Complete el formulario" },
+  "schedule.step2.label": { en: "In-Home Estimate", es: "Estimado a Domicilio" },
+  "schedule.step2.desc": { en: "We visit your home for a free quote", es: "Visitamos su hogar para una cotización gratis" },
+  "schedule.step3.label": { en: "Get Your Quote", es: "Reciba su Cotización" },
+  "schedule.step3.desc": { en: "Receive a personalized price", es: "Reciba un precio personalizado" },
+  "schedule.step4.label": { en: "Cleaning Day", es: "Día de Limpieza" },
+  "schedule.step4.desc": { en: "We come and make it shine!", es: "¡Venimos y lo dejamos reluciente!" },
+
+  // Schedule – In-Home Estimate section
+  "schedule.estimate": { en: "Step 2 — In-Home Estimate", es: "Paso 2 — Estimado a Domicilio" },
+  "schedule.estimate.desc": {
+    en: "We provide a free in-home estimate before every cleaning. Pick a date and time that works for our team to visit your home and provide a personalized quote.",
+    es: "Ofrecemos un estimado gratuito a domicilio antes de cada limpieza. Elija una fecha y hora conveniente para que nuestro equipo visite su hogar y le proporcione una cotización personalizada.",
+  },
+  "schedule.estimate.callout": {
+    en: "This is NOT your cleaning date — we visit your home first to give you a free quote.",
+    es: "Esta NO es su fecha de limpieza — primero visitamos su hogar para darle una cotización gratuita.",
+  },
+  "schedule.estimate.date": { en: "Estimate Visit Date", es: "Fecha de Visita" },
+  "schedule.estimate.time": { en: "Preferred Time", es: "Hora Preferida" },
+
+  // Schedule – Desired Cleaning Date section
+  "schedule.cleaning": { en: "Step 4 — Desired Cleaning Date", es: "Paso 4 — Fecha Deseada de Limpieza" },
+  "schedule.cleaning.desc": {
+    en: "When would you like your first cleaning? We'll confirm the exact date after your in-home estimate.",
+    es: "¿Cuándo le gustaría su primera limpieza? Confirmaremos la fecha exacta después de su estimado a domicilio.",
+  },
+  "schedule.cleaning.callout": {
+    en: "This is your actual cleaning day — when we come and make it shine!",
+    es: "Este es su día de limpieza real — ¡cuando venimos y lo hacemos brillar!",
+  },
+  "schedule.cleaning.date": { en: "Preferred Cleaning Date", es: "Fecha Preferida de Limpieza" },
+  "schedule.cleaning.time": { en: "Preferred Time", es: "Hora Preferida" },
+
+  // Admin Login
+  "admin.login.title": { en: "Admin Login", es: "Inicio de Sesión Admin" },
+  "admin.login.subtitle": { en: "Maid For Chico Dashboard", es: "Panel de Maid For Chico" },
+  "admin.login.email": { en: "Email", es: "Correo Electrónico" },
+  "admin.login.password": { en: "Password", es: "Contraseña" },
+  "admin.login.signin": { en: "Sign In", es: "Iniciar Sesión" },
+  "admin.login.denied": { en: "Access Denied", es: "Acceso Denegado" },
+  "admin.login.denied.msg": { en: "You do not have admin privileges.", es: "No tiene privilegios de administrador." },
+  "admin.login.failed": { en: "Login Failed", es: "Error de Inicio de Sesión" },
+
+  // Admin Dashboard
+  "admin.title": { en: "Admin Dashboard", es: "Panel de Administración" },
+  "admin.subtitle": { en: "Manage inquiries, jobs, users, and activity", es: "Gestionar consultas, trabajos, usuarios y actividad" },
+  "admin.signout": { en: "Sign Out", es: "Cerrar Sesión" },
+  "admin.tab.inquiries": { en: "Inquiries", es: "Consultas" },
+  "admin.tab.jobs": { en: "Jobs", es: "Trabajos" },
+  "admin.tab.activity": { en: "Activity", es: "Actividad" },
+  "admin.tab.customers": { en: "Customers", es: "Clientes" },
+  "admin.tab.users": { en: "Users", es: "Usuarios" },
+
+  // View Modes
+  "admin.view.list": { en: "List", es: "Lista" },
+  "admin.view.day": { en: "Day", es: "Día" },
+  "admin.view.week": { en: "Week", es: "Semana" },
+  "admin.view.month": { en: "Month", es: "Mes" },
+
+  // Bulk Actions
+  "admin.bulk.selected": { en: "selected", es: "seleccionados" },
+  "admin.bulk.assign": { en: "Assign to Customer", es: "Asignar a Cliente" },
+  "admin.bulk.cancel": { en: "Cancel Jobs", es: "Cancelar Trabajos" },
+  "admin.bulk.clear": { en: "Clear", es: "Limpiar" },
+  "admin.bulk.cancelling": { en: "Cancelling...", es: "Cancelando..." },
+  "admin.bulk.cancel.title": { en: "Cancel Job(s)?", es: "¿Cancelar Trabajo(s)?" },
+  "admin.bulk.cancel.desc": { en: "This will move the selected jobs to cancelled status. This action can be undone by reopening the job and changing the status.", es: "Esto moverá los trabajos seleccionados a estado cancelado. Esta acción se puede deshacer reabriendo el trabajo y cambiando el estado." },
+  "admin.bulk.keep": { en: "Keep Jobs", es: "Mantener Trabajos" },
+  "admin.bulk.assign.title": { en: "Assign to Customer", es: "Asignar a Cliente" },
+  "admin.bulk.assign.desc": { en: "Link selected job(s) to a customer profile.", es: "Vincular trabajo(s) seleccionados a un perfil de cliente." },
+  "admin.bulk.assign.select": { en: "Select a customer...", es: "Seleccionar un cliente..." },
+  "admin.bulk.assign.btn": { en: "Assign Jobs", es: "Asignar Trabajos" },
+  "admin.bulk.assigning": { en: "Assigning...", es: "Asignando..." },
+  "admin.bulk.delete": { en: "Delete", es: "Eliminar" },
+  "admin.bulk.deleting": { en: "Deleting...", es: "Eliminando..." },
+  "admin.bulk.delete.title": { en: "Delete permanently?", es: "¿Eliminar permanentemente?" },
+  "admin.bulk.delete.desc": { en: "This will permanently delete the selected items. This action cannot be undone.", es: "Esto eliminará permanentemente los elementos seleccionados. Esta acción no se puede deshacer." },
+  "admin.bulk.delete.confirm": { en: "Delete", es: "Eliminar" },
+  "admin.bulk.delete.cancel": { en: "Keep", es: "Mantener" },
+  "admin.bulk.decline": { en: "Decline", es: "Rechazar" },
+  "admin.bulk.approve": { en: "Approve", es: "Aprobar" },
+
+  // Customer Stats
+  "admin.customers.total": { en: "Total Customers", es: "Total Clientes" },
+  "admin.customers.revenue": { en: "Total Revenue", es: "Ingresos Totales" },
+  "admin.customers.repeat": { en: "Repeat Customers", es: "Clientes Recurrentes" },
+  "admin.customers.active30": { en: "Active (30d)", es: "Activos (30d)" },
+  "admin.customers.add": { en: "Add Customer", es: "Agregar Cliente" },
+  "admin.customers.import": { en: "Import from Bookings", es: "Importar de Reservas" },
+  "admin.customers.customer": { en: "Customer", es: "Cliente" },
+  "admin.customers.location": { en: "Location", es: "Ubicación" },
+  "admin.customers.bookings": { en: "Bookings", es: "Reservas" },
+  "admin.customers.totalspent": { en: "Total Spent", es: "Total Gastado" },
+  "admin.customers.jobs": { en: "jobs", es: "trabajos" },
+
+  // Calendar
+  "admin.calendar.drag": { en: "Drag jobs to reschedule", es: "Arrastra trabajos para reprogramar" },
+  "admin.calendar.today": { en: "Today", es: "Hoy" },
+  "admin.calendar.notime": { en: "No time", es: "Sin hora" },
+  "admin.reschedule.confirm.title": { en: "Reschedule Job?", es: "¿Reprogramar trabajo?" },
+  "admin.reschedule.confirm.description": { en: "Move {name} from {oldDate} to {newDate}?", es: "¿Mover {name} de {oldDate} a {newDate}?" },
+  "admin.reschedule.confirm.btn": { en: "Reschedule", es: "Reprogramar" },
+  "admin.cancel": { en: "Cancel", es: "Cancelar" },
+
+  // Inquiry Pipeline
+  "admin.inquiry.all": { en: "All", es: "Todas" },
+  "admin.inquiry.pending": { en: "New", es: "Nueva" },
+  "admin.inquiry.contacted": { en: "Contacted", es: "Contactada" },
+  "admin.inquiry.estimate-scheduled": { en: "Estimate Scheduled", es: "Estimado Programado" },
+  "admin.inquiry.quoted": { en: "Quoted", es: "Cotizada" },
+  "admin.inquiry.declined": { en: "Declined", es: "Rechazada" },
+  "admin.inquiry.none": { en: "No inquiries found", es: "No se encontraron consultas" },
+  "admin.inquiry.details": { en: "Inquiry Details", es: "Detalles de Consulta" },
+  "admin.inquiry.details.desc": { en: "Review and decide on this inquiry", es: "Revisar y decidir sobre esta consulta" },
+  "admin.inquiry.approve": { en: "Approve", es: "Aprobar" },
+  "admin.inquiry.decline": { en: "Decline", es: "Rechazar" },
+  "admin.inquiry.estimatevisit": { en: "Estimate Visit", es: "Visita de Estimado" },
+  "admin.inquiry.details.tab": { en: "Details", es: "Detalles" },
+  "admin.inquiry.messages": { en: "Messages", es: "Mensajes" },
+  "admin.inquiry.desiredcleaning": { en: "Desired Cleaning Date", es: "Fecha Deseada de Limpieza" },
+  "admin.inquiry.schedule.title": { en: "Schedule an Estimate Visit", es: "Programar Visita de Estimado" },
+  "admin.inquiry.schedule.desc": { en: "Set a date and time for your team to visit the customer's home and provide a quote.", es: "Establezca una fecha y hora para que su equipo visite el hogar del cliente y proporcione una cotización." },
+  "admin.inquiry.visitdate": { en: "Visit Date", es: "Fecha de Visita" },
+  "admin.inquiry.visittime": { en: "Visit Time", es: "Hora de Visita" },
+  "admin.inquiry.customerrequest": { en: "Customer's Requested Estimate Date", es: "Fecha de Estimado Solicitada por el Cliente" },
+  "admin.inquiry.usethisdate": { en: "Use This Date", es: "Usar Esta Fecha" },
+  "admin.inquiry.currentestimate": { en: "Current Estimate Visit", es: "Visita de Estimado Actual" },
+  "admin.inquiry.fromrequest": { en: "From customer's request", es: "De la solicitud del cliente" },
+  "admin.inquiry.syncing": { en: "Syncing Calendar...", es: "Sincronizando Calendario..." },
+  "admin.inquiry.saving": { en: "Saving...", es: "Guardando..." },
+  "admin.inquiry.schedulebtn": { en: "Schedule Estimate Visit", es: "Programar Visita de Estimado" },
+  "admin.inquiry.quickemail": { en: "Quick Email Actions", es: "Acciones Rápidas de Email" },
+  "admin.inquiry.loadingmsgs": { en: "Loading messages...", es: "Cargando mensajes..." },
+  "admin.inquiry.nomsgs": { en: "No messages yet. Send an email below.", es: "Sin mensajes aún. Envíe un correo abajo." },
+  "admin.inquiry.emailsent": { en: "Email Sent", es: "Correo Enviado" },
+  "admin.inquiry.sendemail": { en: "Send Email", es: "Enviar Correo" },
+  "admin.inquiry.sendto": { en: "Send Email to", es: "Enviar Correo a" },
+  "admin.inquiry.usetemplate": { en: "Use Template", es: "Usar Plantilla" },
+  "admin.inquiry.quicktemplates": { en: "Quick Templates", es: "Plantillas Rápidas" },
+  "admin.inquiry.subject": { en: "Subject", es: "Asunto" },
+  "admin.inquiry.typemessage": { en: "Type your message...", es: "Escriba su mensaje..." },
+  "admin.inquiry.sending": { en: "Sending...", es: "Enviando..." },
+  "admin.inquiry.invite.title": { en: "Send Estimate Visit Invite?", es: "¿Enviar Invitación de Visita de Estimado?" },
+  "admin.inquiry.invite.desc": { en: "The estimate visit has been saved and synced to Google Calendar. Would you like to send a calendar invite email to the customer now?", es: "La visita de estimado ha sido guardada y sincronizada con Google Calendar. ¿Desea enviar un correo de invitación al cliente ahora?" },
+  "admin.inquiry.invite.notnow": { en: "Not Now", es: "Ahora No" },
+  "admin.inquiry.invite.send": { en: "Send Invite", es: "Enviar Invitación" },
+  "admin.inquiry.quoted.btn": { en: "Quoted", es: "Cotizada" },
+  "admin.inquiry.at": { en: "at", es: "a las" },
+
+  // Inquiry templates
+  "admin.template.estimate_request": { en: "Request Estimate Visit", es: "Solicitar Visita de Estimado" },
+  "admin.template.estimate_confirm": { en: "Confirm Estimate Visit", es: "Confirmar Visita de Estimado" },
+  "admin.template.send_quote": { en: "Send Quote / Follow-Up", es: "Enviar Cotización / Seguimiento" },
+  "admin.template.cleaning_scheduled": { en: "Cleaning Scheduled", es: "Limpieza Programada" },
+  "admin.template.estimate_reschedule": { en: "Request New Time", es: "Solicitar Nueva Hora" },
+  "admin.template.reschedule_notice": { en: "Reschedule Notice", es: "Aviso de Reprogramación" },
+  "admin.template.thank_you": { en: "Thank You / Post-Clean", es: "Gracias / Post-Limpieza" },
+  "admin.template.general_followup": { en: "General Follow-Up", es: "Seguimiento General" },
+
+  // Jobs Board
+  "admin.job.all": { en: "All", es: "Todos" },
+  "admin.job.approved": { en: "Approved", es: "Aprobado" },
+  "admin.job.scheduled": { en: "Scheduled", es: "Programado" },
+  "admin.job.in-progress": { en: "In Progress", es: "En Progreso" },
+  "admin.job.completed": { en: "Completed", es: "Completado" },
+  "admin.job.none": { en: "No jobs found", es: "No se encontraron trabajos" },
+  "admin.job.details": { en: "Job Details", es: "Detalles del Trabajo" },
+  "admin.job.details.desc": { en: "Track and update this job", es: "Seguir y actualizar este trabajo" },
+  "admin.job.add": { en: "Add Job", es: "Agregar Trabajo" },
+  "admin.job.add.title": { en: "Add Completed Job", es: "Agregar Trabajo Completado" },
+  "admin.job.add.desc": { en: "Manually log a job for tracking", es: "Registrar un trabajo manualmente para seguimiento" },
+  "admin.job.add.save": { en: "Add Job", es: "Agregar Trabajo" },
+  "admin.job.add.success": { en: "Job Added", es: "Trabajo Agregado" },
+  "admin.job.add.success.msg": { en: "Job has been added to the board", es: "El trabajo ha sido agregado al tablero" },
+  "admin.job.add.error": { en: "Failed to add job", es: "Error al agregar trabajo" },
+  "admin.job.add.required": { en: "Please fill in name, email, phone, address, and date", es: "Complete nombre, correo, teléfono, dirección y fecha" },
+  "admin.job.lineitems": { en: "Line Items", es: "Partidas" },
+  "admin.job.additem": { en: "Add Item", es: "Agregar Partida" },
+  "admin.job.item.desc": { en: "e.g. Kitchen deep clean", es: "ej. Limpieza profunda cocina" },
+  "admin.job.total": { en: "Total", es: "Total" },
+  "admin.job.invoice": { en: "Invoice / Receipt", es: "Factura / Recibo" },
+  "admin.job.upload": { en: "Upload File", es: "Subir Archivo" },
+  "admin.job.uploading": { en: "Uploading...", es: "Subiendo..." },
+  "admin.job.viewinvoice": { en: "View File", es: "Ver Archivo" },
+  "admin.job.upload.success": { en: "File Uploaded", es: "Archivo Subido" },
+  "admin.job.upload.success.msg": { en: "Invoice file saved successfully", es: "Archivo de factura guardado" },
+  "admin.job.upload.error": { en: "Failed to upload file", es: "Error al subir archivo" },
+  "admin.job.sendquote": { en: "Send Quote", es: "Enviar Cotización" },
+  "admin.job.sendreceipt": { en: "Send Receipt", es: "Enviar Recibo" },
+  "admin.job.sending": { en: "Sending...", es: "Enviando..." },
+  "admin.job.quote.sent": { en: "Quote Sent", es: "Cotización Enviada" },
+  "admin.job.receipt.sent": { en: "Receipt Sent", es: "Recibo Enviado" },
+  "admin.job.email.sentto": { en: "Sent to", es: "Enviado a" },
+  "admin.job.email.error": { en: "Failed to send email", es: "Error al enviar correo" },
+  "admin.job.email.setup": { en: "Email sending requires domain setup — coming soon", es: "El envío de correo requiere configuración de dominio — próximamente" },
+
+  // Bookings
+  "admin.bookings.all": { en: "All", es: "Todas" },
+  "admin.bookings.pending": { en: "Pending", es: "Pendiente" },
+  "admin.bookings.confirmed": { en: "Confirmed", es: "Confirmada" },
+  "admin.bookings.completed": { en: "Completed", es: "Completada" },
+  "admin.bookings.cancelled": { en: "Cancelled", es: "Cancelada" },
+  "admin.bookings.search": { en: "Search by name, email, or phone...", es: "Buscar por nombre, correo o teléfono..." },
+  "admin.bookings.refresh": { en: "Refresh", es: "Actualizar" },
+  "admin.bookings.date": { en: "Date", es: "Fecha" },
+  "admin.bookings.name": { en: "Name", es: "Nombre" },
+  "admin.bookings.service": { en: "Service", es: "Servicio" },
+  "admin.bookings.frequency": { en: "Frequency", es: "Frecuencia" },
+  "admin.bookings.status": { en: "Status", es: "Estado" },
+  "admin.bookings.loading": { en: "Loading...", es: "Cargando..." },
+  "admin.bookings.none": { en: "No bookings found", es: "No se encontraron reservas" },
+  "admin.bookings.page": { en: "Page", es: "Página" },
+  "admin.bookings.of": { en: "of", es: "de" },
+  "admin.bookings.results": { en: "results", es: "resultados" },
+  "admin.bookings.details": { en: "Booking Details", es: "Detalles de Reserva" },
+  "admin.bookings.details.desc": { en: "View and manage this booking request", es: "Ver y gestionar esta solicitud de reserva" },
+  "admin.bookings.phone": { en: "Phone", es: "Teléfono" },
+  "admin.bookings.email": { en: "Email", es: "Correo" },
+  "admin.bookings.address": { en: "Address", es: "Dirección" },
+  "admin.bookings.sqft": { en: "Sq Ft", es: "Pies Cuad." },
+  "admin.bookings.bedrooms": { en: "Bedrooms", es: "Habitaciones" },
+  "admin.bookings.bathrooms": { en: "Bathrooms", es: "Baños" },
+  "admin.bookings.prefdate": { en: "Preferred Date", es: "Fecha Preferida" },
+  "admin.bookings.preftime": { en: "Preferred Time", es: "Hora Preferida" },
+  "admin.bookings.nopref": { en: "No preference", es: "Sin preferencia" },
+  "admin.bookings.custnotes": { en: "Customer Notes", es: "Notas del Cliente" },
+  "admin.bookings.adminnotes": { en: "Admin Notes", es: "Notas del Admin" },
+  "admin.bookings.adminnotes.placeholder": { en: "Internal notes about this booking...", es: "Notas internas sobre esta reserva..." },
+  "admin.bookings.save": { en: "Save Changes", es: "Guardar Cambios" },
+  "admin.bookings.saving": { en: "Saving...", es: "Guardando..." },
+  "admin.bookings.updated": { en: "Updated", es: "Actualizada" },
+  "admin.bookings.updated.msg": { en: "Booking updated successfully", es: "Reserva actualizada exitosamente" },
+  "admin.bookings.error": { en: "Failed to load bookings", es: "Error al cargar reservas" },
+  "admin.bookings.error.update": { en: "Failed to update booking", es: "Error al actualizar reserva" },
+
+  // Contact Activity
+  "admin.activity.title": { en: "Contact Activity", es: "Actividad de Contacto" },
+  "admin.activity.subtitle": { en: "Track WhatsApp and phone button clicks", es: "Seguimiento de clics en botones de WhatsApp y teléfono" },
+  "admin.activity.whatsapp": { en: "WhatsApp", es: "WhatsApp" },
+  "admin.activity.phone": { en: "Phone Call", es: "Llamada" },
+  "admin.activity.phonecalls": { en: "Phone Calls", es: "Llamadas" },
+  "admin.activity.datetime": { en: "Date & Time", es: "Fecha y Hora" },
+  "admin.activity.channel": { en: "Channel", es: "Canal" },
+  "admin.activity.page": { en: "Page", es: "Página" },
+  "admin.activity.none": { en: "No contact activity yet", es: "Sin actividad de contacto aún" },
+  "admin.activity.error": { en: "Failed to load contact logs", es: "Error al cargar registros de contacto" },
+  "admin.activity.devices": { en: "Devices", es: "Dispositivos" },
+  "admin.activity.peakhours": { en: "Peak Times", es: "Horas Pico" },
+  "admin.activity.device": { en: "Device", es: "Dispositivo" },
+  "admin.activity.browser": { en: "Browser", es: "Navegador" },
+  "admin.activity.os": { en: "OS", es: "Sistema" },
+  "admin.activity.timeofday": { en: "Time of Day", es: "Hora del Día" },
+  "admin.activity.detail": { en: "Click Details", es: "Detalles del Clic" },
+  "admin.activity.detail.desc": { en: "Device and session information", es: "Información del dispositivo y sesión" },
+  "admin.activity.useragent": { en: "User Agent", es: "Agente de Usuario" },
+
+  // User Management
+  "admin.users.title": { en: "User Management", es: "Gestión de Usuarios" },
+  "admin.users.subtitle": { en: "Create and manage team accounts", es: "Crear y gestionar cuentas del equipo" },
+  "admin.users.adduser": { en: "Add User", es: "Agregar Usuario" },
+  "admin.users.email": { en: "Email", es: "Correo" },
+  "admin.users.role": { en: "Role", es: "Rol" },
+  "admin.users.created": { en: "Created", es: "Creado" },
+  "admin.users.lastsignin": { en: "Last Sign In", es: "Último Acceso" },
+  "admin.users.never": { en: "Never", es: "Nunca" },
+  "admin.users.loading": { en: "Loading...", es: "Cargando..." },
+  "admin.users.none": { en: "No users found", es: "No se encontraron usuarios" },
+  "admin.users.create.title": { en: "Create New User", es: "Crear Nuevo Usuario" },
+  "admin.users.create.desc": { en: "Add a team member with specific access level", es: "Agregar un miembro del equipo con nivel de acceso específico" },
+  "admin.users.fullname": { en: "Full Name", es: "Nombre Completo" },
+  "admin.users.password": { en: "Password", es: "Contraseña" },
+  "admin.users.password.placeholder": { en: "Min 6 characters", es: "Mínimo 6 caracteres" },
+  "admin.users.role.admin": { en: "Admin — Full access", es: "Admin — Acceso completo" },
+  "admin.users.role.moderator": { en: "Moderator — View & update bookings", es: "Moderador — Ver y actualizar reservas" },
+  "admin.users.role.user": { en: "User — View only", es: "Usuario — Solo ver" },
+  "admin.users.createbtn": { en: "Create User", es: "Crear Usuario" },
+  "admin.users.creating": { en: "Creating...", es: "Creando..." },
+  "admin.users.created.toast": { en: "User Created", es: "Usuario Creado" },
+  "admin.users.role.updated": { en: "Role Updated", es: "Rol Actualizado" },
+  "admin.users.role.changed": { en: "User role changed to", es: "Rol de usuario cambiado a" },
+  "admin.users.delete.title": { en: "Delete User", es: "Eliminar Usuario" },
+  "admin.users.delete.msg": { en: "Are you sure you want to delete", es: "¿Está seguro que desea eliminar a" },
+  "admin.users.delete.warn": { en: "This action cannot be undone.", es: "Esta acción no se puede deshacer." },
+  "admin.users.delete.cancel": { en: "Cancel", es: "Cancelar" },
+  "admin.users.delete.confirm": { en: "Delete", es: "Eliminar" },
+  "admin.users.deleted": { en: "User Deleted", es: "Usuario Eliminado" },
+  "admin.users.deleted.msg": { en: "has been removed", es: "ha sido eliminado" },
+  "admin.users.added.msg": { en: "has been added as", es: "ha sido agregado como" },
+  "admin.error": { en: "Error", es: "Error" },
+
+  // Translation
+  "admin.translate.btn": { en: "Translate", es: "Traducir" },
+  "admin.translate.original": { en: "Show Original", es: "Ver Original" },
+  "admin.translate.auto": { en: "Auto-translated", es: "Traducción automática" },
+
+  // Dashboard Stats
+  "admin.stats.total": { en: "Total Bookings", es: "Total Reservas" },
+  "admin.stats.pending": { en: "Pending", es: "Pendientes" },
+  "admin.stats.active": { en: "Active Jobs", es: "Trabajos Activos" },
+  "admin.stats.completed": { en: "Completed", es: "Completados" },
+  "admin.stats.revenue": { en: "Revenue", es: "Ingresos" },
+  "admin.stats.thismonth": { en: "This Month", es: "Este Mes" },
+
+  // Job Approval Email
+  "admin.stats.overview": { en: "Overview", es: "Resumen" },
+  "admin.job.approval.sent": { en: "Approval Sent", es: "Aprobación Enviada" },
+
+  // Ads Landing Page
+  "ads.callnow": { en: "Call Now", es: "Llamar Ahora" },
+  "ads.headline": { en: "Professional House Cleaning in Chico, CA", es: "Limpieza Profesional de Hogares en Chico, CA" },
+  "ads.subheadline": {
+    en: "Licensed, insured & bonded. Flat-rate pricing. Eco-friendly products safe for kids & pets. Book online in 60 seconds.",
+    es: "Con licencia, asegurado y con fianza. Precios fijos. Productos ecológicos seguros para niños y mascotas. Reserve en línea en 60 segundos.",
+  },
+  "ads.cta": { en: "Get a Free Quote", es: "Obtener Cotización Gratis" },
+  "ads.licensed": { en: "Licensed & Bonded", es: "Con Licencia y Fianza" },
+  "ads.insured": { en: "Fully Insured", es: "Completamente Asegurado" },
+  "ads.sameday": { en: "Same-Week Availability", es: "Disponibilidad esta Semana" },
+  "ads.included": { en: "What's Included", es: "Qué Incluye" },
+  "ads.item1": { en: "Kitchen deep clean — stovetop, counters, sink", es: "Limpieza profunda de cocina — estufa, encimeras, fregadero" },
+  "ads.item2": { en: "Bathroom sanitization — tub, toilet, tile", es: "Desinfección de baño — bañera, inodoro, azulejo" },
+  "ads.item3": { en: "Vacuuming & mopping all floors", es: "Aspirado y trapeado de todos los pisos" },
+  "ads.item4": { en: "Dusting all surfaces & ceiling fans", es: "Limpieza de polvo en todas las superficies y ventiladores" },
+  "ads.item5": { en: "Trash removal & bag replacement", es: "Retiro de basura y cambio de bolsas" },
+  "ads.item6": { en: "Window sills & baseboards", es: "Marcos de ventanas y rodapiés" },
+  "ads.item7": { en: "Bedroom tidying & linen change", es: "Orden de dormitorios y cambio de ropa de cama" },
+  "ads.item8": { en: "Pet-safe, eco-friendly products", es: "Productos ecológicos seguros para mascotas" },
+  "ads.reviews": { en: "What Customers Say", es: "Lo Que Dicen los Clientes" },
+  "ads.seeall": { en: "See all 37 Google reviews →", es: "Ver las 37 reseñas en Google →" },
+  "ads.promo": { en: "15% Off Your First Cleaning", es: "15% de Descuento en Su Primera Limpieza" },
+  "ads.promodesc": {
+    en: "New customers save 15% on their first booking of $150 or more. No catch — just great service at a great price.",
+    es: "Nuevos clientes ahorran 15% en su primera reserva de $150 o más. Sin trampas — solo excelente servicio a un gran precio.",
+  },
+  "ads.booknow": { en: "Book Now", es: "Reservar Ahora" },
+
+  // Blog
+  "blog.title": { en: "Cleaning Tips & Guides", es: "Consejos y Guías de Limpieza" },
+  "blog.subtitle": {
+    en: "Expert cleaning advice from Chico's trusted professionals.",
+    es: "Consejos de limpieza de los profesionales de confianza de Chico.",
+  },
+  "blog.back": { en: "All articles", es: "Todos los artículos" },
+  "blog.read": { en: "read", es: "lectura" },
+  "blog.cta.title": { en: "Need Help Cleaning?", es: "¿Necesita Ayuda con la Limpieza?" },
+  "blog.cta.desc": {
+    en: "Let the pros handle it. Book a cleaning with Maid For Chico today.",
+    es: "Deje que los profesionales se encarguen. Reserve una limpieza con Maid For Chico hoy.",
+  },
+};
+
+const fallbackLanguageContext: LanguageContextType = {
+  lang: "en",
+  toggleLang: () => {},
+  t: (key: string) => translations[key]?.en ?? key,
+};
+
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+
+export const LanguageProvider = ({ children }: { children: ReactNode }) => {
+  const [lang, setLang] = useState<Lang>(() => {
+    try {
+      const saved = localStorage.getItem("mfc-lang");
+      if (saved === "en" || saved === "es") return saved;
+    } catch {}
+    return "en";
+  });
+
+  const toggleLang = () => {
+    setLang((prev) => {
+      const next = prev === "en" ? "es" : "en";
+      try { localStorage.setItem("mfc-lang", next); } catch {}
+      return next;
+    });
+  };
+
+  const t = (key: string): string => {
+    return translations[key]?.[lang] ?? key;
+  };
+
+  return (
+    <LanguageContext.Provider value={{ lang, toggleLang, t }}>
+      {children}
+    </LanguageContext.Provider>
+  );
+};
+
+export const useLanguage = () => {
+  const ctx = useContext(LanguageContext);
+  return ctx ?? fallbackLanguageContext;
+};
