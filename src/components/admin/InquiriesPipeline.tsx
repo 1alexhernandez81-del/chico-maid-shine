@@ -25,6 +25,7 @@ import ThreadedChat from "@/components/admin/ThreadedChat";
 import { formatTime12, toDateInputValue, toTimeInputValue, formatLabel, STATUS_COLORS } from "./shared/utils";
 import { getEmailTemplates } from "./shared/emailTemplates";
 import type { Booking } from "./shared/types";
+import type { EmailTemplate } from "./shared/emailTemplates";
 
 const INQUIRY_STATUSES = ["pending", "contacted", "estimate-scheduled", "quoted", "declined"];
 
