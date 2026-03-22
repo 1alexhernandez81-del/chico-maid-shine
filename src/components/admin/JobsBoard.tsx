@@ -28,6 +28,8 @@ import { Label } from "@/components/ui/label";
 import JobDetailDialog from "./JobDetailDialog";
 import JobsCalendarView from "./JobsCalendarView";
 import type { UserRole } from "@/pages/AdminDashboard";
+import type { Booking } from "./shared/types";
+import { STATUS_COLORS } from "./shared/utils";
 
 type ViewMode = "list" | "day" | "week" | "month";
 
