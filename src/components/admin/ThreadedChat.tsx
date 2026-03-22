@@ -57,7 +57,7 @@ interface ThreadedChatProps {
   onInitialConsumed?: () => void;
 }
 
-const ThreadedChat = ({ bookingId, customerId, customerName, customerEmail, templates, initialSubject, initialBody, onEmailSent, onInitialConsumed }: ThreadedChatProps) => {
+const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, customerEmail, templates, initialSubject, initialBody, onEmailSent, onInitialConsumed }: ThreadedChatProps) => {
   const { toast } = useToast();
   const { t } = useLanguage();
 
