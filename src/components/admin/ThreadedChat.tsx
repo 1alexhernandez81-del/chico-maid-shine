@@ -88,13 +88,21 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       .select("*")
       .order("created_at", { ascending: true });
 
-    if (customerId && bookingId) {
-      // Fetch messages linked to this customer OR this booking
-      query = query.or(`customer_id.eq.${customerId},booking_id.eq.${bookingId}`);
-    } else if (customerId) {
-      query = query.eq("customer_id", customerId);
-    } else if (bookingId) {
-      query = query.eq("booking_id", bookingId);
+    // Build an OR filter that covers customer_id and all related booking IDs
+    const allBookingIds = bookingIds?.length ? bookingIds : bookingId ? [bookingId] : [];
+    const orParts: string[] = [];
+    if (customerId) orParts.push(`customer_id.eq.${customerId}`);
+    for (const bid of allBookingIds) {
+      orParts.push(`booking_id.eq.${bid}`);
+    }
+
+    if (orParts.length > 0) {
+      query = query.or(orParts.join(","));
+    } else {
+      // No filters — return empty
+      setCommunications([]);
+      setLoading(false);
+      return;
     }
 
     const { data, error } = await query;
@@ -104,7 +112,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
 
   useEffect(() => {
     fetchCommunications();
-  }, [bookingId, customerId]);
+  }, [bookingId, bookingIds?.join(","), customerId]);
 
   // Handle initial subject/body from quick-email buttons
   useEffect(() => {

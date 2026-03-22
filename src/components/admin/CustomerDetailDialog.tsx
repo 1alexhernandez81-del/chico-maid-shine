@@ -317,6 +317,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
             <TabsContent value="messages" className="mt-4">
               <ThreadedChat
                 customerId={customer.id}
+                bookingIds={bookings.map((b) => b.id)}
                 customerName={customer.name}
                 customerEmail={customer.email}
                 templates={[]}
