@@ -46,6 +46,7 @@ type Thread = {
 
 interface ThreadedChatProps {
   bookingId?: string;
+  bookingIds?: string[];
   customerId?: string;
   customerName: string;
   customerEmail: string;
