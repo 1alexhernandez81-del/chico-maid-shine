@@ -5,20 +5,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-function formatTime12(time: string | null): string {
-  if (!time) return "TBD";
-  const [h, m] = time.split(":");
-  const hour = parseInt(h);
-  const ampm = hour >= 12 ? "PM" : "AM";
-  const h12 = hour % 12 || 12;
-  return `${h12}:${m} ${ampm}`;
-}
-
 async function getAccessToken(serviceAccountJson: string): Promise<string> {
   const sa = JSON.parse(serviceAccountJson);
   const now = Math.floor(Date.now() / 1000);
-  
-  // Create JWT header and claim set
   const header = { alg: "RS256", typ: "JWT" };
   const claimSet = {
     iss: sa.client_email,
@@ -29,16 +18,33 @@ async function getAccessToken(serviceAccountJson: string): Promise<string> {
   };
 
   const encoder = new TextEncoder();
-  const headerB64 = btoa(String.fromCharCode(...encoder.encode(JSON.stringify(header)))).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-  const claimB64 = btoa(String.fromCharCode(...encoder.encode(JSON.stringify(claimSet)))).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+  const headerB64 = btoa(String.fromCharCode(...encoder.encode(JSON.stringify(header))))
+    .replace(/=/g, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
+  const claimB64 = btoa(String.fromCharCode(...encoder.encode(JSON.stringify(claimSet))))
+    .replace(/=/g, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
   const signInput = `${headerB64}.${claimB64}`;
 
-  // Import private key and sign
-  const pemContent = sa.private_key.replace(/-----BEGIN PRIVATE KEY-----/g, "").replace(/-----END PRIVATE KEY-----/g, "").replace(/\s/g, "");
+  const pemContent = sa.private_key
+    .replace(/-----BEGIN PRIVATE KEY-----/g, "")
+    .replace(/-----END PRIVATE KEY-----/g, "")
+    .replace(/\s/g, "");
   const binaryKey = Uint8Array.from(atob(pemContent), (c) => c.charCodeAt(0));
-  const cryptoKey = await crypto.subtle.importKey("pkcs8", binaryKey, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
+  const cryptoKey = await crypto.subtle.importKey(
+    "pkcs8",
+    binaryKey,
+    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
   const signature = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", cryptoKey, encoder.encode(signInput));
-  const sigB64 = btoa(String.fromCharCode(...new Uint8Array(signature))).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+  const sigB64 = btoa(String.fromCharCode(...new Uint8Array(signature)))
+    .replace(/=/g, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
 
   const jwt = `${signInput}.${sigB64}`;
 
@@ -69,11 +75,7 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { data: booking, error: fetchErr } = await supabase
-      .from("bookings")
-      .select("*")
-      .eq("id", bookingId)
-      .single();
+    const { data: booking, error: fetchErr } = await supabase.from("bookings").select("*").eq("id", bookingId).single();
 
     if (fetchErr || !booking) throw new Error("Booking not found");
 
@@ -96,11 +98,9 @@ Deno.serve(async (req) => {
     // Determine if estimate or cleaning
     const isEstimate = booking.status === "estimate-scheduled";
     const eventDate = isEstimate
-      ? (booking.estimate_date || booking.preferred_date)
-      : (booking.scheduled_date || booking.preferred_date);
-    const eventTime = isEstimate
-      ? (booking.estimate_time || "09:00")
-      : (booking.scheduled_time || "09:00");
+      ? booking.estimate_date || booking.preferred_date
+      : booking.scheduled_date || booking.preferred_date;
+    const eventTime = isEstimate ? booking.estimate_time || "09:00" : booking.scheduled_time || "09:00";
     const durationMinutes = isEstimate ? 30 : 120;
 
     const titleName = booking.name.replace(/\b\w/g, (c: string) => c.toUpperCase());
@@ -109,25 +109,37 @@ Deno.serve(async (req) => {
     const description = `${booking.service_type.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())}\n📍 ${booking.street}, ${booking.city}, CA ${booking.zip}\n📞 ${booking.phone}\n✉️ ${booking.email}${booking.notes ? `\n📝 ${booking.notes}` : ""}`;
     const location = `${booking.street}, ${booking.city}, CA ${booking.zip}`;
 
-    // Parse date and time
-    const [year, month, day] = eventDate.includes("-") ? eventDate.split("-") : [eventDate.split("/")[2], eventDate.split("/")[0], eventDate.split("/")[1]];
-    const startDateTime = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}T${eventTime}:00`;
-    const startDate = new Date(startDateTime);
-    const endDate = new Date(startDate.getTime() + durationMinutes * 60000);
-    const endDateTime = endDate.toISOString().replace("Z", "");
+    // Parse date and time WITHOUT Date objects to avoid UTC conversion
+    const [year, month, day] = eventDate.includes("-")
+      ? eventDate.split("-")
+      : [eventDate.split("/")[2], eventDate.split("/")[0], eventDate.split("/")[1]];
 
+    const pad = (n: string | number) => String(n).padStart(2, "0");
+    const [hour, minute] = eventTime.split(":").map(Number);
+
+    // Build start time string directly
+    const startDateTime = `${year}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}:00`;
+
+    // Calculate end time with pure math, no Date objects
+    const endTotalMin = hour * 60 + minute + durationMinutes;
+    const endHour = Math.floor(endTotalMin / 60);
+    const endMinute = endTotalMin % 60;
+    const endDateTime = `${year}-${pad(month)}-${pad(day)}T${pad(endHour)}:${pad(endMinute)}:00`;
+
+    // Let Google handle timezone conversion. Pass the raw local time + timeZone.
+    // Do NOT append any offset like -08:00 or -07:00.
     const eventBody = {
       summary,
       description,
       location,
-      start: { dateTime: `${startDateTime}-08:00`, timeZone: "America/Los_Angeles" },
-      end: { dateTime: `${endDateTime.split(".")[0]}-08:00`, timeZone: "America/Los_Angeles" },
+      start: { dateTime: startDateTime, timeZone: "America/Los_Angeles" },
+      end: { dateTime: endDateTime, timeZone: "America/Los_Angeles" },
     };
 
     let eventId = booking.google_calendar_event_id;
 
     if (action === "update" && eventId) {
-      await fetch(`${calBase}/${eventId}`, {
+      const res = await fetch(`${calBase}/${eventId}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -135,6 +147,10 @@ Deno.serve(async (req) => {
         },
         body: JSON.stringify(eventBody),
       });
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error?.message || "Calendar update error");
+      }
     } else {
       const res = await fetch(calBase, {
         method: "POST",
@@ -149,7 +165,6 @@ Deno.serve(async (req) => {
       eventId = eventData.id;
     }
 
-    // Store event ID
     await supabase.from("bookings").update({ google_calendar_event_id: eventId }).eq("id", bookingId);
 
     return new Response(JSON.stringify({ success: true, eventId }), {
