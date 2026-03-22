@@ -673,7 +673,31 @@ const InquiriesPipeline = () => {
                         className="h-8 text-sm bg-background/50 border-emerald-500/20 focus:border-emerald-500/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                       <span className="text-xs text-muted-foreground shrink-0">per visit</span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 shrink-0 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
+                        disabled={!quoteAmount || parseFloat(quoteAmount) === selected.total_price}
+                        onClick={async () => {
+                          const { error } = await supabase
+                            .from("bookings")
+                            .update({ total_price: parseFloat(quoteAmount) })
+                            .eq("id", selected.id);
+                          if (error) {
+                            toast({ title: "Error", description: "Failed to save quote", variant: "destructive" });
+                          } else {
+                            toast({ title: "Saved", description: `Quote updated to $${quoteAmount}` });
+                            setSelected({ ...selected, total_price: parseFloat(quoteAmount) });
+                            setBookings(prev => prev.map(b => b.id === selected.id ? { ...b, total_price: parseFloat(quoteAmount) } : b));
+                          }
+                        }}
+                      >
+                        Save
+                      </Button>
                     </div>
+                    {quoteAmount && parseFloat(quoteAmount) !== selected.total_price && (
+                      <p className="text-xs text-amber-400/80 pl-6">⚠️ Unsaved — click Save to update the stored price</p>
+                    )}
                     {selected.total_price && !quoteAmount && (
                       <p className="text-xs text-emerald-400/70 pl-6">
                         Using saved price from line items: <strong>${selected.total_price}</strong>
