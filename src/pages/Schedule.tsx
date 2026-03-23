@@ -10,6 +10,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import AddressAutocomplete from "@/components/ui/address-autocomplete";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -190,7 +191,18 @@ const Schedule = () => {
               <fieldset className="space-y-4">
                 <legend className="font-body text-xs uppercase tracking-[0.2em] text-accent font-medium border-b border-accent/30 pb-2 mb-4 w-full">{t("schedule.address")}</legend>
                 <FormField control={form.control} name="street" render={({ field }) => (
-                  <FormItem><FormLabel className="font-body font-normal text-sm">{t("schedule.street")}</FormLabel><FormControl><Input placeholder="123 Main St" {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel className="font-body font-normal text-sm">{t("schedule.street")}</FormLabel><FormControl>
+                    <AddressAutocomplete
+                      value={field.value}
+                      onChange={field.onChange}
+                      onSelect={(addr) => {
+                        field.onChange(addr.street);
+                        if (addr.city) form.setValue("city", addr.city);
+                        if (addr.zip) form.setValue("zip", addr.zip);
+                      }}
+                      placeholder="123 Main St"
+                    />
+                  </FormControl><FormMessage /></FormItem>
                 )} />
                 <div className="grid sm:grid-cols-2 gap-4">
                   <FormField control={form.control} name="city" render={({ field }) => (

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
+import AddressAutocomplete from "@/components/ui/address-autocomplete";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -293,7 +294,13 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground">Address</Label>
-                <Input value={editForm.street} onChange={(e) => setEditForm({ ...editForm, street: e.target.value })} placeholder="Street" className="mb-2" />
+                <AddressAutocomplete
+                  value={editForm.street}
+                  onChange={(val) => setEditForm({ ...editForm, street: val })}
+                  onSelect={(addr) => setEditForm({ ...editForm, street: addr.street, city: addr.city || editForm.city, zip: addr.zip || editForm.zip })}
+                  placeholder="Street"
+                  className="mb-2"
+                />
                 <div className="grid grid-cols-2 gap-2">
                   <Input value={editForm.city} onChange={(e) => setEditForm({ ...editForm, city: e.target.value })} placeholder="City" />
                   <Input value={editForm.zip} onChange={(e) => setEditForm({ ...editForm, zip: e.target.value })} placeholder="ZIP" />
