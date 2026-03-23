@@ -13,6 +13,9 @@ import {
 } from "@/components/ui/collapsible";
 import { Send, MessageSquare, Loader2, FileText, ChevronDown, ChevronRight, Plus, Languages, Mail, StickyNote } from "lucide-react";
 
+const QUOTE_CTA_TEMPLATE_IDS = new Set(["send-quote", "general-followup"]);
+const APPROVE_QUOTE_CTA_LABEL = "✅ Approve Quote & Book Cleaning";
+
 export type Communication = {
   id: string;
   booking_id: string | null;
