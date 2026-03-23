@@ -842,9 +842,9 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
       <AlertDialog open={showReviewConfirm} onOpenChange={setShowReviewConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Send Review Request?</AlertDialogTitle>
+            <AlertDialogTitle>{t("admin.job.review.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              This job is being marked as completed. Would you like to send a Google review request email to <strong>{booking?.name}</strong> ({booking?.email})?
+              {t("admin.job.review.desc")} <strong>{booking?.name}</strong> ({booking?.email})?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
@@ -854,7 +854,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                 await executeSave();
               }}
             >
-              Complete Without Email
+              {t("admin.job.review.skip")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
@@ -863,7 +863,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
               }}
               className="bg-accent text-accent-foreground hover:bg-accent/90"
             >
-              ⭐ Complete & Send Review Request
+              {t("admin.job.review.send")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
