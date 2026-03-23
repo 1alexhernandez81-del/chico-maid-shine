@@ -475,12 +475,12 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
                       </Select>
                     </div>
                     <div>
-                      <Label className="text-xs text-muted-foreground">Day</Label>
+                      <Label className="text-xs text-muted-foreground">{t("admin.cd.day")}</Label>
                       <Select value={newSchedule.preferred_day} onValueChange={(v) => setNewSchedule({ ...newSchedule, preferred_day: v })}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
                           {["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"].map((d) => (
-                            <SelectItem key={d} value={d} className="capitalize">{d}</SelectItem>
+                            <SelectItem key={d} value={d}>{t(`admin.day.${d}`)}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
