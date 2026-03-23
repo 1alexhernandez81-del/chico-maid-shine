@@ -320,10 +320,10 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
 
           <Tabs defaultValue="history" className="mt-2">
             <TabsList className="w-full grid grid-cols-4">
-              <TabsTrigger value="history" className="gap-1.5 text-xs"><Calendar className="w-3.5 h-3.5" /> History</TabsTrigger>
-              <TabsTrigger value="messages" className="gap-1.5 text-xs"><Mail className="w-3.5 h-3.5" /> Messages</TabsTrigger>
-              <TabsTrigger value="schedule" className="gap-1.5 text-xs"><Repeat className="w-3.5 h-3.5" /> Schedule</TabsTrigger>
-              <TabsTrigger value="notes" className="gap-1.5 text-xs"><MessageSquare className="w-3.5 h-3.5" /> Notes</TabsTrigger>
+              <TabsTrigger value="history" className="gap-1.5 text-xs"><Calendar className="w-3.5 h-3.5" /> {t("admin.cd.tab.history")}</TabsTrigger>
+              <TabsTrigger value="messages" className="gap-1.5 text-xs"><Mail className="w-3.5 h-3.5" /> {t("admin.cd.tab.messages")}</TabsTrigger>
+              <TabsTrigger value="schedule" className="gap-1.5 text-xs"><Repeat className="w-3.5 h-3.5" /> {t("admin.cd.tab.schedule")}</TabsTrigger>
+              <TabsTrigger value="notes" className="gap-1.5 text-xs"><MessageSquare className="w-3.5 h-3.5" /> {t("admin.cd.tab.notes")}</TabsTrigger>
             </TabsList>
 
             {/* Booking History */}
