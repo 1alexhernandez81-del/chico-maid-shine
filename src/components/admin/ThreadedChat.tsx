@@ -427,7 +427,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
               setActiveTemplateId(null);
             }}
           >
-            <Plus className="w-3.5 h-3.5" /> New Thread
+            <Plus className="w-3.5 h-3.5" /> {t("admin.thread.newthread")}
           </Button>
         </div>
       </div>
