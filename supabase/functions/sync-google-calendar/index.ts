@@ -11,6 +11,7 @@ async function getAccessToken(serviceAccountJson: string): Promise<string> {
   const header = { alg: "RS256", typ: "JWT" };
   const claimSet = {
     iss: sa.client_email,
+    sub: "info@maidforchico.com",
     scope: "https://www.googleapis.com/auth/calendar",
     aud: "https://oauth2.googleapis.com/token",
     exp: now + 3600,
@@ -138,6 +139,7 @@ Deno.serve(async (req) => {
         start: { dateTime: startDateTime, timeZone: "America/Los_Angeles" },
         end: { dateTime: endDateTime, timeZone: "America/Los_Angeles" },
         recurrence: [frequencyToRRule(schedule.frequency)],
+        attendees: [{ email: customer.email }],
       };
 
       // Update existing or create new
@@ -219,6 +221,7 @@ Deno.serve(async (req) => {
       location,
       start: { dateTime: startDateTime, timeZone: "America/Los_Angeles" },
       end: { dateTime: endDateTime, timeZone: "America/Los_Angeles" },
+      attendees: [{ email: booking.email }],
     };
 
     let eventId = booking.google_calendar_event_id;
