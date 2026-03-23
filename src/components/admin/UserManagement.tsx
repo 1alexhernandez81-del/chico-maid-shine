@@ -18,7 +18,22 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { UserPlus, RefreshCw, Trash2, Shield, KeyRound } from "lucide-react";
+import { UserPlus, RefreshCw, Trash2, Shield, KeyRound, Eye, EyeOff } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+
+const getPasswordStrength = (pw: string): { score: number; label: string; color: string } => {
+  let score = 0;
+  if (pw.length >= 6) score++;
+  if (pw.length >= 10) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  if (score <= 1) return { score: 20, label: "Weak", color: "bg-destructive" };
+  if (score === 2) return { score: 40, label: "Fair", color: "bg-orange-500" };
+  if (score === 3) return { score: 60, label: "Good", color: "bg-yellow-500" };
+  if (score === 4) return { score: 80, label: "Strong", color: "bg-emerald-400" };
+  return { score: 100, label: "Very Strong", color: "bg-emerald-500" };
+};
 
 type ManagedUser = {
   id: string;
@@ -41,6 +56,8 @@ const UserManagement = () => {
   const [newName, setNewName] = useState("");
   const [newRole, setNewRole] = useState("user");
   const [creating, setCreating] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
   const { toast } = useToast();
   const { t } = useLanguage();
 
@@ -248,7 +265,21 @@ const UserManagement = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="newPassword">{t("admin.users.password")}</Label>
-              <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required minLength={6} placeholder={t("admin.users.password.placeholder")} />
+              <div className="relative">
+                <Input id="newPassword" type={showNewPassword ? "text" : "password"} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required minLength={6} placeholder={t("admin.users.password.placeholder")} className="pr-10" />
+                <button type="button" tabIndex={-1} onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {newPassword && (() => {
+                const s = getPasswordStrength(newPassword);
+                return (
+                  <div className="space-y-1">
+                    <Progress value={s.score} className="h-1.5" indicatorClassName={s.color} />
+                    <p className="text-xs text-muted-foreground">{s.label} — use 10+ chars, uppercase, number & symbol</p>
+                  </div>
+                );
+              })()}
             </div>
             <div className="space-y-2">
               <Label>{t("admin.users.role")}</Label>
@@ -314,7 +345,21 @@ const UserManagement = () => {
           }} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="resetPw">New Password</Label>
-              <Input id="resetPw" type="password" value={resetPassword} onChange={(e) => setResetPassword(e.target.value)} required minLength={6} placeholder="Min 6 characters" />
+              <div className="relative">
+                <Input id="resetPw" type={showResetPassword ? "text" : "password"} value={resetPassword} onChange={(e) => setResetPassword(e.target.value)} required minLength={6} placeholder="Min 6 characters" className="pr-10" />
+                <button type="button" tabIndex={-1} onClick={() => setShowResetPassword(!showResetPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  {showResetPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {resetPassword && (() => {
+                const s = getPasswordStrength(resetPassword);
+                return (
+                  <div className="space-y-1">
+                    <Progress value={s.score} className="h-1.5" indicatorClassName={s.color} />
+                    <p className="text-xs text-muted-foreground">{s.label} — use 10+ chars, uppercase, number & symbol</p>
+                  </div>
+                );
+              })()}
             </div>
             <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={resetting}>
               {resetting ? "Resetting..." : "Reset Password"}
