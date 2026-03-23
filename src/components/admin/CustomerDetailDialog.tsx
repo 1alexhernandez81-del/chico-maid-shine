@@ -189,8 +189,24 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
     toast({ title: "Note Added" });
   };
 
+  const computeNextServiceDate = (preferredDay: string) => {
+    const dayMap: Record<string, number> = {
+      sunday: 0, monday: 1, tuesday: 2, wednesday: 3,
+      thursday: 4, friday: 5, saturday: 6,
+    };
+    const target = dayMap[preferredDay.toLowerCase()];
+    const now = new Date();
+    const current = now.getDay();
+    let daysUntil = target - current;
+    if (daysUntil <= 0) daysUntil += 7;
+    const next = new Date(now);
+    next.setDate(now.getDate() + daysUntil);
+    return next.toISOString().split("T")[0];
+  };
+
   const addSchedule = async () => {
     setAddingSchedule(true);
+    const nextDate = computeNextServiceDate(newSchedule.preferred_day);
     const { error } = await supabase.from("recurring_schedules").insert({
       customer_id: customer.id,
       service_type: newSchedule.service_type,
@@ -201,6 +217,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
       city: customer.city,
       zip: customer.zip,
       price: newSchedule.price ? parseFloat(newSchedule.price) : null,
+      next_service_date: nextDate,
     });
 
     if (error) {
