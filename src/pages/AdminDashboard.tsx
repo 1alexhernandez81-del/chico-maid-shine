@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Inbox, Briefcase, Users, Activity, UserCheck, Sparkles, Loader2 } from "lucide-react";
+import { LogOut, Inbox, Briefcase, Users, Activity, UserCheck, Sparkles, Loader2, Clock } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import DashboardStats from "@/components/admin/DashboardStats";
 import InquiriesPipeline from "@/components/admin/InquiriesPipeline";
