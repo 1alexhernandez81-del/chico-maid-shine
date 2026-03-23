@@ -391,17 +391,17 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       {/* Header */}
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-medium flex items-center gap-2">
-          <MessageSquare className="w-3.5 h-3.5" /> Messages with {firstName}
+          <MessageSquare className="w-3.5 h-3.5" /> {t("admin.thread.messageswith")} {firstName}
         </h4>
         <div className="flex gap-2">
           <Popover open={templatePickerOpen} onOpenChange={setTemplatePickerOpen}>
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-                <FileText className="w-3.5 h-3.5" /> Template
+                <FileText className="w-3.5 h-3.5" /> {t("admin.thread.template")}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-72 p-2" align="end">
-              <p className="text-xs font-medium text-muted-foreground px-2 py-1.5 uppercase tracking-wider">Quick Templates</p>
+              <p className="text-xs font-medium text-muted-foreground px-2 py-1.5 uppercase tracking-wider">{t("admin.thread.quicktemplates")}</p>
               <div className="space-y-1">
                 {templates.map((tmpl) => (
                   <button
