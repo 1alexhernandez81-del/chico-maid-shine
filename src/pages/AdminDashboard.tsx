@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Inbox, Briefcase, Users, Activity, UserCheck, Sparkles, Loader2 } from "lucide-react";
+import { LogOut, Inbox, Briefcase, Users, Activity, UserCheck, Sparkles, Loader2, Clock } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import DashboardStats from "@/components/admin/DashboardStats";
 import InquiriesPipeline from "@/components/admin/InquiriesPipeline";
@@ -12,6 +12,7 @@ import UserManagement from "@/components/admin/UserManagement";
 import ContactLogs from "@/components/admin/ContactLogs";
 import CustomerManagement from "@/components/admin/CustomerManagement";
 import CleanerManagement from "@/components/admin/CleanerManagement";
+import TimesheetsTab from "@/components/admin/TimesheetsTab";
 
 export type UserRole = "admin" | "moderator" | "user";
 
@@ -115,6 +116,9 @@ const AdminDashboard = () => {
                 <TabsTrigger value="cleaners" className="gap-2">
                   <Sparkles className="w-4 h-4" /> Cleaners
                 </TabsTrigger>
+                <TabsTrigger value="timesheets" className="gap-2">
+                  <Clock className="w-4 h-4" /> Timesheets
+                </TabsTrigger>
                 <TabsTrigger value="activity" className="gap-2">
                   <Activity className="w-4 h-4" /> {t("admin.tab.activity")}
                 </TabsTrigger>
@@ -139,6 +143,9 @@ const AdminDashboard = () => {
               </TabsContent>
               <TabsContent value="cleaners">
                 <CleanerManagement />
+              </TabsContent>
+              <TabsContent value="timesheets">
+                <TimesheetsTab />
               </TabsContent>
               <TabsContent value="activity">
                 <ContactLogs />

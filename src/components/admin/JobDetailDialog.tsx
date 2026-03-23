@@ -20,6 +20,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Plus, Trash2, Upload, FileText, DollarSign, Camera, X, Image, Sparkles, Send, MessageSquare, Loader2 } from "lucide-react";
+import JobTimer from "@/components/admin/JobTimer";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { UserRole } from "@/pages/AdminDashboard";
 import ThreadedChat from "@/components/admin/ThreadedChat";
@@ -432,7 +433,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
               <TabsTrigger value="details" className="flex-1 gap-1.5">
                 📋 Details
               </TabsTrigger>
-              {isAdmin && (
+              {(isAdmin || userRole === "moderator") && (
                 <TabsTrigger value="messages" className="flex-1 gap-1.5">
                   <MessageSquare className="w-3.5 h-3.5" /> Messages
                 </TabsTrigger>
@@ -751,6 +752,11 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                 />
               </div>
 
+              {/* Time Tracking — visible to admin and moderator */}
+              {(isAdmin || userRole === "moderator") && (
+                <JobTimer bookingId={booking.id} userRole={userRole} cleaners={cleaners} />
+              )}
+
               {/* Action Buttons */}
               <div className="grid grid-cols-1 gap-2">
                 <Button onClick={saveChanges} disabled={saving} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
@@ -783,7 +789,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
             </TabsContent>
 
             {/* Messages Tab */}
-            {isAdmin && (
+            {(isAdmin || userRole === "moderator") && (
               <TabsContent value="messages" className="mt-4">
                 <ThreadedChat
                   bookingId={booking.id}

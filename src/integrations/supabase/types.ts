@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       bookings: {
         Row: {
+          accepted_by: string | null
           admin_notes: string | null
           assigned_cleaners: string[] | null
           bathrooms: string | null
@@ -55,6 +56,7 @@ export type Database = {
           zip: string
         }
         Insert: {
+          accepted_by?: string | null
           admin_notes?: string | null
           assigned_cleaners?: string[] | null
           bathrooms?: string | null
@@ -94,6 +96,7 @@ export type Database = {
           zip: string
         }
         Update: {
+          accepted_by?: string | null
           admin_notes?: string | null
           assigned_cleaners?: string[] | null
           bathrooms?: string | null
@@ -288,6 +291,59 @@ export type Database = {
           zip?: string
         }
         Relationships: []
+      }
+      job_time_entries: {
+        Row: {
+          booking_id: string
+          cleaners: string[] | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          notes: string | null
+          paused_at: string | null
+          resumed_at: string | null
+          started_at: string | null
+          stopped_at: string | null
+          total_paused_minutes: number | null
+          total_worked_minutes: number | null
+        }
+        Insert: {
+          booking_id: string
+          cleaners?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          paused_at?: string | null
+          resumed_at?: string | null
+          started_at?: string | null
+          stopped_at?: string | null
+          total_paused_minutes?: number | null
+          total_worked_minutes?: number | null
+        }
+        Update: {
+          booking_id?: string
+          cleaners?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          paused_at?: string | null
+          resumed_at?: string | null
+          started_at?: string | null
+          stopped_at?: string | null
+          total_paused_minutes?: number | null
+          total_worked_minutes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_time_entries_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
