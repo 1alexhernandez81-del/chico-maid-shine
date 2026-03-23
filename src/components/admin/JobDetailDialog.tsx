@@ -436,11 +436,11 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
           <Tabs defaultValue="details">
             <TabsList className="w-full">
               <TabsTrigger value="details" className="flex-1 gap-1.5">
-                📋 Details
+                {t("admin.job.details.tab")}
               </TabsTrigger>
               {isAdmin && (
                 <TabsTrigger value="messages" className="flex-1 gap-1.5">
-                  <MessageSquare className="w-3.5 h-3.5" /> Messages
+                  <MessageSquare className="w-3.5 h-3.5" /> {t("admin.job.messages.tab")}
                 </TabsTrigger>
               )}
             </TabsList>
