@@ -904,9 +904,9 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
       <AlertDialog open={showScheduleConfirm} onOpenChange={setShowScheduleConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Send Calendar Invite?</AlertDialogTitle>
+            <AlertDialogTitle>{t("admin.job.invite.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Would you like to send the calendar invite and scheduling email to <strong>{booking?.name}</strong> ({booking?.email})?
+              {t("admin.job.invite.desc")} <strong>{booking?.name}</strong> ({booking?.email})?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
@@ -916,7 +916,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                 await executeSave();
               }}
             >
-              Save Only
+              {t("admin.job.saveonly")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
@@ -925,7 +925,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
               }}
               className="bg-accent text-accent-foreground hover:bg-accent/90"
             >
-              Save & Send Invite
+              {t("admin.job.invite.send")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
