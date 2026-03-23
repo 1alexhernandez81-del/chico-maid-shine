@@ -752,7 +752,6 @@ const translations: Record<string, Record<Lang, string>> = {
     en: "Let the pros handle it. Book a cleaning with Maid For Chico today.",
     es: "Deje que los profesionales se encarguen. Reserve una limpieza con Maid For Chico hoy.",
   },
-  },
 
   // Customer Detail Dialog
   "admin.cd.edit": { en: "Edit", es: "Editar" },
