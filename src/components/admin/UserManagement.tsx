@@ -271,6 +271,40 @@ const UserManagement = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Reset Password Dialog */}
+      <Dialog open={!!resetTarget} onOpenChange={(open) => { if (!open) setResetTarget(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Reset Password</DialogTitle>
+            <DialogDescription>
+              Set a new password for <strong>{resetTarget?.email}</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            if (!resetTarget) return;
+            setResetting(true);
+            try {
+              await invokeManageUsers({ action: "reset_password", user_id: resetTarget.id, new_password: resetPassword });
+              toast({ title: "Password Reset", description: `Password updated for ${resetTarget.email}` });
+              setResetTarget(null);
+              setResetPassword("");
+            } catch (err: any) {
+              toast({ title: "Error", description: err.message, variant: "destructive" });
+            }
+            setResetting(false);
+          }} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="resetPw">New Password</Label>
+              <Input id="resetPw" type="password" value={resetPassword} onChange={(e) => setResetPassword(e.target.value)} required minLength={6} placeholder="Min 6 characters" />
+            </div>
+            <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={resetting}>
+              {resetting ? "Resetting..." : "Reset Password"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
