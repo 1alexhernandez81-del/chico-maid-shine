@@ -436,8 +436,37 @@ const JobsBoard = ({ userRole = "admin" as UserRole }: { userRole?: UserRole }) 
                           {statusLabel(b.status)}
                         </Badge>
                       </TableCell>
-                      <TableCell onClick={() => openDetail(b)}>
-                        <Eye className="w-4 h-4 text-muted-foreground" />
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-1">
+                          {!isAdmin && b.status === "scheduled" && !b.accepted_by && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs gap-1 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                const { data: { session } } = await supabase.auth.getSession();
+                                if (!session) return;
+                                const { error } = await supabase
+                                  .from("bookings")
+                                  .update({ accepted_by: session.user.id } as any)
+                                  .eq("id", b.id);
+                                if (!error) {
+                                  setBookings((prev) => prev.map((bk) => bk.id === b.id ? { ...bk, accepted_by: session.user.id } : bk));
+                                  toast({ title: "✅ Job Accepted" });
+                                }
+                              }}
+                            >
+                              ✋ Accept
+                            </Button>
+                          )}
+                          {!isAdmin && b.accepted_by && (
+                            <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-400">
+                              Accepted
+                            </Badge>
+                          )}
+                          <Eye className="w-4 h-4 text-muted-foreground cursor-pointer" onClick={() => openDetail(b)} />
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))

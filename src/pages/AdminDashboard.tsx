@@ -12,6 +12,7 @@ import UserManagement from "@/components/admin/UserManagement";
 import ContactLogs from "@/components/admin/ContactLogs";
 import CustomerManagement from "@/components/admin/CustomerManagement";
 import CleanerManagement from "@/components/admin/CleanerManagement";
+import TimesheetsTab from "@/components/admin/TimesheetsTab";
 
 export type UserRole = "admin" | "moderator" | "user";
 
