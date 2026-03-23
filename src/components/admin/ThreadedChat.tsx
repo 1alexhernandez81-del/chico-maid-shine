@@ -436,19 +436,19 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       {showNewThread && (
         <div className="border border-accent/30 rounded-lg p-3 space-y-2 bg-accent/5">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-medium text-accent">✉️ New Email Thread</p>
+            <p className="text-xs font-medium text-accent">✉️ {t("admin.thread.newemailthread")}</p>
             <Button variant="ghost" size="sm" className="h-5 px-1.5 text-xs" onClick={() => setShowNewThread(false)}>
               ✕
             </Button>
           </div>
           <Input
-            placeholder="Subject"
+            placeholder={t("admin.thread.subject")}
             value={newSubject}
             onChange={(e) => setNewSubject(e.target.value)}
             className="text-sm"
           />
           <Textarea
-            placeholder="Type your message..."
+            placeholder={t("admin.thread.typemsg")}
             value={newBody}
             onChange={(e) => setNewBody(e.target.value)}
             rows={3}
@@ -461,7 +461,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
             size="sm"
           >
             {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-            {sending ? "Sending..." : "Send & Start Thread"}
+            {sending ? t("admin.thread.sending") : t("admin.thread.sendstart")}
           </Button>
         </div>
       )}
