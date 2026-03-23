@@ -539,7 +539,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
                               {translations[`msg-${msg.id}`] || msg.body}
                             </p>
                             {translations[`msg-${msg.id}`] && (
-                              <p className="text-[9px] text-muted-foreground italic mt-1">Auto-translated</p>
+                              <p className="text-[9px] text-muted-foreground italic mt-1">{t("admin.translate.auto")}</p>
                             )}
                             {msg.body && (
                               <Button
