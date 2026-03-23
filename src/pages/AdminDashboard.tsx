@@ -19,6 +19,7 @@ export type UserRole = "admin" | "moderator" | "user";
 const AdminDashboard = () => {
   const [authorized, setAuthorized] = useState(false);
   const [userRole, setUserRole] = useState<UserRole>("user");
+  const [activeTab, setActiveTab] = useState("jobs");
   const navigate = useNavigate();
   const { lang, toggleLang, t } = useLanguage();
 
