@@ -108,8 +108,8 @@ const TimesheetsTab = () => {
           address: e.booking ? `${e.booking.street}, ${e.booking.city}` : "—",
           clockIn: e.started_at ? new Date(e.started_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—",
           clockOut: e.stopped_at ? new Date(e.stopped_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—",
-          breakMins: perCleanerBreak,
-          totalMins: perCleanerMins,
+          breakMins,
+          totalMins,
           notes: e.notes || "",
           sharedWith,
         });
