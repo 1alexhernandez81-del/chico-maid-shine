@@ -2,7 +2,7 @@
   "name": "Maid For Chico",
   "short_name": "MaidForChico",
   "description": "Professional cleaning services in Chico, CA — crew management & scheduling",
-  "start_url": "/",
+  "start_url": "/admin/login",
   "display": "standalone",
   "background_color": "#1a1a1a",
   "theme_color": "#E04B2A",
