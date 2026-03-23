@@ -394,7 +394,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
                       <p className="text-xs text-muted-foreground capitalize mt-0.5">
                         {s.frequency.replace("-", " ")} · {s.preferred_day || "Flexible"} · {formatTimeDisplay(s.preferred_time)}
                       </p>
-                      {s.price && <p className="text-accent font-medium text-sm mt-1">${s.price}/visit</p>}
+                      {s.price && <p className="text-accent font-medium text-sm mt-1">${s.price}{t("admin.cd.pervisit")}</p>}
                       {s.active && (
                         <div className="flex items-center gap-1 mt-1">
                           <span className="text-xs text-muted-foreground">📅 Next:</span>
