@@ -707,7 +707,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                       }}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Add a cleaner…" />
+                        <SelectValue placeholder={t("admin.job.addcleaner")} />
                       </SelectTrigger>
                       <SelectContent>
                         {cleaners
