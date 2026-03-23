@@ -135,8 +135,16 @@ Deno.serve(async (req) => {
     }
   } catch (err) {
     console.error("manage-users error:", err);
-    return new Response(JSON.stringify({ error: (err as Error).message }), {
-      status: 500,
+
+    const authErr = err as { message?: string; code?: string; name?: string; reasons?: string[]; status?: number };
+    const isWeakPassword = authErr?.code === "weak_password" || authErr?.name === "AuthWeakPasswordError";
+
+    const message = isWeakPassword
+      ? "Password is too weak or previously exposed. Please use a stronger, unique password."
+      : (authErr?.message || "Unexpected error");
+
+    return new Response(JSON.stringify({ error: message, code: authErr?.code || null }), {
+      status: isWeakPassword ? 422 : 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
