@@ -105,7 +105,7 @@ Deno.serve(async (req) => {
 
     const titleName = booking.name.replace(/\b\w/g, (c: string) => c.toUpperCase());
     const prefix = isEstimate ? "📋 ESTIMATE" : "🧹 CLEANING";
-    const summary = `${prefix} — ${titleName}`;
+    const summary = isEstimate ? "Maid For Chico - In-Home Estimate" : "Maid For Chico - Cleaning Service";
     const description = `${booking.service_type.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())}\n📍 ${booking.street}, ${booking.city}, CA ${booking.zip}\n📞 ${booking.phone}\n✉️ ${booking.email}${booking.notes ? `\n📝 ${booking.notes}` : ""}`;
     const location = `${booking.street}, ${booking.city}, CA ${booking.zip}`;
 
