@@ -428,10 +428,6 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
               )}
             </DialogTitle>
             <DialogDescription>{t("admin.job.details.desc")}</DialogDescription>
-                </span>
-              )}
-            </DialogTitle>
-            <DialogDescription>{t("admin.job.details.desc")}</DialogDescription>
           </DialogHeader>
           <Tabs defaultValue="details">
             <TabsList className="w-full">
