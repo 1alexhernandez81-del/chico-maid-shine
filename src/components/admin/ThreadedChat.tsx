@@ -470,14 +470,14 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       <ScrollArea className="h-[320px] rounded-lg border border-border">
         {loading ? (
           <div className="flex items-center justify-center h-full text-muted-foreground text-sm p-6">
-            <Loader2 className="w-4 h-4 animate-spin mr-2" /> Loading messages...
+            <Loader2 className="w-4 h-4 animate-spin mr-2" /> {t("admin.thread.loading")}
           </div>
         ) : threads.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground text-sm p-6 gap-2">
             <MessageSquare className="w-8 h-8 opacity-30" />
-            <p>No messages yet</p>
+            <p>{t("admin.thread.nomessages")}</p>
             <Button variant="outline" size="sm" className="gap-1.5 text-xs mt-1" onClick={() => setShowNewThread(true)}>
-              <Plus className="w-3 h-3" /> Start a conversation
+              <Plus className="w-3 h-3" /> {t("admin.thread.start")}
             </Button>
           </div>
         ) : (
