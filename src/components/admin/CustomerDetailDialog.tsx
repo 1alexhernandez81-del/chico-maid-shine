@@ -397,13 +397,13 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
                       {s.price && <p className="text-accent font-medium text-sm mt-1">${s.price}{t("admin.cd.pervisit")}</p>}
                       {s.active && (
                         <div className="flex items-center gap-1 mt-1">
-                          <span className="text-xs text-muted-foreground">📅 Next:</span>
+                          <span className="text-xs text-muted-foreground">📅 {t("admin.cd.next")}</span>
                           <Popover>
                             <PopoverTrigger asChild>
                               <Button variant="ghost" size="sm" className="h-6 px-1.5 text-xs text-muted-foreground hover:text-foreground gap-1">
                                 {s.next_service_date
                                   ? new Date(s.next_service_date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
-                                  : "Set date"}
+                                  : t("admin.cd.setdate")}
                                 <Pencil className="w-3 h-3" />
                               </Button>
                             </PopoverTrigger>
