@@ -191,10 +191,10 @@ const InquiriesPipeline = () => {
         body: { bookingId: selected.id, action: selected.google_calendar_event_id ? "update" : "create" },
       });
       if (calError) throw calError;
-      toast({ title: "Calendar Synced", description: "Estimate visit added to Google Calendar" });
+      toast({ title: t("admin.cal.synced"), description: t("admin.cal.synced.desc") });
     } catch (err) {
       console.error("Calendar sync error:", err);
-      toast({ title: "Calendar Sync Failed", description: "Saved estimate but failed to sync calendar", variant: "destructive" });
+      toast({ title: t("admin.cal.syncfail"), description: t("admin.cal.syncfail.desc"), variant: "destructive" });
     }
     setSyncingCalendar(false);
 
