@@ -260,17 +260,17 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
             <div className="flex items-center justify-between">
               <div>
                 <DialogTitle className="flex items-center gap-2">
-                  <span>{editing ? "Edit Customer" : customer.name}</span>
+                  <span>{editing ? t("admin.cd.editcustomer") : customer.name}</span>
                 </DialogTitle>
                 <DialogDescription className="flex flex-wrap gap-3 text-sm mt-1">
                   <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" /> {customer.email}</span>
                   <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {customer.phone}</span>
-                  <span className="flex items-center gap-1"><DollarSign className="w-3.5 h-3.5" /> ${totalSpent.toFixed(0)} total</span>
+                  <span className="flex items-center gap-1"><DollarSign className="w-3.5 h-3.5" /> ${totalSpent.toFixed(0)} {t("admin.cd.total")}</span>
                 </DialogDescription>
               </div>
               {!editing && (
                 <Button variant="outline" size="sm" onClick={() => setEditing(true)} className="gap-1.5 shrink-0">
-                  <Pencil className="w-3.5 h-3.5" /> Edit
+                  <Pencil className="w-3.5 h-3.5" /> {t("admin.cd.edit")}
                 </Button>
               )}
             </div>
