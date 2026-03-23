@@ -381,6 +381,9 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
                         {s.frequency.replace("-", " ")} · {s.preferred_day || "Flexible"} · {formatTimeDisplay(s.preferred_time)}
                       </p>
                       {s.price && <p className="text-accent font-medium text-sm mt-1">${s.price}/visit</p>}
+                      {s.next_service_date && s.active && (
+                        <p className="text-xs text-muted-foreground mt-1">📅 Next: {new Date(s.next_service_date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</p>
+                      )}
                     </div>
                     <div className="flex gap-1">
                       <Button
