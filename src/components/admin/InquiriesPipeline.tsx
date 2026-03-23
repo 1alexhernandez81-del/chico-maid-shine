@@ -278,7 +278,7 @@ const InquiriesPipeline = () => {
     if (error) {
       toast({ title: t("admin.error"), description: error.message, variant: "destructive" });
     } else {
-      toast({ title: t("admin.bulk.delete"), description: `${ids.length} inquiry(ies) deleted` });
+      toast({ title: t("admin.bulk.delete"), description: `${ids.length} ${t("admin.inquiries.deleted.desc")}` });
       setBookings((prev) => prev.filter((b) => !selectedIds.has(b.id)));
       setSelectedIds(new Set());
     }
