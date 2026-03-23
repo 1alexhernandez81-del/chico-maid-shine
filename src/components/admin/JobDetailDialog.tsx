@@ -355,24 +355,6 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
         });
       }
 
-      // SMS notify newly assigned cleaners
-      const previousCleanerIds = Array.isArray(booking.assigned_cleaners) ? booking.assigned_cleaners : [];
-      const newlyAssigned = assignedCleanerIds.filter((id: string) => !previousCleanerIds.includes(id));
-      if (newlyAssigned.length > 0) {
-        supabase.functions.invoke('notify-cleaner-sms', {
-          body: { booking_id: booking.id, cleaner_ids: newlyAssigned },
-        }).then(({ data, error: smsErr }) => {
-          if (smsErr) {
-            console.error("SMS notification error:", smsErr);
-          } else {
-            const results = data?.results || [];
-            const sent = results.filter((r: any) => r.success).length;
-            if (sent > 0) {
-              toast({ title: "📱 SMS Sent", description: `Notified ${sent} cleaner(s) via text` });
-            }
-          }
-        });
-      }
 
       onUpdated({
         ...booking,
