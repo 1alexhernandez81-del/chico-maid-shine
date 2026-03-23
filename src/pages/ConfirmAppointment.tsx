@@ -11,8 +11,8 @@ const ConfirmAppointment = () => {
   const [booking, setBooking] = useState<any>(null);
   const [confirming, setConfirming] = useState(false);
   const [cancelling, setCancelling] = useState(false);
-  const [cancelResult, setCancelResult] = useState<{ fee: number } | null>(null);
-  const [isWithin24Hours, setIsWithin24Hours] = useState(false);
+  const [cancelResult, setCancelResult] = useState<{ fee: number; depositForfeited: boolean } | null>(null);
+  const [hoursUntilAppointment, setHoursUntilAppointment] = useState<number>(Infinity);
 
   useEffect(() => {
     if (!token) {
