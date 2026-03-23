@@ -94,9 +94,9 @@ const AdminDashboard = () => {
 
       <div className="p-6">
         {/* Only admins see stats overview */}
-        {isAdmin && <DashboardStats />}
+        {isAdmin && <DashboardStats onNavigate={(tab) => setActiveTab(tab)} />}
 
-        <Tabs defaultValue="jobs">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-6">
             {/* Only admins see inquiries */}
             {isAdmin && (
