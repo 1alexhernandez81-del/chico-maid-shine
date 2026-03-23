@@ -235,10 +235,10 @@ const InquiriesPipeline = () => {
         body: `Estimate visit invite sent for ${visitDate} at ${visitTime}`,
       });
 
-      toast({ title: "Invite Sent", description: `Estimate visit invite sent to ${selected.email}` });
+      toast({ title: t("admin.invite.sent"), description: `${t("admin.invite.sent.desc")} ${selected.email}` });
     } catch (err) {
       console.error("Send invite error:", err);
-      toast({ title: t("admin.error"), description: "Failed to send estimate invite", variant: "destructive" });
+      toast({ title: t("admin.error"), description: t("admin.invite.fail"), variant: "destructive" });
     }
     setSendingInvite(false);
     setShowInviteApproval(false);
