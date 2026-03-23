@@ -116,6 +116,9 @@ const AdminDashboard = () => {
                 <TabsTrigger value="cleaners" className="gap-2">
                   <Sparkles className="w-4 h-4" /> Cleaners
                 </TabsTrigger>
+                <TabsTrigger value="timesheets" className="gap-2">
+                  <Clock className="w-4 h-4" /> Timesheets
+                </TabsTrigger>
                 <TabsTrigger value="activity" className="gap-2">
                   <Activity className="w-4 h-4" /> {t("admin.tab.activity")}
                 </TabsTrigger>
@@ -140,6 +143,9 @@ const AdminDashboard = () => {
               </TabsContent>
               <TabsContent value="cleaners">
                 <CleanerManagement />
+              </TabsContent>
+              <TabsContent value="timesheets">
+                <TimesheetsTab />
               </TabsContent>
               <TabsContent value="activity">
                 <ContactLogs />
