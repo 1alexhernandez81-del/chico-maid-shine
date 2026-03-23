@@ -396,6 +396,7 @@ export type Database = {
           created_at: string
           customer_id: string
           frequency: string
+          google_calendar_event_id: string | null
           id: string
           next_service_date: string | null
           notes: string | null
@@ -416,6 +417,7 @@ export type Database = {
           created_at?: string
           customer_id: string
           frequency: string
+          google_calendar_event_id?: string | null
           id?: string
           next_service_date?: string | null
           notes?: string | null
@@ -436,6 +438,7 @@ export type Database = {
           created_at?: string
           customer_id?: string
           frequency?: string
+          google_calendar_event_id?: string | null
           id?: string
           next_service_date?: string | null
           notes?: string | null

@@ -1,0 +1,1 @@
+ALTER TABLE public.recurring_schedules ADD COLUMN IF NOT EXISTS google_calendar_event_id text DEFAULT NULL;
