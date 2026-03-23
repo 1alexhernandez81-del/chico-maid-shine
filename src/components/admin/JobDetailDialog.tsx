@@ -379,12 +379,27 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
     }
 
     const statusChanged = newStatus !== booking.status;
+    const isRescheduled = booking.status === "scheduled" && newStatus === "scheduled" &&
+      (scheduledDate !== booking.scheduled_date || scheduledTime !== booking.scheduled_time);
+
     if (statusChanged && newStatus === "completed") {
       setShowReviewConfirm(true);
       return;
     }
+    if (statusChanged && newStatus === "approved") {
+      setShowApprovalConfirm(true);
+      return;
+    }
+    if (statusChanged && newStatus === "scheduled") {
+      setShowScheduleConfirm(true);
+      return;
+    }
+    if (isRescheduled) {
+      setShowRescheduleConfirm(true);
+      return;
+    }
 
-    await executeSave(false);
+    await executeSave();
   };
 
   // Non-admin can only move to completed or in-progress
