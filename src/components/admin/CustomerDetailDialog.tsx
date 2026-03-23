@@ -117,10 +117,9 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
   });
 
   const formatTimeDisplay = (time: string | null) => {
-    if (!time) return "Flexible";
+    if (!time) return t("admin.cd.flexible");
     const slot = timeSlots.find((s) => s.value === time);
     if (slot) return slot.label;
-    // Fallback for legacy values
     return time.charAt(0).toUpperCase() + time.slice(1);
   };
   const [addingSchedule, setAddingSchedule] = useState(false);
