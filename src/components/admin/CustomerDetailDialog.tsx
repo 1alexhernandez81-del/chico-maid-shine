@@ -429,10 +429,10 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
                       <Label className="text-xs text-muted-foreground">Time</Label>
                       <Select value={newSchedule.preferred_time} onValueChange={(v) => setNewSchedule({ ...newSchedule, preferred_time: v })}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="morning">Morning</SelectItem>
-                          <SelectItem value="afternoon">Afternoon</SelectItem>
-                          <SelectItem value="evening">Evening</SelectItem>
+                        <SelectContent className="max-h-60">
+                          {timeSlots.map((slot) => (
+                            <SelectItem key={slot.value} value={slot.value}>{slot.label}</SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
