@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
 
     if (action === "delete") {
       if (booking.google_calendar_event_id) {
-        await fetch(`${calBase}/${booking.google_calendar_event_id}`, {
+        await fetch(`${calBase}/${booking.google_calendar_event_id}?sendUpdates=all`, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${accessToken}` },
         });
@@ -128,18 +128,19 @@ Deno.serve(async (req) => {
 
     // Let Google handle timezone conversion. Pass the raw local time + timeZone.
     // Do NOT append any offset like -08:00 or -07:00.
-    const eventBody = {
+    const eventBody: Record<string, unknown> = {
       summary,
       description,
       location,
       start: { dateTime: startDateTime, timeZone: "America/Los_Angeles" },
       end: { dateTime: endDateTime, timeZone: "America/Los_Angeles" },
+      attendees: [{ email: booking.email, displayName: booking.name }],
     };
 
     let eventId = booking.google_calendar_event_id;
 
     if (action === "update" && eventId) {
-      const res = await fetch(`${calBase}/${eventId}`, {
+      const res = await fetch(`${calBase}/${eventId}?sendUpdates=all`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -152,7 +153,7 @@ Deno.serve(async (req) => {
         throw new Error(errData.error?.message || "Calendar update error");
       }
     } else {
-      const res = await fetch(calBase, {
+      const res = await fetch(`${calBase}?sendUpdates=all`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,
