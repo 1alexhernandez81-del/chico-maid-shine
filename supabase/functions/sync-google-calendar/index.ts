@@ -128,12 +128,13 @@ Deno.serve(async (req) => {
 
     // Let Google handle timezone conversion. Pass the raw local time + timeZone.
     // Do NOT append any offset like -08:00 or -07:00.
-    const eventBody = {
+    const eventBody: Record<string, unknown> = {
       summary,
       description,
       location,
       start: { dateTime: startDateTime, timeZone: "America/Los_Angeles" },
       end: { dateTime: endDateTime, timeZone: "America/Los_Angeles" },
+      attendees: [{ email: booking.email, displayName: booking.name }],
     };
 
     let eventId = booking.google_calendar_event_id;
