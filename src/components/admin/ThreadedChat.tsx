@@ -554,7 +554,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
                                 ) : (
                                   <Languages className="w-2.5 h-2.5" />
                                 )}
-                                {translations[`msg-${msg.id}`] ? "Show Original" : "Translate"}
+                                {translations[`msg-${msg.id}`] ? t("admin.translate.original") : t("admin.translate.btn")}
                               </Button>
                             )}
                           </div>
