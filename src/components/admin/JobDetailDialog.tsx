@@ -423,7 +423,11 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
               )}
               {booking.confirmed_at && (
                 <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">
-                  ✅ Confirmed
+                  ✅ {t("admin.job.confirmed")}
+                </span>
+              )}
+            </DialogTitle>
+            <DialogDescription>{t("admin.job.details.desc")}</DialogDescription>
                 </span>
               )}
             </DialogTitle>
