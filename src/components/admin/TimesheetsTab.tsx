@@ -9,11 +9,11 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Clock, RefreshCw, Calendar, Copy, Loader2 } from "lucide-react";
+import { Clock, RefreshCw, Calendar, Copy, Loader2, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { JobTimeEntry, Cleaner, Booking } from "./shared/types";
 
-type EntryWithBooking = JobTimeEntry & { booking?: Booking };
+type EntryWithBooking = JobTimeEntry & { booking?: Booking; effectiveCleaners: string[] };
 
 const TimesheetsTab = () => {
   const [entries, setEntries] = useState<EntryWithBooking[]>([]);
@@ -29,7 +29,7 @@ const TimesheetsTab = () => {
     const [entriesRes, cleanersRes, bookingsRes] = await Promise.all([
       supabase.from("job_time_entries").select("*").not("stopped_at", "is", null).order("started_at", { ascending: false }),
       supabase.from("cleaners").select("id, name, active").order("name"),
-      supabase.from("bookings").select("id, name, street, city, zip, service_type"),
+      supabase.from("bookings").select("id, name, street, city, zip, service_type, assigned_cleaners"),
     ]);
 
     const allCleaners = (cleanersRes.data || []) as Cleaner[];
@@ -41,7 +41,16 @@ const TimesheetsTab = () => {
     }
 
     const raw = ((entriesRes.data || []) as any[]) as JobTimeEntry[];
-    setEntries(raw.map((e) => ({ ...e, booking: bookingsMap.get(e.booking_id) })));
+    setEntries(raw.map((e) => {
+      const booking = bookingsMap.get(e.booking_id);
+      // Use time entry cleaners first, fall back to booking's assigned_cleaners
+      const entryCleaners = Array.isArray(e.cleaners) && e.cleaners.length > 0 ? e.cleaners : [];
+      const bookingCleaners = booking && Array.isArray((booking as any).assigned_cleaners) && (booking as any).assigned_cleaners.length > 0
+        ? (booking as any).assigned_cleaners
+        : [];
+      const effectiveCleaners = entryCleaners.length > 0 ? entryCleaners : bookingCleaners;
+      return { ...e, booking, effectiveCleaners };
+    }));
     setLoading(false);
   };
 
@@ -58,7 +67,7 @@ const TimesheetsTab = () => {
   const filtered = useMemo(() => {
     return entries.filter((e) => {
       if (cleanerFilter !== "all") {
-        if (!Array.isArray(e.cleaners) || !e.cleaners.includes(cleanerFilter)) return false;
+        if (!e.effectiveCleaners.includes(cleanerFilter)) return false;
       }
       if (dateFrom && e.started_at && new Date(e.started_at) < new Date(dateFrom)) return false;
       if (dateTo && e.started_at && new Date(e.started_at) > new Date(dateTo + "T23:59:59")) return false;
@@ -66,16 +75,62 @@ const TimesheetsTab = () => {
     });
   }, [entries, cleanerFilter, dateFrom, dateTo]);
 
+  // For per-cleaner rows in the detail table
+  const expandedRows = useMemo(() => {
+    const rows: Array<{
+      entryId: string;
+      cleanerId: string;
+      cleanerName: string;
+      date: string;
+      customerName: string;
+      address: string;
+      clockIn: string;
+      clockOut: string;
+      breakMins: number;
+      totalMins: number;
+      notes: string;
+      sharedWith: number; // how many cleaners shared this job
+    }> = [];
+
+    for (const e of filtered) {
+      const cleanerIds = e.effectiveCleaners.length > 0 ? e.effectiveCleaners : ["unassigned"];
+      const sharedWith = cleanerIds.length;
+      // Split hours evenly among cleaners on this job
+      const perCleanerMins = Math.round((e.total_worked_minutes || 0) / sharedWith);
+      const perCleanerBreak = Math.round((e.total_paused_minutes || 0) / sharedWith);
+
+      for (const cid of cleanerIds) {
+        rows.push({
+          entryId: e.id,
+          cleanerId: cid,
+          cleanerName: cid === "unassigned" ? "Unassigned" : getCleanerName(cid),
+          date: e.started_at ? new Date(e.started_at).toLocaleDateString() : "—",
+          customerName: e.booking?.name || "—",
+          address: e.booking ? `${e.booking.street}, ${e.booking.city}` : "—",
+          clockIn: e.started_at ? new Date(e.started_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—",
+          clockOut: e.stopped_at ? new Date(e.stopped_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—",
+          breakMins: perCleanerBreak,
+          totalMins: perCleanerMins,
+          notes: e.notes || "",
+          sharedWith,
+        });
+      }
+    }
+
+    return rows;
+  }, [filtered, cleaners]);
+
   const computeSummary = (filterFn: (e: EntryWithBooking) => boolean) => {
     const subset = entries.filter(filterFn);
     const cleanerMap = new Map<string, { jobs: number; totalMins: number }>();
 
     for (const e of subset) {
-      const ids = Array.isArray(e.cleaners) && e.cleaners.length > 0 ? e.cleaners : ["unassigned"];
+      const ids = e.effectiveCleaners.length > 0 ? e.effectiveCleaners : ["unassigned"];
+      const perCleanerMins = Math.round((e.total_worked_minutes || 0) / ids.length);
       for (const cid of ids) {
         const existing = cleanerMap.get(cid) || { jobs: 0, totalMins: 0 };
         existing.jobs += 1;
-        existing.totalMins += e.total_worked_minutes || 0;
+        existing.totalMins += perCleanerMins;
         cleanerMap.set(cid, existing);
       }
     }
@@ -108,6 +163,17 @@ const TimesheetsTab = () => {
     }
     navigator.clipboard.writeText(lines.join("\n"));
     toast({ title: "Copied!", description: "Summary copied to clipboard for payroll" });
+  };
+
+  const copyDetailedToClipboard = () => {
+    const lines = ["Cleaner\tDate\tCustomer\tAddress\tClock In\tClock Out\tBreak\tTotal Hours\tNotes"];
+    for (const r of expandedRows) {
+      const hours = Math.floor(r.totalMins / 60);
+      const mins = r.totalMins % 60;
+      lines.push(`${r.cleanerName}\t${r.date}\t${r.customerName}\t${r.address}\t${r.clockIn}\t${r.clockOut}\t${r.breakMins}m\t${hours}h ${mins}m\t${r.notes}`);
+    }
+    navigator.clipboard.writeText(lines.join("\n"));
+    toast({ title: "Copied!", description: "Detailed timesheet copied for payroll" });
   };
 
   const SummaryTable = ({ title, data }: { title: string; data: typeof weekSummary }) => (
@@ -192,21 +258,26 @@ const TimesheetsTab = () => {
         <Button variant="outline" onClick={fetchData} disabled={loading} className="gap-2">
           <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Refresh
         </Button>
+        {expandedRows.length > 0 && (
+          <Button variant="outline" onClick={copyDetailedToClipboard} className="gap-2">
+            <Copy className="w-4 h-4" /> Export for Payroll
+          </Button>
+        )}
       </div>
 
-      {/* Detailed Entries */}
+      {/* Detailed Entries — per-cleaner rows */}
       <div className="border border-border rounded-lg overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="bg-secondary/50">
+              <TableHead className="text-xs">Cleaner</TableHead>
               <TableHead className="text-xs">Date</TableHead>
               <TableHead className="text-xs">Customer</TableHead>
               <TableHead className="text-xs hidden md:table-cell">Address</TableHead>
-              <TableHead className="text-xs">Cleaners</TableHead>
               <TableHead className="text-xs text-center">Clock In</TableHead>
               <TableHead className="text-xs text-center">Clock Out</TableHead>
               <TableHead className="text-xs text-center">Break</TableHead>
-              <TableHead className="text-xs text-center">Total</TableHead>
+              <TableHead className="text-xs text-center">Hours</TableHead>
               <TableHead className="text-xs hidden md:table-cell">Notes</TableHead>
             </TableRow>
           </TableHeader>
@@ -217,53 +288,41 @@ const TimesheetsTab = () => {
                   <Loader2 className="w-4 h-4 animate-spin inline mr-2" /> Loading...
                 </TableCell>
               </TableRow>
-            ) : filtered.length === 0 ? (
+            ) : expandedRows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                   No time entries found
                 </TableCell>
               </TableRow>
             ) : (
-              filtered.map((e) => {
-                const hours = Math.floor((e.total_worked_minutes || 0) / 60);
-                const mins = (e.total_worked_minutes || 0) % 60;
+              expandedRows.map((r, i) => {
+                const hours = Math.floor(r.totalMins / 60);
+                const mins = r.totalMins % 60;
                 return (
-                  <TableRow key={e.id}>
-                    <TableCell className="text-sm">
-                      {e.started_at ? new Date(e.started_at).toLocaleDateString() : "—"}
-                    </TableCell>
-                    <TableCell className="text-sm font-medium">
-                      {e.booking?.name || "—"}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground hidden md:table-cell">
-                      {e.booking ? `${e.booking.street}, ${e.booking.city}` : "—"}
-                    </TableCell>
+                  <TableRow key={`${r.entryId}-${r.cleanerId}-${i}`}>
                     <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {Array.isArray(e.cleaners) && e.cleaners.length > 0
-                          ? e.cleaners.map((cid) => (
-                              <Badge key={cid} variant="outline" className="text-[10px]">
-                                {getCleanerName(cid)}
-                              </Badge>
-                            ))
-                          : <span className="text-xs text-muted-foreground">—</span>
-                        }
+                      <div className="flex items-center gap-1.5">
+                        <Badge variant="outline" className="text-xs font-medium">
+                          {r.cleanerName}
+                        </Badge>
+                        {r.sharedWith > 1 && (
+                          <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                            <Users className="w-3 h-3" />{r.sharedWith}
+                          </span>
+                        )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm text-center font-mono">
-                      {e.started_at ? new Date(e.started_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}
-                    </TableCell>
-                    <TableCell className="text-sm text-center font-mono">
-                      {e.stopped_at ? new Date(e.stopped_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}
-                    </TableCell>
-                    <TableCell className="text-sm text-center">
-                      {e.total_paused_minutes || 0}m
-                    </TableCell>
+                    <TableCell className="text-sm">{r.date}</TableCell>
+                    <TableCell className="text-sm font-medium">{r.customerName}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground hidden md:table-cell">{r.address}</TableCell>
+                    <TableCell className="text-sm text-center font-mono">{r.clockIn}</TableCell>
+                    <TableCell className="text-sm text-center font-mono">{r.clockOut}</TableCell>
+                    <TableCell className="text-sm text-center">{r.breakMins}m</TableCell>
                     <TableCell className="text-sm text-center font-semibold text-accent">
                       {hours}h {mins}m
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground hidden md:table-cell max-w-[150px] truncate">
-                      {e.notes || "—"}
+                      {r.notes || "—"}
                     </TableCell>
                   </TableRow>
                 );
