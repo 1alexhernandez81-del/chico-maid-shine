@@ -663,10 +663,10 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
               {/* Scheduled date/time — shown when status is scheduled */}
               {newStatus === "scheduled" && (
                 <div className="bg-secondary/50 rounded-lg p-4 space-y-3">
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">📅 Schedule Details</p>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">{t("admin.job.schedule.details")}</p>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Date</label>
+                      <label className="text-xs text-muted-foreground mb-1 block">{t("admin.job.schedule.date")}</label>
                       <Input
                         type="date"
                         value={scheduledDate}
@@ -675,7 +675,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Time</label>
+                      <label className="text-xs text-muted-foreground mb-1 block">{t("admin.job.schedule.time")}</label>
                       <Input
                         type="time"
                         value={scheduledTime}
