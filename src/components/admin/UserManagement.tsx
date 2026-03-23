@@ -18,7 +18,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { UserPlus, RefreshCw, Trash2, Shield } from "lucide-react";
+import { UserPlus, RefreshCw, Trash2, Shield, KeyRound } from "lucide-react";
 
 type ManagedUser = {
   id: string;
