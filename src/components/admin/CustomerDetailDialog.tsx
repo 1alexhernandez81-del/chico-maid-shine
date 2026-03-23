@@ -441,6 +441,12 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
                                   const iso = format(date, "yyyy-MM-dd");
                                   await supabase.from("recurring_schedules").update({ next_service_date: iso }).eq("id", s.id);
                                   setSchedules(prev => prev.map(sc => sc.id === s.id ? { ...sc, next_service_date: iso } : sc));
+                                  // Update recurring GCal event
+                                  try {
+                                    await supabase.functions.invoke("sync-google-calendar", {
+                                      body: { scheduleId: s.id, action: "create-recurring" },
+                                    });
+                                  } catch (e) { console.error("GCal update error:", e); }
                                   toast({ title: t("admin.cd.dateupdated") });
                                 }}
                                 className={cn("p-3 pointer-events-auto")}
