@@ -194,7 +194,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
     const { data } = await supabase.from("customer_communications").select("*")
       .eq("customer_id", customer.id).order("created_at", { ascending: false });
     setCommunications((data || []) as Communication[]);
-    toast({ title: "Note Added" });
+    toast({ title: t("admin.cd.noteadded") });
   };
 
   const computeNextServiceDate = (preferredDay: string) => {
