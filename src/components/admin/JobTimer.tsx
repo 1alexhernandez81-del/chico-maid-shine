@@ -21,9 +21,10 @@ interface JobTimerProps {
   bookingId: string;
   userRole: UserRole;
   cleaners: Cleaner[];
+  assignedCleaners?: string[];
 }
 
-const JobTimer = ({ bookingId, userRole, cleaners }: JobTimerProps) => {
+const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobTimerProps) => {
   const { toast } = useToast();
   const [timerState, setTimerState] = useState<TimerState>("idle");
   const [entry, setEntry] = useState<JobTimeEntry | null>(null);
