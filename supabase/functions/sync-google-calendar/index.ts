@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
 
     if (action === "delete") {
       if (booking.google_calendar_event_id) {
-        await fetch(`${calBase}/${booking.google_calendar_event_id}`, {
+        await fetch(`${calBase}/${booking.google_calendar_event_id}?sendUpdates=all`, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${accessToken}` },
         });
