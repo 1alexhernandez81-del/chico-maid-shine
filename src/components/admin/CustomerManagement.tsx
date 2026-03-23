@@ -73,7 +73,7 @@ const CustomerManagement = () => {
       .order("created_at", { ascending: false });
 
     if (error) {
-      toast({ title: "Error", description: "Failed to load customers", variant: "destructive" });
+      toast({ title: t("admin.error"), description: t("admin.customers.loadfail"), variant: "destructive" });
       setLoading(false);
       return;
     }
