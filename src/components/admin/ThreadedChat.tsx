@@ -597,7 +597,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
                           onClick={() => { setReplyThreadId(thread.threadId); setReplySubject(thread.subject); setReplyBody(""); }}
                           className="w-full text-left text-xs text-muted-foreground hover:text-foreground px-3 py-2 rounded-md border border-dashed border-border hover:border-accent/30 transition-colors mt-1"
                         >
-                          Reply in this thread...
+                          {t("admin.thread.replyin")}
                         </button>
                       )}
                     </div>
