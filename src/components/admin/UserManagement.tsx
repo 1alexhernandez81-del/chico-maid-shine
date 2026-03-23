@@ -46,7 +46,21 @@ const UserManagement = () => {
 
   const invokeManageUsers = async (body: Record<string, unknown>) => {
     const { data, error } = await supabase.functions.invoke("manage-users", { body });
-    if (error) throw new Error(error.message);
+    if (error) {
+      let backendMessage: string | null = null;
+      const response = (error as any).context;
+
+      if (response?.json) {
+        try {
+          const payload = await response.json();
+          backendMessage = payload?.error ?? null;
+        } catch {
+          backendMessage = null;
+        }
+      }
+
+      throw new Error(backendMessage || error.message);
+    }
     if (data?.error) throw new Error(data.error);
     return data;
   };
@@ -291,7 +305,10 @@ const UserManagement = () => {
               setResetTarget(null);
               setResetPassword("");
             } catch (err: any) {
-              toast({ title: "Error", description: err.message, variant: "destructive" });
+              const friendlyMessage = /weak|pwned|breach|compromised/i.test(err.message)
+                ? "That password is too weak or exposed. Use a longer unique password."
+                : err.message;
+              toast({ title: "Error", description: friendlyMessage, variant: "destructive" });
             }
             setResetting(false);
           }} className="space-y-4">
