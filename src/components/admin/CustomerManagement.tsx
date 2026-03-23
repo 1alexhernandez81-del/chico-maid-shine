@@ -434,14 +434,11 @@ const CustomerManagement = () => {
       <Dialog open={showImport} onOpenChange={setShowImport}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Import from Bookings</DialogTitle>
-            <DialogDescription>
-              This will create customer profiles from existing bookings and link them together.
-              Customers are matched by email — duplicates will be skipped.
-            </DialogDescription>
+            <DialogTitle>{t("admin.customers.importtitle")}</DialogTitle>
+            <DialogDescription>{t("admin.customers.importdesc")}</DialogDescription>
           </DialogHeader>
           <Button onClick={handleImportFromBookings} disabled={importing} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-            {importing ? "Importing..." : "Import Customers"}
+            {importing ? t("admin.customers.importing") : t("admin.customers.importbtn")}
           </Button>
         </DialogContent>
       </Dialog>
