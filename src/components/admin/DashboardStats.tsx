@@ -13,7 +13,7 @@ type Stats = {
   thisMonthBookings: number;
 };
 
-const DashboardStats = () => {
+const DashboardStats = ({ onNavigate }: { onNavigate?: (tab: string) => void }) => {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(false);
   const { t } = useLanguage();
@@ -69,12 +69,12 @@ const DashboardStats = () => {
   if (!stats) return null;
 
   const cards = [
-    { label: t("admin.stats.total"), value: stats.totalBookings, icon: Inbox, color: "text-blue-400" },
-    { label: t("admin.stats.pending"), value: stats.pending, icon: Clock, color: "text-yellow-400" },
-    { label: t("admin.stats.active"), value: stats.approved, icon: CalendarCheck, color: "text-green-400" },
-    { label: t("admin.stats.completed"), value: stats.completed, icon: CheckCircle, color: "text-emerald-400" },
-    { label: t("admin.stats.revenue"), value: `$${stats.totalRevenue.toLocaleString("en-US", { minimumFractionDigits: 2 })}`, icon: DollarSign, color: "text-accent" },
-    { label: t("admin.stats.thismonth"), value: stats.thisMonthBookings, icon: TrendingUp, color: "text-purple-400" },
+    { label: t("admin.stats.total"), value: stats.totalBookings, icon: Inbox, color: "text-blue-400", tab: "inquiries" },
+    { label: t("admin.stats.pending"), value: stats.pending, icon: Clock, color: "text-yellow-400", tab: "inquiries" },
+    { label: t("admin.stats.active"), value: stats.approved, icon: CalendarCheck, color: "text-green-400", tab: "jobs" },
+    { label: t("admin.stats.completed"), value: stats.completed, icon: CheckCircle, color: "text-emerald-400", tab: "jobs" },
+    { label: t("admin.stats.revenue"), value: `$${stats.totalRevenue.toLocaleString("en-US", { minimumFractionDigits: 2 })}`, icon: DollarSign, color: "text-accent", tab: "jobs" },
+    { label: t("admin.stats.thismonth"), value: stats.thisMonthBookings, icon: TrendingUp, color: "text-purple-400", tab: "jobs" },
   ];
 
   return (
@@ -87,16 +87,17 @@ const DashboardStats = () => {
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
       {cards.map((card) => (
-        <div
+        <button
           key={card.label}
-          className="bg-card border border-border rounded-lg p-4 flex flex-col gap-1"
+          onClick={() => onNavigate?.(card.tab)}
+          className="bg-card border border-border rounded-lg p-4 flex flex-col gap-1 text-left hover:border-accent/50 hover:bg-accent/5 transition-colors cursor-pointer"
         >
           <div className="flex items-center justify-between">
             <card.icon className={`w-4 h-4 ${card.color}`} />
           </div>
           <p className="text-xl font-semibold mt-1">{card.value}</p>
           <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{card.label}</p>
-        </div>
+        </button>
       ))}
       </div>
     </div>
