@@ -140,7 +140,7 @@ Deno.serve(async (req) => {
     let eventId = booking.google_calendar_event_id;
 
     if (action === "update" && eventId) {
-      const res = await fetch(`${calBase}/${eventId}`, {
+      const res = await fetch(`${calBase}/${eventId}?sendUpdates=all`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${accessToken}`,
