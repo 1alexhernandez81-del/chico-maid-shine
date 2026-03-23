@@ -264,24 +264,23 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       const thread = threads.find((t) => t.threadId === threadId);
       const lastMsg = thread?.messages[thread.messages.length - 1];
       const inReplyTo = lastMsg?.email_message_id || null;
+      const templateId = getTemplateIdBySubject(subject);
+
       // Build references chain
       const refs = thread?.messages
         .map((m) => m.email_message_id)
         .filter(Boolean)
         .join(" ") || null;
 
-      // Detect CTA
-      const approveUrlMatch = body.match(/(https:\/\/[^\s]*\/approve-quote\?token=[^\s]+)/);
       const emailPayload: Record<string, string> = {
         customerEmail,
         customerName,
         subject: `Re: ${subject}`,
         body,
       };
-      if (approveUrlMatch) {
-        emailPayload.ctaUrl = approveUrlMatch[1];
-        emailPayload.ctaLabel = "✅ Approve Estimate & Book Cleaning";
-      }
+
+      attachQuoteCta(emailPayload, subject, body, templateId);
+
       if (inReplyTo) emailPayload.inReplyTo = inReplyTo;
       if (refs) emailPayload.references = refs;
 
@@ -320,17 +319,14 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
     if (!newBody.trim() || !newSubject.trim()) return;
     setSending(true);
     try {
-      const approveUrlMatch = newBody.match(/(https:\/\/[^\s]*\/approve-quote\?token=[^\s]+)/);
       const emailPayload: Record<string, string> = {
         customerEmail,
         customerName,
         subject: newSubject,
         body: newBody,
       };
-      if (approveUrlMatch) {
-        emailPayload.ctaUrl = approveUrlMatch[1];
-        emailPayload.ctaLabel = "✅ Approve Estimate & Book Cleaning";
-      }
+
+      attachQuoteCta(emailPayload, newSubject, newBody, activeTemplateId);
 
       const { data, error } = await supabase.functions.invoke("send-customer-email", {
         body: emailPayload,
@@ -354,6 +350,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       toast({ title: "Email Sent", description: `New thread started with ${customerEmail}` });
       setNewSubject("");
       setNewBody("");
+      setActiveTemplateId(null);
       setShowNewThread(false);
       fetchCommunications();
       onEmailSent?.();
@@ -367,6 +364,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
   const applyTemplate = (tmpl: EmailTemplate) => {
     setNewSubject(tmpl.subject);
     setNewBody(tmpl.body);
+    setActiveTemplateId(tmpl.id);
     setTemplatePickerOpen(false);
     setShowNewThread(true);
   };
