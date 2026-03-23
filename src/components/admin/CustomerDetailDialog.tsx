@@ -293,7 +293,13 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground">Address</Label>
-                <Input value={editForm.street} onChange={(e) => setEditForm({ ...editForm, street: e.target.value })} placeholder="Street" className="mb-2" />
+                <AddressAutocomplete
+                  value={editForm.street}
+                  onChange={(val) => setEditForm({ ...editForm, street: val })}
+                  onSelect={(addr) => setEditForm({ ...editForm, street: addr.street, city: addr.city || editForm.city, zip: addr.zip || editForm.zip })}
+                  placeholder="Street"
+                  className="mb-2"
+                />
                 <div className="grid grid-cols-2 gap-2">
                   <Input value={editForm.city} onChange={(e) => setEditForm({ ...editForm, city: e.target.value })} placeholder="City" />
                   <Input value={editForm.zip} onChange={(e) => setEditForm({ ...editForm, zip: e.target.value })} placeholder="ZIP" />

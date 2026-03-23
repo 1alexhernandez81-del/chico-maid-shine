@@ -533,7 +533,13 @@ const JobsBoard = ({ userRole = "admin" as UserRole }: { userRole?: UserRole }) 
             </div>
             <div>
               <Label className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.bookings.address")}</Label>
-              <Input value={newJob.street} onChange={(e) => setNewJob({ ...newJob, street: e.target.value })} placeholder="123 Main St" className="mb-2" />
+              <AddressAutocomplete
+                value={newJob.street}
+                onChange={(val) => setNewJob({ ...newJob, street: val })}
+                onSelect={(addr) => setNewJob({ ...newJob, street: addr.street, city: addr.city || newJob.city, zip: addr.zip || newJob.zip })}
+                placeholder="123 Main St"
+                className="mb-2"
+              />
               <div className="grid grid-cols-2 gap-2">
                 <Input value={newJob.city} onChange={(e) => setNewJob({ ...newJob, city: e.target.value })} placeholder="Chico" />
                 <Input value={newJob.zip} onChange={(e) => setNewJob({ ...newJob, zip: e.target.value })} placeholder="95928" />
