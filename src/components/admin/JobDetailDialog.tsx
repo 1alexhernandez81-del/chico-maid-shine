@@ -816,14 +816,14 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
       <AlertDialog open={showUnsavedWarning} onOpenChange={setShowUnsavedWarning}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
+            <AlertDialogTitle>{t("admin.job.unsaved.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              You have unsaved changes. Do you want to save before closing?
+              {t("admin.job.unsaved.desc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => { setShowUnsavedWarning(false); onClose(); }}>
-              Discard
+              {t("admin.job.unsaved.discard")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
@@ -832,7 +832,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
               }}
               className="bg-accent text-accent-foreground hover:bg-accent/90"
             >
-              Save Changes
+              {t("admin.job.unsaved.save")}
             </AlertDialogAction>
           </AlertDialogFooter>
       </AlertDialogContent>
