@@ -231,12 +231,29 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
     if (error) {
       toast({ title: t("admin.error"), description: t("admin.cd.schedulefail"), variant: "destructive" });
     } else {
-      toast({ title: t("admin.cd.scheduleadded") });
+      // Fetch the newly created schedule to get its ID
+      const { data: newSchedules } = await supabase.from("recurring_schedules").select("*")
+        .eq("customer_id", customer.id).order("created_at", { ascending: false });
+      setSchedules((newSchedules || []) as RecurringSchedule[]);
+
+      const createdSchedule = newSchedules?.[0];
+      if (createdSchedule) {
+        // Create recurring Google Calendar event
+        try {
+          await supabase.functions.invoke("sync-google-calendar", {
+            body: { scheduleId: createdSchedule.id, action: "create-recurring" },
+          });
+          toast({ title: t("admin.cd.scheduleadded"), description: "Recurring calendar event created" });
+        } catch (calErr) {
+          console.error("GCal recurring sync error:", calErr);
+          toast({ title: t("admin.cd.scheduleadded"), description: "Schedule saved (calendar sync failed)" });
+        }
+      } else {
+        toast({ title: t("admin.cd.scheduleadded") });
+      }
+
       setShowAddSchedule(false);
       setNewSchedule({ service_type: "residential", frequency: "weekly", preferred_day: "monday", preferred_time: "09:00", price: "" });
-      const { data } = await supabase.from("recurring_schedules").select("*")
-        .eq("customer_id", customer.id).order("created_at", { ascending: false });
-      setSchedules((data || []) as RecurringSchedule[]);
     }
     setAddingSchedule(false);
   };
