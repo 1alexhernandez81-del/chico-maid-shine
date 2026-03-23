@@ -75,7 +75,7 @@ const ConfirmAppointment = () => {
       setStatus("error");
     } else {
       const fee = (data as any).fee || 0;
-      setCancelResult({ fee });
+      setCancelResult({ fee, depositForfeited: hoursUntilAppointment < 48 });
       setStatus("cancelled");
 
       // Notify business about the cancellation
