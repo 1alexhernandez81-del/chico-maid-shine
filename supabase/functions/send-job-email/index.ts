@@ -48,6 +48,8 @@ Deno.serve(async (req) => {
 
     let subject = "";
     let bodyText = "";
+    let ctaUrl = "";
+    let ctaLabel = "";
 
     switch (type) {
       case "quote": {
@@ -55,7 +57,11 @@ Deno.serve(async (req) => {
           ? `https://maidforchico.com/approve-quote?token=${booking.confirmation_token}`
           : "";
         subject = "Your Cleaning Estimate — Maid for Chico";
-        bodyText = `Thank you for letting us visit your home! Based on our walk-through, here is your personalized cleaning estimate:\n\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n📐 Size: ${booking.sqft ? booking.sqft + " sqft" : "N/A"} | ${booking.bedrooms || "—"} bed / ${booking.bathrooms || "—"} bath\n📋 Frequency: ${formatLabel(booking.frequency)}\n\n💰 Estimated Quote: ${total} per visit\n\n✅ To approve this estimate and book your cleaning:\n${approveUrl}\n\nOr call us at (530) 966-0752.\n\nBetty & the Maid for Chico Team`;
+        bodyText = `Thank you for letting us visit your home! Based on our walk-through, here is your personalized cleaning estimate:\n\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n📐 Size: ${booking.sqft ? booking.sqft + " sqft" : "N/A"} | ${booking.bedrooms || "—"} bed / ${booking.bathrooms || "—"} bath\n📋 Frequency: ${formatLabel(booking.frequency)}\n\n💰 Estimated Quote: ${total} per visit\n\n⚠️ Please note: This is an estimate and is subject to change depending on additional services requested or removed at the time of cleaning.\n\n💳 DEPOSIT: A 25% deposit is required to secure your cleaning date. We'll collect the deposit once you approve. The remaining balance is due on the day of your cleaning.\n\nOr call us at (530) 966-0752.\n\nWe'd love to make your home sparkle!\nBetty & the Maid for Chico Team`;
+        if (approveUrl) {
+          ctaUrl = approveUrl;
+          ctaLabel = "✅ Approve Quote & Book Cleaning";
+        }
         break;
       }
       case "receipt": {
@@ -87,10 +93,18 @@ Deno.serve(async (req) => {
         throw new Error(`Unknown email type: ${type}`);
     }
 
-    const htmlBody = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <p style="font-size: 15px; color: #333;">Hi ${firstName},</p>
-      <div style="font-size: 15px; color: #333; line-height: 1.6; white-space: pre-wrap;">${bodyText.replace(/\n/g, "<br>")}</div>
-    </div>`;
+    // Build branded HTML
+    let htmlBody = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">`;
+    htmlBody += `<div style="padding: 24px 24px 16px; text-align: center; border-bottom: 2px solid #e04a2f;">`;
+    htmlBody += `<h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: 0.5px; font-family: 'Playfair Display', Georgia, serif;"><span style="color: #e04a2f;">Maid</span> <span style="color: #1a1a1a;">For Chico</span></h1>`;
+    htmlBody += `</div>`;
+    htmlBody += `<div style="padding: 24px 20px;">`;
+    htmlBody += `<p style="font-size: 15px; color: #333; line-height: 1.6;">Hi ${firstName},</p>`;
+    htmlBody += `<div style="font-size: 15px; color: #333; line-height: 1.6; white-space: pre-wrap;">${bodyText.replace(/\n/g, "<br>")}</div>`;
+    if (ctaUrl && ctaLabel) {
+      htmlBody += `<div style="margin: 24px 0;"><a href="${ctaUrl}" style="display: inline-block; background-color: #059669; color: #fff; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 15px;">${ctaLabel}</a></div>`;
+    }
+    htmlBody += `</div></div>`;
 
     // Send to customer
     await fetch("https://api.resend.com/emails", {
