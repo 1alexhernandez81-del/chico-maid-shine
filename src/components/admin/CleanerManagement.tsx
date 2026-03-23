@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +36,7 @@ const CleanerManagement = () => {
   const [form, setForm] = useState({ name: "", phone: "" });
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const fetchCleaners = async () => {
     setLoading(true);
@@ -43,7 +45,7 @@ const CleanerManagement = () => {
       .select("*")
       .order("name");
     if (error) {
-      toast({ title: "Error", description: "Failed to load cleaners", variant: "destructive" });
+      toast({ title: t("admin.error"), description: t("admin.cleaners.loadfail"), variant: "destructive" });
     } else {
       setCleaners((data || []) as Cleaner[]);
     }
@@ -54,7 +56,7 @@ const CleanerManagement = () => {
 
   const handleAdd = async () => {
     if (!form.name.trim()) {
-      toast({ title: "Error", description: "Name is required", variant: "destructive" });
+      toast({ title: t("admin.error"), description: t("admin.cleaners.required"), variant: "destructive" });
       return;
     }
     setSaving(true);
@@ -64,12 +66,12 @@ const CleanerManagement = () => {
       .select()
       .single();
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: t("admin.error"), description: error.message, variant: "destructive" });
     } else {
       setCleaners((prev) => [...prev, data as Cleaner].sort((a, b) => a.name.localeCompare(b.name)));
       setShowAdd(false);
       setForm({ name: "", phone: "" });
-      toast({ title: "Cleaner added", description: `${(data as Cleaner).name} has been added` });
+      toast({ title: t("admin.cleaners.added"), description: `${(data as Cleaner).name} ${t("admin.cleaners.added.desc")}` });
     }
     setSaving(false);
   };
@@ -82,13 +84,13 @@ const CleanerManagement = () => {
       .update({ name: form.name.trim(), phone: form.phone.trim() })
       .eq("id", editCleaner.id);
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: t("admin.error"), description: error.message, variant: "destructive" });
     } else {
       setCleaners((prev) =>
         prev.map((c) => c.id === editCleaner.id ? { ...c, name: form.name.trim(), phone: form.phone.trim() } : c)
       );
       setEditCleaner(null);
-      toast({ title: "Updated", description: "Cleaner details updated" });
+      toast({ title: t("admin.cleaners.updated"), description: t("admin.cleaners.updated.desc") });
     }
     setSaving(false);
   };
@@ -112,10 +114,10 @@ const CleanerManagement = () => {
       .delete()
       .eq("id", deleteCleaner.id);
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: t("admin.error"), description: error.message, variant: "destructive" });
     } else {
       setCleaners((prev) => prev.filter((c) => c.id !== deleteCleaner.id));
-      toast({ title: "Deleted", description: `${deleteCleaner.name} removed` });
+      toast({ title: t("admin.cleaners.deleted"), description: `${deleteCleaner.name} ${t("admin.cleaners.deleted.desc")}` });
     }
     setDeleteCleaner(null);
   };
@@ -129,15 +131,15 @@ const CleanerManagement = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Cleaners</h2>
-          <p className="text-sm text-muted-foreground">Manage your cleaning team members</p>
+          <h2 className="text-lg font-semibold">{t("admin.cleaners.title")}</h2>
+          <p className="text-sm text-muted-foreground">{t("admin.cleaners.subtitle")}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={fetchCleaners} disabled={loading}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} /> Refresh
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} /> {t("admin.cleaners.refresh")}
           </Button>
           <Button onClick={() => { setForm({ name: "", phone: "" }); setShowAdd(true); }} className="bg-accent text-accent-foreground hover:bg-accent/90 gap-2">
-            <Plus className="w-4 h-4" /> Add Cleaner
+            <Plus className="w-4 h-4" /> {t("admin.cleaners.add")}
           </Button>
         </div>
       </div>
@@ -146,17 +148,17 @@ const CleanerManagement = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-secondary/50">
-              <TableHead>Name</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="w-24">Actions</TableHead>
+              <TableHead>{t("admin.cleaners.name")}</TableHead>
+              <TableHead>{t("admin.cleaners.phone")}</TableHead>
+              <TableHead>{t("admin.cleaners.status")}</TableHead>
+              <TableHead className="w-24">{t("admin.cleaners.actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {cleaners.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="text-center text-muted-foreground py-12">
-                  {loading ? "Loading..." : "No cleaners added yet. Add your first team member!"}
+                  {loading ? t("admin.cleaners.loading") : t("admin.cleaners.empty")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -171,7 +173,7 @@ const CleanerManagement = () => {
                         onCheckedChange={() => handleToggleActive(c)}
                       />
                       <Badge variant="outline" className={c.active ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : "bg-muted text-muted-foreground"}>
-                        {c.active ? "Active" : "Inactive"}
+                        {c.active ? t("admin.cleaners.active") : t("admin.cleaners.inactive")}
                       </Badge>
                     </div>
                   </TableCell>
@@ -196,20 +198,20 @@ const CleanerManagement = () => {
       <Dialog open={showAdd} onOpenChange={setShowAdd}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Add Cleaner</DialogTitle>
-            <DialogDescription>Add a new team member</DialogDescription>
+            <DialogTitle>{t("admin.cleaners.add.title")}</DialogTitle>
+            <DialogDescription>{t("admin.cleaners.add.desc")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Name *</Label>
+              <Label>{t("admin.cleaners.name")} *</Label>
               <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="e.g. Maria Garcia" />
             </div>
             <div>
-              <Label>Phone</Label>
+              <Label>{t("admin.cleaners.phone")}</Label>
               <Input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} placeholder="(530) 555-0123" />
             </div>
             <Button onClick={handleAdd} disabled={saving} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-              {saving ? "Adding..." : "Add Cleaner"}
+              {saving ? t("admin.cleaners.adding") : t("admin.cleaners.add.btn")}
             </Button>
           </div>
         </DialogContent>
@@ -219,20 +221,20 @@ const CleanerManagement = () => {
       <Dialog open={!!editCleaner} onOpenChange={(open) => !open && setEditCleaner(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Edit Cleaner</DialogTitle>
-            <DialogDescription>Update team member details</DialogDescription>
+            <DialogTitle>{t("admin.cleaners.edit.title")}</DialogTitle>
+            <DialogDescription>{t("admin.cleaners.edit.desc")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Name *</Label>
+              <Label>{t("admin.cleaners.name")} *</Label>
               <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
             </div>
             <div>
-              <Label>Phone</Label>
+              <Label>{t("admin.cleaners.phone")}</Label>
               <Input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
             </div>
             <Button onClick={handleEdit} disabled={saving} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-              {saving ? "Saving..." : "Save Changes"}
+              {saving ? t("admin.cleaners.saving") : t("admin.cleaners.save")}
             </Button>
           </div>
         </DialogContent>
@@ -242,15 +244,15 @@ const CleanerManagement = () => {
       <AlertDialog open={!!deleteCleaner} onOpenChange={(open) => !open && setDeleteCleaner(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove {deleteCleaner?.name}?</AlertDialogTitle>
+            <AlertDialogTitle>{t("admin.cleaners.remove")} {deleteCleaner?.name}?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will remove the cleaner from your team. They won't be unassigned from past jobs.
+              {t("admin.cleaners.remove.desc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("admin.bulk.delete.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
+              {t("admin.bulk.delete.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
