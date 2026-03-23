@@ -95,9 +95,8 @@ const TimesheetsTab = () => {
     for (const e of filtered) {
       const cleanerIds = e.effectiveCleaners.length > 0 ? e.effectiveCleaners : ["unassigned"];
       const sharedWith = cleanerIds.length;
-      // Split hours evenly among cleaners on this job
-      const perCleanerMins = Math.round((e.total_worked_minutes || 0) / sharedWith);
-      const perCleanerBreak = Math.round((e.total_paused_minutes || 0) / sharedWith);
+      const totalMins = e.total_worked_minutes || 0;
+      const breakMins = e.total_paused_minutes || 0;
 
       for (const cid of cleanerIds) {
         rows.push({
@@ -109,8 +108,8 @@ const TimesheetsTab = () => {
           address: e.booking ? `${e.booking.street}, ${e.booking.city}` : "—",
           clockIn: e.started_at ? new Date(e.started_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—",
           clockOut: e.stopped_at ? new Date(e.stopped_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—",
-          breakMins: perCleanerBreak,
-          totalMins: perCleanerMins,
+          breakMins,
+          totalMins,
           notes: e.notes || "",
           sharedWith,
         });
@@ -126,11 +125,10 @@ const TimesheetsTab = () => {
 
     for (const e of subset) {
       const ids = e.effectiveCleaners.length > 0 ? e.effectiveCleaners : ["unassigned"];
-      const perCleanerMins = Math.round((e.total_worked_minutes || 0) / ids.length);
       for (const cid of ids) {
         const existing = cleanerMap.get(cid) || { jobs: 0, totalMins: 0 };
         existing.jobs += 1;
-        existing.totalMins += perCleanerMins;
+        existing.totalMins += e.total_worked_minutes || 0;
         cleanerMap.set(cid, existing);
       }
     }
