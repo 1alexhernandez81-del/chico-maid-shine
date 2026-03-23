@@ -76,7 +76,11 @@ Deno.serve(async (req) => {
         : "";
 
       const html = `
-<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <div style="background-color: #1a1a1a; padding: 28px 24px; text-align: center; border-radius: 8px 8px 0 0; border-bottom: 1px solid #333;">
+    <h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: 0.5px; font-family: 'Playfair Display', Georgia, serif;"><span style="color: #e04a2f;">Maid</span> <span style="color: #ebebeb;">For Chico</span></h1>
+  </div>
+  <div style="padding: 24px 20px;">
   <p style="font-size: 15px; color: #333; line-height: 1.6;">Hi ${titleName},</p>
   <p style="font-size: 15px; color: #333; line-height: 1.6;">This is a friendly reminder that your cleaning appointment is <strong>tomorrow</strong>!</p>
   
@@ -94,7 +98,7 @@ Deno.serve(async (req) => {
     <li>Clear any clutter from surfaces you'd like cleaned</li>
   </ul>
 
-  ${confirmUrl ? `<div style="margin: 24px 0; text-align: center;"><a href="${confirmUrl}" style="display: inline-block; background-color: #b5a26a; color: #fff; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 15px;">Confirm Appointment</a></div>` : ""}
+  ${confirmUrl ? `<div style="margin: 24px 0; text-align: center;"><a href="${confirmUrl}" style="display: inline-block; background-color: #059669; color: #fff; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 15px;">Confirm Appointment</a></div>` : ""}
 
   <div style="background: #fef9ee; border-left: 4px solid #d4a843; padding: 16px; margin: 20px 0; border-radius: 0 8px 8px 0;">
     <p style="font-size: 14px; color: #333; margin: 0 0 8px 0; font-weight: bold;">📋 Cancellation Policy</p>
@@ -103,11 +107,12 @@ Deno.serve(async (req) => {
       <li><strong>24 to 48 hours</strong> before — your 25% deposit is non-refundable</li>
       <li><strong>Less than 24 hours or no-show</strong> — deposit forfeited plus a $50 rebooking fee applies</li>
     </ul>
-    <p style="font-size: 13px; color: #555; margin: 12px 0 0 0;">To reschedule, call us at <a href="tel:5309660752" style="color: #b5a26a;">(530) 966-0752</a> or reply to this email.</p>
+    <p style="font-size: 13px; color: #555; margin: 12px 0 0 0;">To reschedule, call us at <a href="tel:5309660752" style="color: #e04a2f;">(530) 966-0752</a> or reply to this email.</p>
   </div>
 
   <p style="font-size: 15px; color: #333; line-height: 1.6;">We look forward to seeing you tomorrow!</p>
   <p style="font-size: 15px; color: #333; line-height: 1.6;">— The Maid For Chico Team</p>
+  </div>
 </div>`;
 
       const res = await fetch("https://api.resend.com/emails", {

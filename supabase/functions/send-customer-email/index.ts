@@ -30,10 +30,9 @@ Deno.serve(async (req) => {
     
     // Build HTML body with branded header
     let htmlBody = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">`;
-    // Branded header
-    htmlBody += `<div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 24px 20px; text-align: center; border-radius: 8px 8px 0 0;">`;
-    htmlBody += `<h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: 0.5px;">Maid for Chico</h1>`;
-    htmlBody += `<p style="margin: 4px 0 0; font-size: 13px; color: #d1fae5; letter-spacing: 1px;">PROFESSIONAL CLEANING SERVICES</p>`;
+    // Branded header matching website style
+    htmlBody += `<div style="background-color: #1a1a1a; padding: 28px 24px; text-align: center; border-radius: 8px 8px 0 0; border-bottom: 1px solid #333;">`;
+    htmlBody += `<h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: 0.5px; font-family: 'Playfair Display', Georgia, serif;"><span style="color: #e04a2f;">Maid</span> <span style="color: #ebebeb;">For Chico</span></h1>`;
     htmlBody += `</div>`;
     // Body content
     htmlBody += `<div style="padding: 24px 20px;">`;
