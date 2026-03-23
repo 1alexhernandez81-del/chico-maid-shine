@@ -153,7 +153,7 @@ Deno.serve(async (req) => {
         throw new Error(errData.error?.message || "Calendar update error");
       }
     } else {
-      const res = await fetch(calBase, {
+      const res = await fetch(`${calBase}?sendUpdates=all`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,
