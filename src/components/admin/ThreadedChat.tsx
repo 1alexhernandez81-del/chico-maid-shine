@@ -588,7 +588,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
                               className="text-xs"
                               onClick={() => { setReplyThreadId(null); setReplyBody(""); }}
                             >
-                              Cancel
+                              {t("admin.thread.cancel")}
                             </Button>
                           </div>
                         </div>
