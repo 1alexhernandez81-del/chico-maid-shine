@@ -373,8 +373,8 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
   const saveChanges = async () => {
     if (newStatus === "scheduled" && (!scheduledDate || !scheduledTime)) {
       toast({
-        title: "Missing schedule details",
-        description: "Please set a date and time before scheduling this job.",
+        title: t("admin.job.schedule.missing"),
+        description: t("admin.job.schedule.missing.desc"),
         variant: "destructive",
       });
       return;
