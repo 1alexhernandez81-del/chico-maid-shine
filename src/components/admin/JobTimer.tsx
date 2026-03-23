@@ -104,10 +104,14 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
   };
 
   const handleStartClock = () => {
+    // Pre-select assigned cleaners from the booking
+    if (assignedCleaners.length > 0 && selectedCleaners.length === 0) {
+      setSelectedCleaners(assignedCleaners);
+    }
     if (cleaners.length > 0) {
       setShowCleanerPicker(true);
     } else {
-      startClock([]);
+      startClock(assignedCleaners);
     }
   };
 
