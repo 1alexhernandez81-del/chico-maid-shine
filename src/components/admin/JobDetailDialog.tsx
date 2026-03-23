@@ -840,7 +840,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
             <AlertDialogCancel
               onClick={async () => {
                 setShowReviewConfirm(false);
-                await executeSave(false);
+                await executeSave();
               }}
             >
               Complete Without Email
@@ -848,11 +848,104 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
             <AlertDialogAction
               onClick={async () => {
                 setShowReviewConfirm(false);
-                await executeSave(true);
+                await executeSave({ sendReviewEmail: true });
               }}
               className="bg-accent text-accent-foreground hover:bg-accent/90"
             >
               ⭐ Complete & Send Review Request
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Approval email confirmation */}
+      <AlertDialog open={showApprovalConfirm} onOpenChange={setShowApprovalConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Send Approval Email?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Would you like to send an approval confirmation email to <strong>{booking?.name}</strong> ({booking?.email})?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel
+              onClick={async () => {
+                setShowApprovalConfirm(false);
+                await executeSave();
+              }}
+            >
+              Save Only
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                setShowApprovalConfirm(false);
+                await executeSave({ sendApprovalEmail: true });
+              }}
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              Save & Send Email
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Schedule email confirmation */}
+      <AlertDialog open={showScheduleConfirm} onOpenChange={setShowScheduleConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Send Calendar Invite?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Would you like to send the calendar invite and scheduling email to <strong>{booking?.name}</strong> ({booking?.email})?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel
+              onClick={async () => {
+                setShowScheduleConfirm(false);
+                await executeSave();
+              }}
+            >
+              Save Only
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                setShowScheduleConfirm(false);
+                await executeSave({ sendScheduledEmail: true });
+              }}
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              Save & Send Invite
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Reschedule email confirmation */}
+      <AlertDialog open={showRescheduleConfirm} onOpenChange={setShowRescheduleConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Send Updated Invite?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The schedule has changed. Would you like to send an updated calendar invite to <strong>{booking?.name}</strong> ({booking?.email})?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel
+              onClick={async () => {
+                setShowRescheduleConfirm(false);
+                await executeSave();
+              }}
+            >
+              Save Only
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                setShowRescheduleConfirm(false);
+                await executeSave({ sendRescheduleEmail: true });
+              }}
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              Save & Send Invite
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
