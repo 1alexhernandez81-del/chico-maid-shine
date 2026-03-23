@@ -449,28 +449,28 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
 
               {showAddSchedule && (
                 <div className="border border-border rounded-lg p-4 space-y-3">
-                  <p className="text-sm font-medium">New Recurring Schedule</p>
+                  <p className="text-sm font-medium">{t("admin.cd.newschedule")}</p>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label className="text-xs text-muted-foreground">Service</Label>
+                      <Label className="text-xs text-muted-foreground">{t("admin.cd.servicelabel")}</Label>
                       <Select value={newSchedule.service_type} onValueChange={(v) => setNewSchedule({ ...newSchedule, service_type: v })}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="residential">Residential</SelectItem>
-                          <SelectItem value="commercial">Commercial</SelectItem>
-                          <SelectItem value="construction">Construction</SelectItem>
+                          <SelectItem value="residential">{t("admin.cd.residential")}</SelectItem>
+                          <SelectItem value="commercial">{t("admin.cd.commercial")}</SelectItem>
+                          <SelectItem value="construction">{t("admin.cd.construction")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <Label className="text-xs text-muted-foreground">Frequency</Label>
+                      <Label className="text-xs text-muted-foreground">{t("admin.cd.frequency")}</Label>
                       <Select value={newSchedule.frequency} onValueChange={(v) => setNewSchedule({ ...newSchedule, frequency: v })}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="weekly">Weekly</SelectItem>
-                          <SelectItem value="bi-weekly">Bi-Weekly</SelectItem>
-                          <SelectItem value="every-3-weeks">Every 3 Weeks</SelectItem>
-                          <SelectItem value="monthly">Monthly</SelectItem>
+                          <SelectItem value="weekly">{t("admin.cd.weekly")}</SelectItem>
+                          <SelectItem value="bi-weekly">{t("admin.cd.biweekly")}</SelectItem>
+                          <SelectItem value="every-3-weeks">{t("admin.cd.every3weeks")}</SelectItem>
+                          <SelectItem value="monthly">{t("admin.cd.monthly")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
