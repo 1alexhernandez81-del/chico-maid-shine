@@ -325,7 +325,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       onEmailSent?.();
     } catch (err) {
       console.error("Send reply error:", err);
-      toast({ title: "Error", description: "Failed to send reply", variant: "destructive" });
+      toast({ title: t("admin.error"), description: t("admin.thread.reply.fail"), variant: "destructive" });
     }
     setSending(false);
   };
