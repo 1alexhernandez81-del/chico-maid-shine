@@ -59,13 +59,25 @@ async function getAccessToken(serviceAccountJson: string): Promise<string> {
   return tokenData.access_token;
 }
 
+// Map frequency to RRULE
+function frequencyToRRule(frequency: string): string {
+  switch (frequency) {
+    case "weekly": return "RRULE:FREQ=WEEKLY";
+    case "bi-weekly": return "RRULE:FREQ=WEEKLY;INTERVAL=2";
+    case "every-3-weeks": return "RRULE:FREQ=WEEKLY;INTERVAL=3";
+    case "monthly": return "RRULE:FREQ=MONTHLY";
+    default: return "RRULE:FREQ=WEEKLY";
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { bookingId, action } = await req.json();
+    const body = await req.json();
+    const { bookingId, action, scheduleId } = body;
 
     const serviceAccountJson = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_JSON");
     const calendarId = Deno.env.get("GOOGLE_CALENDAR_ID");
@@ -75,12 +87,93 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    const accessToken = await getAccessToken(serviceAccountJson);
+    const calBase = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`;
+    const pad = (n: string | number) => String(n).padStart(2, "0");
+
+    // ── Recurring schedule → recurring GCal event ──
+    if (scheduleId && (action === "create-recurring" || action === "delete-recurring")) {
+      const { data: schedule, error: schErr } = await supabase
+        .from("recurring_schedules")
+        .select("*, customers(name, email, phone)")
+        .eq("id", scheduleId)
+        .single();
+
+      if (schErr || !schedule) throw new Error("Schedule not found");
+
+      if (action === "delete-recurring") {
+        if (schedule.google_calendar_event_id) {
+          await fetch(`${calBase}/${schedule.google_calendar_event_id}?sendUpdates=all`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
+          await supabase.from("recurring_schedules").update({ google_calendar_event_id: null }).eq("id", scheduleId);
+        }
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const customer = schedule.customers as any;
+      const eventDate = schedule.next_service_date;
+      const eventTime = schedule.preferred_time || "09:00";
+      const [year, month, day] = eventDate.split("-");
+      const [hour, minute] = eventTime.split(":").map(Number);
+      const durationMinutes = 120;
+
+      const startDateTime = `${year}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}:00`;
+      const endTotalMin = hour * 60 + minute + durationMinutes;
+      const endDateTime = `${year}-${pad(month)}-${pad(day)}T${pad(Math.floor(endTotalMin / 60))}:${pad(endTotalMin % 60)}:00`;
+
+      const freqLabel = schedule.frequency.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
+      const serviceLabel = schedule.service_type.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
+      const summary = `🔁 ${customer.name} - ${serviceLabel} (${freqLabel})`;
+      const description = `Recurring ${serviceLabel}\n📍 ${schedule.street}, ${schedule.city}, CA ${schedule.zip}\n📞 ${customer.phone}\n✉️ ${customer.email}${schedule.notes ? `\n📝 ${schedule.notes}` : ""}`;
+      const location = `${schedule.street}, ${schedule.city}, CA ${schedule.zip}`;
+
+      const eventBody: Record<string, unknown> = {
+        summary,
+        description,
+        location,
+        start: { dateTime: startDateTime, timeZone: "America/Los_Angeles" },
+        end: { dateTime: endDateTime, timeZone: "America/Los_Angeles" },
+        recurrence: [frequencyToRRule(schedule.frequency)],
+      };
+
+      // Update existing or create new
+      let eventId = schedule.google_calendar_event_id;
+      if (eventId) {
+        const res = await fetch(`${calBase}/${eventId}?sendUpdates=all`, {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+          body: JSON.stringify(eventBody),
+        });
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error?.message || "Calendar update error");
+        }
+      } else {
+        const res = await fetch(`${calBase}?sendUpdates=all`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+          body: JSON.stringify(eventBody),
+        });
+        const eventData = await res.json();
+        if (!res.ok) throw new Error(eventData.error?.message || "Calendar API error");
+        eventId = eventData.id;
+      }
+
+      await supabase.from("recurring_schedules").update({ google_calendar_event_id: eventId }).eq("id", scheduleId);
+
+      return new Response(JSON.stringify({ success: true, eventId }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── Single booking → single GCal event (existing logic) ──
     const { data: booking, error: fetchErr } = await supabase.from("bookings").select("*").eq("id", bookingId).single();
 
     if (fetchErr || !booking) throw new Error("Booking not found");
-
-    const accessToken = await getAccessToken(serviceAccountJson);
-    const calBase = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`;
 
     if (action === "delete") {
       if (booking.google_calendar_event_id) {
@@ -109,33 +202,23 @@ Deno.serve(async (req) => {
     const description = `${booking.service_type.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())}\n📍 ${booking.street}, ${booking.city}, CA ${booking.zip}\n📞 ${booking.phone}\n✉️ ${booking.email}${booking.notes ? `\n📝 ${booking.notes}` : ""}`;
     const location = `${booking.street}, ${booking.city}, CA ${booking.zip}`;
 
-    // Parse date and time WITHOUT Date objects to avoid UTC conversion
     const [year, month, day] = eventDate.includes("-")
       ? eventDate.split("-")
       : [eventDate.split("/")[2], eventDate.split("/")[0], eventDate.split("/")[1]];
 
-    const pad = (n: string | number) => String(n).padStart(2, "0");
     const [hour, minute] = eventTime.split(":").map(Number);
-
-    // Build start time string directly
     const startDateTime = `${year}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}:00`;
-
-    // Calculate end time with pure math, no Date objects
     const endTotalMin = hour * 60 + minute + durationMinutes;
     const endHour = Math.floor(endTotalMin / 60);
     const endMinute = endTotalMin % 60;
     const endDateTime = `${year}-${pad(month)}-${pad(day)}T${pad(endHour)}:${pad(endMinute)}:00`;
 
-    // Let Google handle timezone conversion. Pass the raw local time + timeZone.
-    // Do NOT append any offset like -08:00 or -07:00.
     const eventBody: Record<string, unknown> = {
       summary,
       description,
       location,
       start: { dateTime: startDateTime, timeZone: "America/Los_Angeles" },
       end: { dateTime: endDateTime, timeZone: "America/Los_Angeles" },
-      // Keep Google sync as owner-calendar event (service-account limitation on attendees).
-      // Attendee invites are sent via .ics in the scheduled email flow.
     };
 
     let eventId = booking.google_calendar_event_id;
