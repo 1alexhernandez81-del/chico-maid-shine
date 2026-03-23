@@ -99,7 +99,11 @@ Deno.serve(async (req) => {
 
     // Send confirmation to customer
     const customerHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="padding: 24px 24px 16px; text-align: center; border-bottom: 2px solid #e04a2f;">
+          <h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: 0.5px; font-family: 'Playfair Display', Georgia, serif;"><span style="color: #e04a2f;">Maid</span> <span style="color: #1a1a1a;">For Chico</span></h1>
+        </div>
+        <div style="padding: 24px 20px;">
         <p style="font-size: 15px; color: #333;">Hi ${name.split(" ")[0]},</p>
         <p style="font-size: 15px; color: #333; line-height: 1.6;">
           Thank you for reaching out to Maid for Chico! We've received your cleaning request and will get back to you shortly to schedule your in-home estimate.
@@ -108,6 +112,7 @@ Deno.serve(async (req) => {
           In the meantime, if you have any questions, feel free to call us at <strong>(530) 966-0752</strong>.
         </p>
         <p style="font-size: 15px; color: #333;">Thank you!<br>Betty & the Maid for Chico Team</p>
+        </div>
       </div>
     `;
 
