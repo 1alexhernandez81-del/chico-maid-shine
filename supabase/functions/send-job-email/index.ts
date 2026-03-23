@@ -102,6 +102,45 @@ Deno.serve(async (req) => {
         bodyText = `We've received your cancellation request for your cleaning appointment.\n\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n📅 Original Date: ${booking.scheduled_date || booking.preferred_date}${fee}\n\nIf you'd like to rebook in the future, we'd love to hear from you! Call us at (530) 966-0752.\n\nBetty & the Maid for Chico Team`;
         break;
       }
+      case "quote-approved-admin": {
+        // Admin-only notification — send to info@maidforchico.com, not to customer
+        subject = `✅ Quote Approved — ${titleName}`;
+        bodyText = `${titleName} has approved their cleaning quote!\n\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n📞 Phone: ${booking.phone}\n✉️ Email: ${booking.email}\n💰 Quoted Price: ${total}\n📋 Frequency: ${formatLabel(booking.frequency)}\n\n💳 Next Step: Collect the 25% deposit via Zelle to (530) 966-0752, then schedule the cleaning.\n\nLog into your admin dashboard to manage this booking.`;
+
+        // Send ONLY to admin, not to customer
+        await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: "Maid for Chico <info@maidforchico.com>",
+            to: ["info@maidforchico.com"],
+            subject,
+            html: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <div style="padding: 24px 24px 16px; text-align: center; border-bottom: 2px solid #059669;">
+                <h1 style="margin: 0; font-size: 24px; color: #059669;">✅ Quote Approved!</h1>
+              </div>
+              <div style="padding: 24px 20px; font-size: 15px; color: #333; line-height: 1.6; white-space: pre-wrap;">${bodyText.replace(/\n/g, "<br>")}</div>
+            </div>`,
+          }),
+        });
+
+        // Log and return early (no customer email)
+        await supabase.from("customer_communications").insert({
+          booking_id: bookingId,
+          customer_id: booking.customer_id || null,
+          type: "email",
+          subject,
+          body: bodyText,
+          direction: "inbound",
+        });
+
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       default:
         throw new Error(`Unknown email type: ${type}`);
     }
