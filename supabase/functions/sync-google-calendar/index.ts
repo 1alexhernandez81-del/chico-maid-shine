@@ -221,6 +221,7 @@ Deno.serve(async (req) => {
       location,
       start: { dateTime: startDateTime, timeZone: "America/Los_Angeles" },
       end: { dateTime: endDateTime, timeZone: "America/Los_Angeles" },
+      attendees: [{ email: booking.email }],
     };
 
     let eventId = booking.google_calendar_event_id;
