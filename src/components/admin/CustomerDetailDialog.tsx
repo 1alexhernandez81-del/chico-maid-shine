@@ -174,9 +174,9 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
     }).eq("id", customer.id);
 
     if (error) {
-      toast({ title: "Error", description: "Failed to update customer", variant: "destructive" });
+      toast({ title: t("admin.error"), description: t("admin.cd.updatefail"), variant: "destructive" });
     } else {
-      toast({ title: "Saved", description: "Customer info updated" });
+      toast({ title: t("admin.cd.saved"), description: t("admin.cd.infoupdated") });
       setEditing(false);
       onUpdated();
     }
