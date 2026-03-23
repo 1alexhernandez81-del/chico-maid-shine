@@ -434,7 +434,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
               <TabsTrigger value="details" className="flex-1 gap-1.5">
                 📋 Details
               </TabsTrigger>
-              {(isAdmin || userRole === "moderator") && (
+              {isAdmin && (
                 <TabsTrigger value="messages" className="flex-1 gap-1.5">
                   <MessageSquare className="w-3.5 h-3.5" /> Messages
                 </TabsTrigger>
@@ -790,7 +790,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
             </TabsContent>
 
             {/* Messages Tab */}
-            {(isAdmin || userRole === "moderator") && (
+            {isAdmin && (
               <TabsContent value="messages" className="mt-4">
                 <ThreadedChat
                   bookingId={booking.id}
