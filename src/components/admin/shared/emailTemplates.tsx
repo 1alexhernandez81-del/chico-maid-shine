@@ -83,7 +83,7 @@ export const getEmailTemplates = (booking: Booking | null, t: (key: string) => s
       color: "text-pink-400 border-pink-500/30 bg-pink-500/10",
       subject: () => "Thank You from Maid for Chico! \u{1F49B}",
       body: () =>
-        `Thank you so much for choosing Maid for Chico! We hope your home is looking and feeling fresh. \u2728\n\nIf you have a moment, we'd truly appreciate a quick review \u2014 it helps us grow and serve more families like yours:\n\n\u2B50 Google: https://g.page/r/maidforchico/review\n\u2B50 Yelp: https://yelp.com/biz/maid-for-chico\n\nAlso, did you know about our referral program? Refer a friend and you BOTH get $25 off your next cleaning! Share this link: https://maidforchico.com/refer\n\nWe'd love to see you again!\nBetty & the Maid for Chico Team`,
+        `Thank you so much for choosing Maid for Chico! We hope your home is looking and feeling fresh. \u2728\n\nIf you have a moment, we'd truly appreciate a quick review \u2014 it helps us grow and serve more families like yours:\n\n\u2B50 Google: https://www.google.com/maps/place/Maid+For+Chico/@39.7238225,-122.007554,9z/data=!4m8!3m7!1s0x8082d9f21b5035d3:0x189f9dfb3b334fcb!8m2!3d39.7238225!4d-122.007554!9m1!1b1!16s%2Fg%2F11ghnxkzp4?entry=ttu\n\u2B50 Yelp: https://www.yelp.com/biz/maid-for-chico-chico\n\nAlso, did you know about our referral program? Refer a friend and you BOTH get $25 off your next cleaning! Share this link: https://maidforchico.com/refer\n\nWe'd love to see you again!\nBetty & the Maid for Chico Team`,
     },
     {
       id: "general-followup",
