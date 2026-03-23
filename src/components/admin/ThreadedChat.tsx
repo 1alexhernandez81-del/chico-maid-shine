@@ -266,7 +266,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       if (error) throw error;
       setTranslations((prev) => ({ ...prev, [key]: data.translated }));
     } catch {
-      toast({ title: "Error", description: "Translation failed", variant: "destructive" });
+      toast({ title: t("admin.error"), description: t("admin.thread.translate.fail"), variant: "destructive" });
     }
     setTranslating((prev) => ({ ...prev, [key]: false }));
   };
