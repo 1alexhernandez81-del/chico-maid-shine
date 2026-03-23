@@ -362,7 +362,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
         direction: "outbound",
       });
 
-      toast({ title: "Email Sent", description: `New thread started with ${customerEmail}` });
+      toast({ title: t("admin.thread.email.sent"), description: `${t("admin.thread.email.sent.desc")} ${customerEmail}` });
       setNewSubject("");
       setNewBody("");
       setActiveTemplateId(null);
