@@ -580,7 +580,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
                               className="gap-1.5 text-xs bg-accent text-accent-foreground hover:bg-accent/90"
                             >
                               {sending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
-                              Reply
+                              {t("admin.thread.reply")}
                             </Button>
                             <Button
                               variant="ghost"
