@@ -18,6 +18,94 @@ function formatLabel(s: string): string {
   return s.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+function escapeIcsText(value: string): string {
+  return value
+    .replace(/\\/g, "\\\\")
+    .replace(/\n/g, "\\n")
+    .replace(/,/g, "\\,")
+    .replace(/;/g, "\\;");
+}
+
+function buildCalendarInviteIcs(booking: any): string | null {
+  const rawDate = booking.scheduled_date || booking.preferred_date;
+  if (!rawDate) return null;
+
+  const rawTime = String(booking.scheduled_time || booking.preferred_time || "09:00").slice(0, 5);
+  const [year, month, day] = rawDate.split("-");
+  if (!year || !month || !day) return null;
+
+  const [hourRaw, minuteRaw] = rawTime.split(":");
+  const hour = Number.parseInt(hourRaw || "9", 10);
+  const minute = Number.parseInt(minuteRaw || "0", 10);
+
+  const durationMinutes = booking.status === "estimate-scheduled" ? 30 : 120;
+  const startDateTime = `${year}${month.padStart(2, "0")}${day.padStart(2, "0")}T${String(hour).padStart(2, "0")}${String(minute).padStart(2, "0")}00`;
+
+  const endTotal = hour * 60 + minute + durationMinutes;
+  const endHour = Math.floor(endTotal / 60);
+  const endMinute = endTotal % 60;
+  const endDateTime = `${year}${month.padStart(2, "0")}${day.padStart(2, "0")}T${String(endHour).padStart(2, "0")}${String(endMinute).padStart(2, "0")}00`;
+
+  const now = new Date();
+  const dtstamp = `${now.getUTCFullYear()}${String(now.getUTCMonth() + 1).padStart(2, "0")}${String(now.getUTCDate()).padStart(2, "0")}T${String(now.getUTCHours()).padStart(2, "0")}${String(now.getUTCMinutes()).padStart(2, "0")}${String(now.getUTCSeconds()).padStart(2, "0")}Z`;
+
+  const summary = escapeIcsText(
+    booking.status === "estimate-scheduled" ? "Maid For Chico - In-Home Estimate" : "Maid For Chico - Cleaning Service",
+  );
+  const location = escapeIcsText(`${booking.street}, ${booking.city}, CA ${booking.zip}`);
+  const description = escapeIcsText(
+    `${formatLabel(booking.service_type)}\n${booking.street}, ${booking.city}, CA ${booking.zip}\nPhone: ${booking.phone}`,
+  );
+
+  const customerEmail = String(booking.email || "").trim();
+  const attendees = [
+    customerEmail
+      ? `ATTENDEE;CN=${escapeIcsText(booking.name || "Customer")};PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:${customerEmail}`
+      : "",
+    "ATTENDEE;CN=Maid For Chico;PARTSTAT=ACCEPTED:mailto:info@maidforchico.com",
+  ].filter(Boolean);
+
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Maid For Chico//Booking//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:REQUEST",
+    "BEGIN:VTIMEZONE",
+    "TZID:America/Los_Angeles",
+    "BEGIN:DAYLIGHT",
+    "TZOFFSETFROM:-0800",
+    "TZOFFSETTO:-0700",
+    "TZNAME:PDT",
+    "DTSTART:19700308T020000",
+    "RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU",
+    "END:DAYLIGHT",
+    "BEGIN:STANDARD",
+    "TZOFFSETFROM:-0700",
+    "TZOFFSETTO:-0800",
+    "TZNAME:PST",
+    "DTSTART:19701101T020000",
+    "RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU",
+    "END:STANDARD",
+    "END:VTIMEZONE",
+    "BEGIN:VEVENT",
+    `UID:${booking.id}@maidforchico.com`,
+    `DTSTAMP:${dtstamp}`,
+    `DTSTART;TZID=America/Los_Angeles:${startDateTime}`,
+    `DTEND;TZID=America/Los_Angeles:${endDateTime}`,
+    `SUMMARY:${summary}`,
+    `DESCRIPTION:${description}`,
+    `LOCATION:${location}`,
+    "STATUS:CONFIRMED",
+    "TRANSP:OPAQUE",
+    "SEQUENCE:0",
+    "ORGANIZER;CN=Maid For Chico:mailto:info@maidforchico.com",
+    ...attendees,
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -42,7 +130,7 @@ Deno.serve(async (req) => {
     if (fetchErr || !booking) throw new Error("Booking not found");
 
     const firstName = (booking.name || "").trim().split(/\s+/)[0] || "there";
-    const titleName = booking.name.replace(/\b\w/g, (c: string) => c.toUpperCase());
+    const titleName = (booking.name || "Customer").replace(/\b\w/g, (c: string) => c.toUpperCase());
     const serviceLabel = formatLabel(booking.service_type);
     const total = booking.total_price ? `$${Number(booking.total_price).toFixed(2)}` : "TBD";
 
@@ -51,6 +139,8 @@ Deno.serve(async (req) => {
     let ctaUrl = "";
     let ctaLabel = "";
     let confirmationToken: string | null = booking.confirmation_token;
+    let recipients: string[] = [booking.email];
+    let attachments: Array<{ filename: string; content: string; contentType: string }> | undefined;
 
     if (type === "quote" && !confirmationToken) {
       confirmationToken = crypto.randomUUID();
@@ -80,7 +170,7 @@ Deno.serve(async (req) => {
       case "receipt": {
         subject = `Cleaning Receipt — ${booking.scheduled_date || booking.preferred_date}`;
         const items = Array.isArray(booking.line_items) ? booking.line_items : [];
-        let itemsList = items.map((i: any) => `• ${i.description}: $${Number(i.amount).toFixed(2)}`).join("\n");
+        const itemsList = items.map((i: any) => `• ${i.description}: $${Number(i.amount).toFixed(2)}`).join("\n");
         bodyText = `Thank you for choosing Maid for Chico! Here's your receipt:\n\n📅 Date: ${booking.scheduled_date || booking.preferred_date}\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n\n${itemsList ? "Services:\n" + itemsList + "\n\n" : ""}💰 Total: ${total}\n\nThank you for your business!\nBetty & the Maid for Chico Team`;
         break;
       }
@@ -94,6 +184,17 @@ Deno.serve(async (req) => {
         const schedTime = formatTime12(booking.scheduled_time || booking.preferred_time);
         subject = `Your Cleaning is Scheduled! — ${schedDate}`;
         bodyText = `Your cleaning has been scheduled! 🧹✨\n\n📅 Date: ${schedDate}\n🕐 Time: ${schedTime}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n🏠 Service: ${serviceLabel}\n\nPlease make sure we have access to your home at the scheduled time. If you need to reschedule, please let us know at least 24 hours in advance.\n\nWe look forward to making your home sparkle!\nBetty & the Maid for Chico Team`;
+
+        recipients = Array.from(new Set([booking.email, "info@maidforchico.com"].filter(Boolean)));
+
+        const inviteIcs = buildCalendarInviteIcs(booking);
+        if (inviteIcs) {
+          attachments = [{
+            filename: "maid-for-chico-appointment.ics",
+            content: btoa(inviteIcs),
+            contentType: "text/calendar; charset=utf-8; method=REQUEST",
+          }];
+        }
         break;
       }
       case "cancellation": {
@@ -103,11 +204,9 @@ Deno.serve(async (req) => {
         break;
       }
       case "quote-approved-admin": {
-        // Admin-only notification — send to info@maidforchico.com, not to customer
         subject = `✅ Quote Approved — ${titleName}`;
         bodyText = `${titleName} has approved their cleaning quote!\n\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n📞 Phone: ${booking.phone}\n✉️ Email: ${booking.email}\n💰 Quoted Price: ${total}\n📋 Frequency: ${formatLabel(booking.frequency)}\n\n💳 Next Step: Collect the 25% deposit via Zelle to (530) 966-0752, then schedule the cleaning.\n\nLog into your admin dashboard to manage this booking.`;
 
-        // Send ONLY to admin, not to customer
         await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {
@@ -127,14 +226,13 @@ Deno.serve(async (req) => {
           }),
         });
 
-        // Log and return early (no customer email)
         await supabase.from("customer_communications").insert({
           booking_id: bookingId,
           customer_id: booking.customer_id || null,
           type: "email",
           subject,
           body: bodyText,
-          direction: "inbound",
+          direction: "outbound",
         });
 
         return new Response(JSON.stringify({ success: true }), {
@@ -145,7 +243,6 @@ Deno.serve(async (req) => {
         throw new Error(`Unknown email type: ${type}`);
     }
 
-    // Build branded HTML
     let htmlBody = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">`;
     htmlBody += `<div style="padding: 24px 24px 16px; text-align: center; border-bottom: 2px solid #e04a2f;">`;
     htmlBody += `<h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: 0.5px; font-family: 'Playfair Display', Georgia, serif;"><span style="color: #e04a2f;">Maid</span> <span style="color: #1a1a1a;">For Chico</span></h1>`;
@@ -158,22 +255,26 @@ Deno.serve(async (req) => {
     }
     htmlBody += `</div></div>`;
 
-    // Send to customer
+    const emailPayload: Record<string, unknown> = {
+      from: "Maid for Chico <info@maidforchico.com>",
+      to: recipients,
+      subject,
+      html: htmlBody,
+    };
+
+    if (attachments && attachments.length > 0) {
+      emailPayload.attachments = attachments;
+    }
+
     await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${RESEND_API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        from: "Maid for Chico <info@maidforchico.com>",
-        to: [booking.email],
-        subject,
-        html: htmlBody,
-      }),
+      body: JSON.stringify(emailPayload),
     });
 
-    // Log communication
     await supabase.from("customer_communications").insert({
       booking_id: bookingId,
       customer_id: booking.customer_id || null,

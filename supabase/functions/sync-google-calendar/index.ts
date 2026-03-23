@@ -134,7 +134,8 @@ Deno.serve(async (req) => {
       location,
       start: { dateTime: startDateTime, timeZone: "America/Los_Angeles" },
       end: { dateTime: endDateTime, timeZone: "America/Los_Angeles" },
-      attendees: [{ email: booking.email, displayName: booking.name }],
+      // Keep Google sync as owner-calendar event (service-account limitation on attendees).
+      // Attendee invites are sent via .ics in the scheduled email flow.
     };
 
     let eventId = booking.google_calendar_event_id;
