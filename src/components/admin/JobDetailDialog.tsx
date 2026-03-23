@@ -213,7 +213,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
       const updatedPhotos = [...photos, ...newPhotoPaths];
       setPhotos(updatedPhotos);
       await supabase.from("bookings").update({ photos: updatedPhotos } as any).eq("id", booking.id);
-      toast({ title: "Photos uploaded", description: `${newPhotoPaths.length} photo(s) added` });
+      toast({ title: t("admin.job.photos.uploaded"), description: `${newPhotoPaths.length} photo(s)` });
     }
     setUploadingPhoto(false);
     if (photoInputRef.current) photoInputRef.current.value = "";
