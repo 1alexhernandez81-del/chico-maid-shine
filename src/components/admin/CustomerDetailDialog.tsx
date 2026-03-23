@@ -82,6 +82,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
   const [editNotes, setEditNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   // Edit customer info
   const [editing, setEditing] = useState(false);
