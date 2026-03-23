@@ -329,15 +329,15 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
             {/* Booking History */}
             <TabsContent value="history" className="space-y-4 mt-4">
               {bookings.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">No booking history</p>
+                <p className="text-center text-muted-foreground py-8">{t("admin.cd.nohistory")}</p>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-secondary/50">
-                      <TableHead className="text-xs">Date</TableHead>
-                      <TableHead className="text-xs">Service</TableHead>
-                      <TableHead className="text-xs">Status</TableHead>
-                      <TableHead className="text-xs text-right">Price</TableHead>
+                      <TableHead className="text-xs">{t("admin.cd.date")}</TableHead>
+                      <TableHead className="text-xs">{t("admin.cd.service")}</TableHead>
+                      <TableHead className="text-xs">{t("admin.cd.status")}</TableHead>
+                      <TableHead className="text-xs text-right">{t("admin.cd.price")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
