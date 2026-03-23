@@ -79,6 +79,8 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
   const [newSubject, setNewSubject] = useState("");
   const [newBody, setNewBody] = useState("");
   const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
+  const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
+  const [approveQuoteUrl, setApproveQuoteUrl] = useState<string | null>(null);
 
   // Translation
   const [translations, setTranslations] = useState<Record<string, string>>({});
@@ -113,9 +115,74 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
     setLoading(false);
   };
 
+  const normalizeSubject = (value: string) => value.replace(/^re:\s*/i, "").trim().toLowerCase();
+
+  const getTemplateIdBySubject = (subject: string) => {
+    const normalized = normalizeSubject(subject);
+    return templates.find((tmpl) => normalizeSubject(tmpl.subject) === normalized)?.id ?? null;
+  };
+
+  const shouldAttachQuoteCta = (templateId: string | null, subject: string, body: string) => {
+    if (templateId && QUOTE_CTA_TEMPLATE_IDS.has(templateId)) return true;
+
+    const subjectLower = subject.toLowerCase();
+    const bodyLower = body.toLowerCase();
+    return (subjectLower.includes("estimate") || subjectLower.includes("quote")) && bodyLower.includes("estimated quote");
+  };
+
+  const attachQuoteCta = (
+    emailPayload: Record<string, string>,
+    subject: string,
+    body: string,
+    templateId: string | null,
+  ) => {
+    const approveUrlMatch = body.match(/(https:\/\/[^\s]*\/approve-quote\?token=[^\s]+)/);
+    if (approveUrlMatch) {
+      emailPayload.ctaUrl = approveUrlMatch[1];
+      emailPayload.ctaLabel = APPROVE_QUOTE_CTA_LABEL;
+      return;
+    }
+
+    if (approveQuoteUrl && shouldAttachQuoteCta(templateId, subject, body)) {
+      emailPayload.ctaUrl = approveQuoteUrl;
+      emailPayload.ctaLabel = APPROVE_QUOTE_CTA_LABEL;
+    }
+  };
+
   useEffect(() => {
     fetchCommunications();
   }, [bookingId, bookingIds?.join(","), customerId]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchApproveQuoteUrl = async () => {
+      if (!bookingId) {
+        if (isMounted) setApproveQuoteUrl(null);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("bookings")
+        .select("confirmation_token")
+        .eq("id", bookingId)
+        .single();
+
+      if (!isMounted) return;
+      if (error || !data?.confirmation_token) {
+        setApproveQuoteUrl(null);
+        return;
+      }
+
+      setApproveQuoteUrl(`https://maidforchico.com/approve-quote?token=${data.confirmation_token}`);
+    };
+
+    fetchApproveQuoteUrl();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [bookingId]);
 
   // Handle initial subject/body from quick-email buttons
   useEffect(() => {
@@ -123,9 +190,11 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       setShowNewThread(true);
       setNewSubject(initialSubject);
       setNewBody(initialBody);
+      const matchedTemplateId = templates.find((tmpl) => tmpl.subject === initialSubject && tmpl.body === initialBody)?.id ?? null;
+      setActiveTemplateId(matchedTemplateId);
       onInitialConsumed?.();
     }
-  }, [initialSubject, initialBody]);
+  }, [initialSubject, initialBody, templates, onInitialConsumed]);
 
   // Group into threads
   const threads: Thread[] = useMemo(() => {
