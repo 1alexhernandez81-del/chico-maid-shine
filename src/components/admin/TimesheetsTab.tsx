@@ -9,7 +9,8 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Clock, RefreshCw, Calendar, Copy, Loader2, Users } from "lucide-react";
+import { Clock, RefreshCw, Calendar, Copy, Loader2, Users, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { JobTimeEntry, Cleaner, Booking } from "./shared/types";
