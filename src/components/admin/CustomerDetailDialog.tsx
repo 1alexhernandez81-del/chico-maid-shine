@@ -249,7 +249,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
   const deleteSchedule = async (scheduleId: string) => {
     await supabase.from("recurring_schedules").delete().eq("id", scheduleId);
     setSchedules((prev) => prev.filter((s) => s.id !== scheduleId));
-    toast({ title: "Schedule Removed" });
+    toast({ title: t("admin.cd.scheduleremoved") });
   };
 
   return (
