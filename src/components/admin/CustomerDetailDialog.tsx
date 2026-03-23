@@ -158,7 +158,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
   const saveNotes = async () => {
     setSaving(true);
     await supabase.from("customers").update({ notes: editNotes }).eq("id", customer.id);
-    toast({ title: "Saved", description: "Customer notes updated" });
+    toast({ title: t("admin.cd.saved"), description: t("admin.cd.notesupdated") });
     setSaving(false);
   };
 
