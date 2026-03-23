@@ -721,7 +721,6 @@ const InquiriesPipeline = () => {
                           applyTemplate(tmpl);
                           setDetailTab("messages");
                         }}
-                        }}
                       >
                         {tmpl.icon} {tmpl.name}
                       </Button>
