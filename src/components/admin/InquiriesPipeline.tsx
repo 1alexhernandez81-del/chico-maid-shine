@@ -801,7 +801,7 @@ const InquiriesPipeline = () => {
               disabled={bulkActioning}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {bulkActioning ? "Deleting..." : t("admin.bulk.delete")}
+              {bulkActioning ? t("admin.deleting") : t("admin.bulk.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

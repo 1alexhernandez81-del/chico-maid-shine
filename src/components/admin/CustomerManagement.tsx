@@ -224,9 +224,9 @@ const CustomerManagement = () => {
       .in("id", ids);
 
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: t("admin.error"), description: error.message, variant: "destructive" });
     } else {
-      toast({ title: t("admin.bulk.delete"), description: `${ids.length} customer(s) deleted` });
+      toast({ title: t("admin.bulk.delete"), description: `${ids.length} ${t("admin.customers.deleted.desc")}` });
       setCustomers((prev) => prev.filter((c) => !selectedIds.has(c.id)));
       setSelectedIds(new Set());
     }

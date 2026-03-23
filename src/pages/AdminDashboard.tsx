@@ -58,7 +58,7 @@ const AdminDashboard = () => {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
         <Loader2 className="w-8 h-8 animate-spin text-accent mx-auto mb-3" />
-        <p className="text-muted-foreground text-sm font-body">Loading dashboard...</p>
+        <p className="text-muted-foreground text-sm font-body">{t("admin.loading")}</p>
       </div>
     </div>
   );
