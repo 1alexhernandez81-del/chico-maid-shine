@@ -153,7 +153,7 @@ const CustomerManagement = () => {
       .is("customer_id", null);
 
     if (!bookings || bookings.length === 0) {
-      toast({ title: "No New Customers", description: "All bookings are already linked to customers" });
+      toast({ title: t("admin.customers.nonew"), description: t("admin.customers.alllinked") });
       setImporting(false);
       setShowImport(false);
       return;
