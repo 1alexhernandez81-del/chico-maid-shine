@@ -47,6 +47,9 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
   const [showReviewConfirm, setShowReviewConfirm] = useState(false);
+  const [showScheduleConfirm, setShowScheduleConfirm] = useState(false);
+  const [showApprovalConfirm, setShowApprovalConfirm] = useState(false);
+  const [showRescheduleConfirm, setShowRescheduleConfirm] = useState(false);
   const [cleaners, setCleaners] = useState<Cleaner[]>([]);
   const [assignedCleanerIds, setAssignedCleanerIds] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -252,7 +255,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
     setSendingEmail(null);
   };
 
-  const executeSave = async (sendReviewEmail: boolean = false) => {
+  const executeSave = async (opts: { sendReviewEmail?: boolean; sendApprovalEmail?: boolean; sendScheduledEmail?: boolean; sendRescheduleEmail?: boolean } = {}) => {
     setSaving(true);
     const cleanItems = lineItems.filter((item) => item.description.trim() !== "");
     const statusChanged = newStatus !== booking.status;
@@ -293,7 +296,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
 
       toast({ title: t("admin.bookings.updated"), description: t("admin.bookings.updated.msg") });
 
-      if (isNewlyApproved) {
+      if (isNewlyApproved && opts.sendApprovalEmail) {
         supabase.functions.invoke('send-job-email', {
           body: { bookingId: booking.id, type: 'approval' },
         }).then(({ error: emailErr }) => {
@@ -302,7 +305,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
         });
       }
 
-      if (isNewlyScheduled) {
+      if (isNewlyScheduled && opts.sendScheduledEmail) {
         supabase.functions.invoke('send-job-email', {
           body: { bookingId: booking.id, type: 'scheduled' },
         }).then(({ error: emailErr }) => {
@@ -322,13 +325,13 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
         });
       }
 
-      // Update Google Calendar when rescheduled (same status, different date/time)
-      if (isRescheduled) {
-        supabase.functions.invoke('sync-google-calendar', {
-          body: { bookingId: booking.id, action: 'update' },
-        }).then(({ error: gcalErr }) => {
-          if (gcalErr) console.error("Google Calendar update error:", gcalErr);
-          else toast({ title: "📅 Calendar updated!", description: "Google Calendar event rescheduled" });
+      // Send reschedule email if opted in
+      if (isRescheduled && opts.sendRescheduleEmail) {
+        supabase.functions.invoke('send-job-email', {
+          body: { bookingId: booking.id, type: 'scheduled' },
+        }).then(({ error: emailErr }) => {
+          if (emailErr) console.error("Reschedule email error:", emailErr);
+          else toast({ title: "📅 Updated invite sent!", description: `Rescheduled email sent to ${booking.email}` });
         });
       }
 
@@ -342,7 +345,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
         });
       }
 
-      if (isNewlyCompleted && sendReviewEmail) {
+      if (isNewlyCompleted && opts.sendReviewEmail) {
         supabase.functions.invoke('send-review-request', {
           body: { bookingId: booking.id, email: booking.email, name: booking.name },
         }).then(({ error: emailErr }) => {
@@ -376,12 +379,27 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
     }
 
     const statusChanged = newStatus !== booking.status;
+    const isRescheduled = booking.status === "scheduled" && newStatus === "scheduled" &&
+      (scheduledDate !== booking.scheduled_date || scheduledTime !== booking.scheduled_time);
+
     if (statusChanged && newStatus === "completed") {
       setShowReviewConfirm(true);
       return;
     }
+    if (statusChanged && newStatus === "approved") {
+      setShowApprovalConfirm(true);
+      return;
+    }
+    if (statusChanged && newStatus === "scheduled") {
+      setShowScheduleConfirm(true);
+      return;
+    }
+    if (isRescheduled) {
+      setShowRescheduleConfirm(true);
+      return;
+    }
 
-    await executeSave(false);
+    await executeSave();
   };
 
   // Non-admin can only move to completed or in-progress
@@ -822,7 +840,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
             <AlertDialogCancel
               onClick={async () => {
                 setShowReviewConfirm(false);
-                await executeSave(false);
+                await executeSave();
               }}
             >
               Complete Without Email
@@ -830,11 +848,104 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
             <AlertDialogAction
               onClick={async () => {
                 setShowReviewConfirm(false);
-                await executeSave(true);
+                await executeSave({ sendReviewEmail: true });
               }}
               className="bg-accent text-accent-foreground hover:bg-accent/90"
             >
               ⭐ Complete & Send Review Request
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Approval email confirmation */}
+      <AlertDialog open={showApprovalConfirm} onOpenChange={setShowApprovalConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Send Approval Email?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Would you like to send an approval confirmation email to <strong>{booking?.name}</strong> ({booking?.email})?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel
+              onClick={async () => {
+                setShowApprovalConfirm(false);
+                await executeSave();
+              }}
+            >
+              Save Only
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                setShowApprovalConfirm(false);
+                await executeSave({ sendApprovalEmail: true });
+              }}
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              Save & Send Email
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Schedule email confirmation */}
+      <AlertDialog open={showScheduleConfirm} onOpenChange={setShowScheduleConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Send Calendar Invite?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Would you like to send the calendar invite and scheduling email to <strong>{booking?.name}</strong> ({booking?.email})?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel
+              onClick={async () => {
+                setShowScheduleConfirm(false);
+                await executeSave();
+              }}
+            >
+              Save Only
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                setShowScheduleConfirm(false);
+                await executeSave({ sendScheduledEmail: true });
+              }}
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              Save & Send Invite
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Reschedule email confirmation */}
+      <AlertDialog open={showRescheduleConfirm} onOpenChange={setShowRescheduleConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Send Updated Invite?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The schedule has changed. Would you like to send an updated calendar invite to <strong>{booking?.name}</strong> ({booking?.email})?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel
+              onClick={async () => {
+                setShowRescheduleConfirm(false);
+                await executeSave();
+              }}
+            >
+              Save Only
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                setShowRescheduleConfirm(false);
+                await executeSave({ sendRescheduleEmail: true });
+              }}
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              Save & Send Invite
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
