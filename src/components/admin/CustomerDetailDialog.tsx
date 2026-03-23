@@ -387,8 +387,34 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
                         {s.frequency.replace("-", " ")} · {s.preferred_day || "Flexible"} · {formatTimeDisplay(s.preferred_time)}
                       </p>
                       {s.price && <p className="text-accent font-medium text-sm mt-1">${s.price}/visit</p>}
-                      {s.next_service_date && s.active && (
-                        <p className="text-xs text-muted-foreground mt-1">📅 Next: {new Date(s.next_service_date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</p>
+                      {s.active && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <span className="text-xs text-muted-foreground">📅 Next:</span>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-6 px-1.5 text-xs text-muted-foreground hover:text-foreground gap-1">
+                                {s.next_service_date
+                                  ? new Date(s.next_service_date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
+                                  : "Set date"}
+                                <Pencil className="w-3 h-3" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <CalendarWidget
+                                mode="single"
+                                selected={s.next_service_date ? new Date(s.next_service_date + "T00:00:00") : undefined}
+                                onSelect={async (date) => {
+                                  if (!date) return;
+                                  const iso = format(date, "yyyy-MM-dd");
+                                  await supabase.from("recurring_schedules").update({ next_service_date: iso }).eq("id", s.id);
+                                  setSchedules(prev => prev.map(sc => sc.id === s.id ? { ...sc, next_service_date: iso } : sc));
+                                  toast({ title: "Next service date updated" });
+                                }}
+                                className={cn("p-3 pointer-events-auto")}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
                       )}
                     </div>
                     <div className="flex gap-1">
