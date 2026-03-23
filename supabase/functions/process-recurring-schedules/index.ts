@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
           preferred_time: schedule.preferred_time || null,
           scheduled_date: schedule.next_service_date,
           scheduled_time: schedule.preferred_time || "09:00",
-          status: "scheduled",
+          status: "approved",
           total_price: schedule.price || null,
           notes: schedule.notes
             ? `[Auto-generated from recurring schedule]\n${schedule.notes}`
