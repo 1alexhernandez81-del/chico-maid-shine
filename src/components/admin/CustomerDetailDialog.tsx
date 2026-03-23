@@ -361,7 +361,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
                     <div>
                       <p className="font-medium text-sm capitalize">{s.service_type.replace("-", " ")}</p>
                       <p className="text-xs text-muted-foreground capitalize mt-0.5">
-                        {s.frequency.replace("-", " ")} · {s.preferred_day || "Flexible"} · {s.preferred_time || "Any time"}
+                        {s.frequency.replace("-", " ")} · {s.preferred_day || "Flexible"} · {formatTimeDisplay(s.preferred_time)}
                       </p>
                       {s.price && <p className="text-accent font-medium text-sm mt-1">${s.price}/visit</p>}
                     </div>
