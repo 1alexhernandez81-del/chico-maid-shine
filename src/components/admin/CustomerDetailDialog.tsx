@@ -379,10 +379,10 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
             <TabsContent value="schedule" className="space-y-4 mt-4">
               <div className="flex justify-between items-center">
                 <p className="text-sm text-muted-foreground">
-                  {schedules.length === 0 ? "No recurring schedules" : `${schedules.filter((s) => s.active).length} active schedules`}
+                  {schedules.length === 0 ? t("admin.cd.noschedules") : `${schedules.filter((s) => s.active).length} ${t("admin.cd.activeschedules")}`}
                 </p>
                 <Button variant="outline" size="sm" onClick={() => setShowAddSchedule(true)} className="gap-1.5">
-                  <Plus className="w-3.5 h-3.5" /> Add Schedule
+                  <Plus className="w-3.5 h-3.5" /> {t("admin.cd.addschedule")}
                 </Button>
               </div>
 
