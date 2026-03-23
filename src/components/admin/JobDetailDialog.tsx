@@ -752,6 +752,11 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                 />
               </div>
 
+              {/* Time Tracking — visible to admin and moderator */}
+              {(isAdmin || userRole === "moderator") && (
+                <JobTimer bookingId={booking.id} userRole={userRole} cleaners={cleaners} />
+              )}
+
               {/* Action Buttons */}
               <div className="grid grid-cols-1 gap-2">
                 <Button onClick={saveChanges} disabled={saving} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
@@ -784,7 +789,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
             </TabsContent>
 
             {/* Messages Tab */}
-            {isAdmin && (
+            {(isAdmin || userRole === "moderator") && (
               <TabsContent value="messages" className="mt-4">
                 <ThreadedChat
                   bookingId={booking.id}
