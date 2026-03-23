@@ -511,7 +511,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
             <div className="border-t border-border pt-4 space-y-3">
               <div className="flex items-center justify-between">
                 <label className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <Image className="w-3.5 h-3.5" /> Job Photos
+                  <Image className="w-3.5 h-3.5" /> {t("admin.job.photos")}
                 </label>
                 <div>
                   <input
