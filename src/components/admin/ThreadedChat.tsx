@@ -317,7 +317,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
         direction: "outbound",
       });
 
-      toast({ title: "Reply Sent", description: `Reply sent to ${customerEmail}` });
+      toast({ title: t("admin.thread.reply.sent"), description: `${t("admin.thread.reply.sent.desc")} ${customerEmail}` });
       setReplyThreadId(null);
       setReplySubject("");
       setReplyBody("");
