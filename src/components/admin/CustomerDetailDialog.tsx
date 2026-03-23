@@ -91,9 +91,29 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
     service_type: "residential",
     frequency: "weekly",
     preferred_day: "monday",
-    preferred_time: "morning",
+    preferred_time: "09:00",
     price: "",
   });
+
+  // Generate 30-min time slots from 8:00 AM to 5:00 PM
+  const timeSlots = Array.from({ length: 19 }, (_, i) => {
+    const totalMinutes = 8 * 60 + i * 30;
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    const value = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+    const period = hours >= 12 ? "PM" : "AM";
+    const displayHour = hours > 12 ? hours - 12 : hours === 0 ? 12 : hours;
+    const label = `${displayHour}:${String(minutes).padStart(2, "0")} ${period}`;
+    return { value, label };
+  });
+
+  const formatTimeDisplay = (time: string | null) => {
+    if (!time) return "Flexible";
+    const slot = timeSlots.find((s) => s.value === time);
+    if (slot) return slot.label;
+    // Fallback for legacy values
+    return time.charAt(0).toUpperCase() + time.slice(1);
+  };
   const [addingSchedule, setAddingSchedule] = useState(false);
 
   useEffect(() => {
