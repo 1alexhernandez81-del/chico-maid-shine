@@ -280,9 +280,14 @@ const TimesheetsTab = () => {
           <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> {t("admin.ts.refresh")}
         </Button>
         {expandedRows.length > 0 && (
-          <Button variant="outline" onClick={copyDetailedToClipboard} className="gap-2">
-            <Copy className="w-4 h-4" /> {t("admin.ts.export")}
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={copyDetailedToClipboard} className="gap-2">
+              <Copy className="w-4 h-4" /> {t("admin.ts.copy")}
+            </Button>
+            <Button variant="outline" onClick={exportToExcel} className="gap-2">
+              <Download className="w-4 h-4" /> {t("admin.ts.exportexcel")}
+            </Button>
+          </div>
         )}
       </div>
 
