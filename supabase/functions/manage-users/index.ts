@@ -59,6 +59,7 @@ Deno.serve(async (req) => {
           full_name: u.user_metadata?.full_name || "",
           roles: roleMap[u.id] || [],
           created_at: u.created_at,
+          last_sign_in_at: u.last_sign_in_at,
         }));
 
         return new Response(JSON.stringify({ users: mapped }), {
