@@ -53,6 +53,7 @@ const InquiriesPipeline = () => {
   const [pendingTemplateSubject, setPendingTemplateSubject] = useState("");
   const [pendingTemplateBody, setPendingTemplateBody] = useState("");
   const [quoteAmount, setQuoteAmount] = useState("");
+  const [detailTab, setDetailTab] = useState("details");
 
   // Translation state
   const [translations, setTranslations] = useState<Record<string, string>>({});
