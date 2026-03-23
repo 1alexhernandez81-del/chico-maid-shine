@@ -1,0 +1,1 @@
+ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS reminded_at timestamp with time zone DEFAULT NULL;

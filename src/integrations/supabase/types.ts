@@ -42,6 +42,7 @@ export type Database = {
           photos: string[] | null
           preferred_date: string
           preferred_time: string | null
+          reminded_at: string | null
           reminder_sent: boolean | null
           scheduled_date: string | null
           scheduled_time: string | null
@@ -80,6 +81,7 @@ export type Database = {
           photos?: string[] | null
           preferred_date: string
           preferred_time?: string | null
+          reminded_at?: string | null
           reminder_sent?: boolean | null
           scheduled_date?: string | null
           scheduled_time?: string | null
@@ -118,6 +120,7 @@ export type Database = {
           photos?: string[] | null
           preferred_date?: string
           preferred_time?: string | null
+          reminded_at?: string | null
           reminder_sent?: boolean | null
           scheduled_date?: string | null
           scheduled_time?: string | null

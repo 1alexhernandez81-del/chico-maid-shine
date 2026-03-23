@@ -11,8 +11,8 @@ const ConfirmAppointment = () => {
   const [booking, setBooking] = useState<any>(null);
   const [confirming, setConfirming] = useState(false);
   const [cancelling, setCancelling] = useState(false);
-  const [cancelResult, setCancelResult] = useState<{ fee: number } | null>(null);
-  const [isWithin24Hours, setIsWithin24Hours] = useState(false);
+  const [cancelResult, setCancelResult] = useState<{ fee: number; depositForfeited: boolean } | null>(null);
+  const [hoursUntilAppointment, setHoursUntilAppointment] = useState<number>(Infinity);
 
   useEffect(() => {
     if (!token) {
@@ -39,7 +39,7 @@ const ConfirmAppointment = () => {
     const minute = parseInt(timeParts[1]) || 0;
     const scheduled = new Date(year, month - 1, day, hour, minute);
     const hoursUntil = (scheduled.getTime() - Date.now()) / (1000 * 60 * 60);
-    setIsWithin24Hours(hoursUntil < 24);
+    setHoursUntilAppointment(hoursUntil);
 
     if (b.status === 'cancelled') {
       setBooking(b);
@@ -75,7 +75,7 @@ const ConfirmAppointment = () => {
       setStatus("error");
     } else {
       const fee = (data as any).fee || 0;
-      setCancelResult({ fee });
+      setCancelResult({ fee, depositForfeited: hoursUntilAppointment < 48 });
       setStatus("cancelled");
 
       // Notify business about the cancellation
@@ -207,22 +207,45 @@ const ConfirmAppointment = () => {
               </p>
             </div>
 
-            {isWithin24Hours && (
+            <div className="bg-secondary/50 rounded-xl p-4 text-left space-y-2">
+              <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+                📋 Cancellation Policy
+              </p>
+              <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+                <li className={hoursUntilAppointment >= 48 ? "text-green-500 font-semibold" : ""}>
+                  <strong>More than 48 hours</strong> — cancel free of charge
+                </li>
+                <li className={hoursUntilAppointment >= 24 && hoursUntilAppointment < 48 ? "text-yellow-500 font-semibold" : ""}>
+                  <strong>24–48 hours</strong> — your 25% deposit is non-refundable
+                </li>
+                <li className={hoursUntilAppointment < 24 ? "text-destructive font-semibold" : ""}>
+                  <strong>Less than 24 hours / no-show</strong> — deposit forfeited + $50 rebooking fee
+                </li>
+              </ul>
+            </div>
+
+            {hoursUntilAppointment < 24 && (
               <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 text-left">
                 <p className="text-sm font-semibold text-destructive flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 shrink-0" />
-                  $50 Late Cancellation Fee
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Cancellations within 24 hours of the scheduled appointment are subject to a <strong className="text-foreground">$50 cancellation fee</strong>.
+                  Late Cancellation: Deposit forfeited + $50 rebooking fee
                 </p>
               </div>
             )}
 
-            {!isWithin24Hours && (
-              <div className="bg-secondary/50 rounded-xl p-4 text-left">
-                <p className="text-sm text-muted-foreground">
-                  ✅ No cancellation fee — you're cancelling more than 24 hours in advance.
+            {hoursUntilAppointment >= 24 && hoursUntilAppointment < 48 && (
+              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 text-left">
+                <p className="text-sm font-semibold text-yellow-600 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  Your 25% deposit will be non-refundable
+                </p>
+              </div>
+            )}
+
+            {hoursUntilAppointment >= 48 && (
+              <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 text-left">
+                <p className="text-sm text-green-600">
+                  ✅ No fees — you're cancelling more than 48 hours in advance.
                 </p>
               </div>
             )}
@@ -260,13 +283,15 @@ const ConfirmAppointment = () => {
               </p>
             </div>
 
-            {cancelResult && cancelResult.fee > 0 && (
+            {cancelResult && (cancelResult.fee > 0 || cancelResult.depositForfeited) && (
               <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4">
                 <p className="text-sm text-destructive font-semibold">
-                  A ${cancelResult.fee} late cancellation fee applies.
+                  {cancelResult.fee > 0
+                    ? `Your deposit is forfeited and a $${cancelResult.fee} rebooking fee applies.`
+                    : "Your 25% deposit is non-refundable for this cancellation."}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  We will contact you regarding payment. Questions? Call us at (530) 966-0752.
+                  We will contact you regarding any charges. Questions? Call us at (530) 966-0752.
                 </p>
               </div>
             )}
