@@ -44,12 +44,9 @@ export const getEmailTemplates = (booking: Booking | null, t: (key: string) => s
       color: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10",
       subject: () => "Your Cleaning Estimate from Maid for Chico",
       body: (b) => {
-        const approveUrl = b.confirmation_token
-          ? `https://maidforchico.com/approve-quote?token=${b.confirmation_token}`
-          : "";
         const amt = (b as any)._quoteAmount || (b.total_price ? String(b.total_price) : "");
         const quoteDisplay = amt ? `$${amt}` : "$_____";
-        return `Thank you for letting us visit your home! Based on our walk-through, here is your personalized cleaning estimate:\n\n\u{1F3E0} Service: ${serviceLabel}\n\u{1F4CD} Address: ${b.street}, ${b.city}, CA ${b.zip}\n\u{1F4D0} Size: ${b.sqft ? b.sqft + " sqft" : "N/A"} | ${b.bedrooms || "\u2014"} bed / ${b.bathrooms || "\u2014"} bath\n\u{1F4CB} Frequency: ${frequencyLabel}\n\n\u{1F4B0} Estimated Quote: ${quoteDisplay} per visit\n\n\u26A0\uFE0F Please note: This is an estimate and is subject to change depending on additional services requested or removed at the time of cleaning.\n\n\u{1F4B3} DEPOSIT: A 25% deposit is required to secure your cleaning date. We'll collect the deposit once you approve. The remaining balance is due on the day of your cleaning.\n\n\u2705 To approve this estimate and book your cleaning, click the link below:\n${approveUrl}\n\nOr call us at (530) 966-0752.\n\nWe'd love to make your home sparkle!\nBetty & the Maid for Chico Team`;
+        return `Thank you for letting us visit your home! Based on our walk-through, here is your personalized cleaning estimate:\n\n\u{1F3E0} Service: ${serviceLabel}\n\u{1F4CD} Address: ${b.street}, ${b.city}, CA ${b.zip}\n\u{1F4D0} Size: ${b.sqft ? b.sqft + " sqft" : "N/A"} | ${b.bedrooms || "\u2014"} bed / ${b.bathrooms || "\u2014"} bath\n\u{1F4CB} Frequency: ${frequencyLabel}\n\n\u{1F4B0} Estimated Quote: ${quoteDisplay} per visit\n\n\u26A0\uFE0F Please note: This is an estimate and is subject to change depending on additional services requested or removed at the time of cleaning.\n\n\u{1F4B3} DEPOSIT: A 25% deposit is required to secure your cleaning date. We'll collect the deposit once you approve. The remaining balance is due on the day of your cleaning.\n\nOr call us at (530) 966-0752.\n\nWe'd love to make your home sparkle!\nBetty & the Maid for Chico Team`;
       },
     },
     {

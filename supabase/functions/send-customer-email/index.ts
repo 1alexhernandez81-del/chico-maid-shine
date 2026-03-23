@@ -23,18 +23,28 @@ Deno.serve(async (req) => {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY not set");
 
-    const titleName = customerName || "there";
+    // Use capitalized first name only
+    const firstName = customerName
+      ? customerName.trim().split(/\s+/)[0].replace(/^\w/, (c: string) => c.toUpperCase())
+      : "there";
     
-    // Build HTML body
-    let htmlBody = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">`;
-    htmlBody += `<p style="font-size: 15px; color: #333; line-height: 1.6;">Hi ${titleName},</p>`;
+    // Build HTML body with branded header
+    let htmlBody = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">`;
+    // Branded header
+    htmlBody += `<div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 24px 20px; text-align: center; border-radius: 8px 8px 0 0;">`;
+    htmlBody += `<h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: 0.5px;">Maid for Chico</h1>`;
+    htmlBody += `<p style="margin: 4px 0 0; font-size: 13px; color: #d1fae5; letter-spacing: 1px;">PROFESSIONAL CLEANING SERVICES</p>`;
+    htmlBody += `</div>`;
+    // Body content
+    htmlBody += `<div style="padding: 24px 20px;">`;
+    htmlBody += `<p style="font-size: 15px; color: #333; line-height: 1.6;">Hi ${firstName},</p>`;
     htmlBody += `<div style="font-size: 15px; color: #333; line-height: 1.6; white-space: pre-wrap;">${body.replace(/\n/g, "<br>")}</div>`;
     
     if (ctaUrl && ctaLabel) {
-      htmlBody += `<div style="margin: 24px 0;"><a href="${ctaUrl}" style="display: inline-block; background-color: #b5a26a; color: #fff; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 15px;">${ctaLabel}</a></div>`;
+      htmlBody += `<div style="margin: 24px 0;"><a href="${ctaUrl}" style="display: inline-block; background-color: #059669; color: #fff; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 15px;">${ctaLabel}</a></div>`;
     }
     
-    htmlBody += `</div>`;
+    htmlBody += `</div></div>`;
 
     const emailPayload: Record<string, any> = {
       from: "Maid for Chico <info@maidforchico.com>",
