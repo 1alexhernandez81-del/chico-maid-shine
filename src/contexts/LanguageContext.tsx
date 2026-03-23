@@ -362,6 +362,11 @@ const translations: Record<string, Record<Lang, string>> = {
   "admin.users.pw.tip": { en: "use 10+ chars, uppercase, number & symbol", es: "usa 10+ caracteres, mayúscula, número y símbolo" },
 
   // Threaded chat
+  "admin.thread.messageswith": { en: "Messages with", es: "Mensajes con" },
+  "admin.thread.template": { en: "Template", es: "Plantilla" },
+  "admin.thread.quicktemplates": { en: "Quick Templates", es: "Plantillas Rápidas" },
+  "admin.thread.newthread": { en: "New Thread", es: "Nuevo Hilo" },
+  "admin.thread.newemailthread": { en: "New Email Thread", es: "Nuevo Hilo de Correo" },
   "admin.thread.subject": { en: "Subject", es: "Asunto" },
   "admin.thread.typemsg": { en: "Type your message...", es: "Escribe tu mensaje..." },
   "admin.thread.sending": { en: "Sending...", es: "Enviando..." },
@@ -371,7 +376,10 @@ const translations: Record<string, Record<Lang, string>> = {
   "admin.thread.start": { en: "Start a conversation", es: "Iniciar una conversación" },
   "admin.thread.note": { en: "Note", es: "Nota" },
   "admin.thread.you": { en: "You", es: "Tú" },
+  "admin.thread.message": { en: "message", es: "mensaje" },
+  "admin.thread.messages": { en: "messages", es: "mensajes" },
   "admin.thread.reply": { en: "Reply", es: "Responder" },
+  "admin.thread.cancel": { en: "Cancel", es: "Cancelar" },
   "admin.thread.replyin": { en: "Reply in this thread...", es: "Responder en este hilo..." },
   "admin.thread.translate.fail": { en: "Translation failed", es: "Falló la traducción" },
   "admin.thread.reply.sent": { en: "Reply Sent", es: "Respuesta Enviada" },
