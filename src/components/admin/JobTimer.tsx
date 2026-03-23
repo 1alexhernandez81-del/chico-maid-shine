@@ -21,9 +21,10 @@ interface JobTimerProps {
   bookingId: string;
   userRole: UserRole;
   cleaners: Cleaner[];
+  assignedCleaners?: string[];
 }
 
-const JobTimer = ({ bookingId, userRole, cleaners }: JobTimerProps) => {
+const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobTimerProps) => {
   const { toast } = useToast();
   const [timerState, setTimerState] = useState<TimerState>("idle");
   const [entry, setEntry] = useState<JobTimeEntry | null>(null);
@@ -103,10 +104,14 @@ const JobTimer = ({ bookingId, userRole, cleaners }: JobTimerProps) => {
   };
 
   const handleStartClock = () => {
+    // Pre-select assigned cleaners from the booking
+    if (assignedCleaners.length > 0 && selectedCleaners.length === 0) {
+      setSelectedCleaners(assignedCleaners);
+    }
     if (cleaners.length > 0) {
       setShowCleanerPicker(true);
     } else {
-      startClock([]);
+      startClock(assignedCleaners);
     }
   };
 
