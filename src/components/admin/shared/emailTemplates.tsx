@@ -54,9 +54,13 @@ export const getEmailTemplates = (booking: Booking | null, t: (key: string) => s
       name: t("admin.template.cleaning_scheduled"),
       icon: <Sparkles className="w-3.5 h-3.5" />,
       color: "text-green-400 border-green-500/30 bg-green-500/10",
-      subject: (b) => `Your Cleaning is Booked! \u2014 ${b.preferred_date}`,
-      body: (b) =>
-        `Exciting news \u2014 your cleaning has been scheduled! \u{1F389}\n\n\u{1F4C5} Date: ${b.preferred_date}\n\u{1F550} Time: ${b.preferred_time || "TBD"}\n\u{1F4CD} Address: ${b.street}, ${b.city}, CA ${b.zip}\n\u{1F3E0} Service: ${serviceLabel}\n\nHere are a few things to keep in mind:\n\u2022 Please make sure we have access to your home at the scheduled time\n\u2022 Secure any pets if applicable\n\u2022 Let us know if there are any special instructions\n\nIf you need to reschedule, please let us know at least 24 hours in advance.\n\nWe look forward to making your home sparkle!\nBetty & the Maid for Chico Team`,
+      subject: (b) => `Your Cleaning is Booked! \u2014 ${b.scheduled_date || b.preferred_date}`,
+      body: (b) => {
+        const cleanDate = b.scheduled_date || b.preferred_date;
+        const cleanTime = formatTime12(b.scheduled_time || b.preferred_time || null);
+        const deposit = b.total_price ? `$${(Number(b.total_price) * 0.25).toFixed(2)}` : "25%";
+        return `Exciting news \u2014 your cleaning has been scheduled! \u{1F389}\n\n\u{1F4C5} Date: ${cleanDate}\n\u{1F550} Time: ${cleanTime}\n\u{1F4CD} Address: ${b.street}, ${b.city}, CA ${b.zip}\n\u{1F3E0} Service: ${serviceLabel}\n\n\u2705 Your ${deposit} deposit has been received \u2014 your spot is confirmed! The remaining balance is due on the day of your cleaning.\n\nHere are a few things to keep in mind:\n\u2022 Please make sure we have access to your home at the scheduled time\n\u2022 Secure any pets if applicable\n\u2022 Let us know if there are any special instructions\n\nIf you need to reschedule, please let us know at least 24 hours in advance.\n\nWe look forward to making your home sparkle!\nBetty & the Maid for Chico Team`;
+      },
     },
     {
       id: "estimate-reschedule",

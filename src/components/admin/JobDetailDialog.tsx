@@ -104,8 +104,8 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
         id: "cleaning-scheduled",
         name: "Cleaning Scheduled",
         color: "text-green-400",
-        subject: `Your Cleaning is Booked! — ${booking.preferred_date}`,
-        body: `Exciting news — your cleaning has been scheduled! 🎉\n\n📅 Date: ${booking.scheduled_date || booking.preferred_date}\n🕐 Time: ${booking.scheduled_time || booking.preferred_time || "TBD"}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n🏠 Service: ${serviceLabel}\n\n✅ Your 25% deposit has been received — your spot is confirmed! The remaining balance is due on the day of your cleaning.\n\nHere are a few things to keep in mind:\n• Please make sure we have access to your home at the scheduled time\n• Secure any pets if applicable\n• Let us know if there are any special instructions\n\nIf you need to reschedule, please let us know at least 24 hours in advance.\n\nWe look forward to making your home sparkle!\nBetty & the Maid for Chico Team`,
+        subject: `Your Cleaning is Booked! — ${scheduledDate || booking.scheduled_date || booking.preferred_date}`,
+        body: `Exciting news — your cleaning has been scheduled! 🎉\n\n📅 Date: ${scheduledDate || booking.scheduled_date || booking.preferred_date}\n🕐 Time: ${scheduledTime || booking.scheduled_time || booking.preferred_time || "TBD"}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n🏠 Service: ${serviceLabel}\n\n✅ Your 25% deposit has been received — your spot is confirmed! The remaining balance is due on the day of your cleaning.\n\nHere are a few things to keep in mind:\n• Please make sure we have access to your home at the scheduled time\n• Secure any pets if applicable\n• Let us know if there are any special instructions\n\nIf you need to reschedule, please let us know at least 24 hours in advance.\n\nWe look forward to making your home sparkle!\nBetty & the Maid for Chico Team`,
       },
       {
         id: "reschedule-notice",

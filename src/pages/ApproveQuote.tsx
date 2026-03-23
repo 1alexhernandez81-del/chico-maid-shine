@@ -47,6 +47,14 @@ const ApproveQuote = () => {
       }
     } else {
       setStatus("approved");
+      // Notify admin that quote was approved
+      try {
+        await supabase.functions.invoke("send-job-email", {
+          body: { bookingId: booking?.id, type: "quote-approved-admin" },
+        });
+      } catch (e) {
+        console.error("Failed to notify admin:", e);
+      }
     }
     setApproving(false);
   };
