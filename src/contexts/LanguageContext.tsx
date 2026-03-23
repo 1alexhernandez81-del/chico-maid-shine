@@ -242,6 +242,7 @@ const translations: Record<string, Record<Lang, string>> = {
   "admin.tab.activity": { en: "Activity", es: "Actividad" },
   "admin.tab.customers": { en: "Customers", es: "Clientes" },
   "admin.tab.users": { en: "Users", es: "Usuarios" },
+  "admin.tab.cleaners": { en: "Cleaners", es: "Limpiadores" },
 
   // View Modes
   "admin.view.list": { en: "List", es: "Lista" },
