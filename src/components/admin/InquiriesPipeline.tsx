@@ -53,6 +53,7 @@ const InquiriesPipeline = () => {
   const [pendingTemplateSubject, setPendingTemplateSubject] = useState("");
   const [pendingTemplateBody, setPendingTemplateBody] = useState("");
   const [quoteAmount, setQuoteAmount] = useState("");
+  const [detailTab, setDetailTab] = useState("details");
 
   // Translation state
   const [translations, setTranslations] = useState<Record<string, string>>({});
@@ -128,6 +129,7 @@ const InquiriesPipeline = () => {
       setEstimateTime(toTimeInputValue(booking.estimate_time));
       setPendingTemplateSubject("");
       setPendingTemplateBody("");
+      setDetailTab("details");
       console.log("[InquiriesPipeline] openDetail completed successfully");
     } catch (err) {
       console.error("[InquiriesPipeline] openDetail error:", err);
@@ -441,7 +443,7 @@ const InquiriesPipeline = () => {
             <DialogDescription>{t("admin.inquiry.details.desc")}</DialogDescription>
           </DialogHeader>
           {selected && (
-            <Tabs defaultValue="details" className="w-full">
+            <Tabs value={detailTab} onValueChange={setDetailTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="details" className="gap-1.5">
                   <Eye className="w-3.5 h-3.5" /> {t("admin.inquiry.details.tab")}
@@ -717,8 +719,7 @@ const InquiriesPipeline = () => {
                         className={`gap-1.5 text-xs justify-start ${tmpl.color}`}
                         onClick={() => {
                           applyTemplate(tmpl);
-                          const messagesTab = document.querySelector('[value="messages"]') as HTMLButtonElement;
-                          messagesTab?.click();
+                          setDetailTab("messages");
                         }}
                       >
                         {tmpl.icon} {tmpl.name}
