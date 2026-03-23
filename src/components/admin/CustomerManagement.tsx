@@ -387,38 +387,44 @@ const CustomerManagement = () => {
       <Dialog open={showAdd} onOpenChange={setShowAdd}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Customer</DialogTitle>
-            <DialogDescription>Create a new customer profile</DialogDescription>
+            <DialogTitle>{t("admin.customers.addtitle")}</DialogTitle>
+            <DialogDescription>{t("admin.customers.addsubtitle")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="text-xs uppercase tracking-wider text-muted-foreground">Name</Label>
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.customers.name")}</Label>
               <Input value={newCustomer.name} onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })} placeholder="Jane Doe" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Email</Label>
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.customers.email")}</Label>
                 <Input value={newCustomer.email} onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })} placeholder="jane@example.com" />
               </div>
               <div>
-                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Phone</Label>
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.customers.phone")}</Label>
                 <Input value={newCustomer.phone} onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })} placeholder="(530) 555-0123" />
               </div>
             </div>
             <div>
-              <Label className="text-xs uppercase tracking-wider text-muted-foreground">Address</Label>
-              <Input value={newCustomer.street} onChange={(e) => setNewCustomer({ ...newCustomer, street: e.target.value })} placeholder="123 Main St" className="mb-2" />
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.customers.address")}</Label>
+              <AddressAutocomplete
+                value={newCustomer.street}
+                onChange={(val) => setNewCustomer({ ...newCustomer, street: val })}
+                onSelect={(addr) => setNewCustomer({ ...newCustomer, street: addr.street, city: addr.city || newCustomer.city, zip: addr.zip || newCustomer.zip })}
+                placeholder="123 Main St"
+                className="mb-2"
+              />
               <div className="grid grid-cols-2 gap-2">
                 <Input value={newCustomer.city} onChange={(e) => setNewCustomer({ ...newCustomer, city: e.target.value })} placeholder="Chico" />
                 <Input value={newCustomer.zip} onChange={(e) => setNewCustomer({ ...newCustomer, zip: e.target.value })} placeholder="95928" />
               </div>
             </div>
             <div>
-              <Label className="text-xs uppercase tracking-wider text-muted-foreground">Notes</Label>
-              <Textarea value={newCustomer.notes} onChange={(e) => setNewCustomer({ ...newCustomer, notes: e.target.value })} placeholder="Internal notes..." rows={2} />
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.customers.notes")}</Label>
+              <Textarea value={newCustomer.notes} onChange={(e) => setNewCustomer({ ...newCustomer, notes: e.target.value })} placeholder={t("admin.customers.notes") + "..."} rows={2} />
             </div>
             <Button onClick={handleAdd} disabled={adding} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-              {adding ? "Adding..." : "Add Customer"}
+              {adding ? t("admin.customers.adding") : t("admin.customers.addbtn")}
             </Button>
           </div>
         </DialogContent>
