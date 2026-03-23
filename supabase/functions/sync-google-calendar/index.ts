@@ -56,7 +56,11 @@ async function getAccessToken(serviceAccountJson: string): Promise<string> {
   });
 
   const tokenData = await tokenRes.json();
-  if (!tokenData.access_token) throw new Error("Failed to get access token");
+  if (!tokenData.access_token) {
+    console.error("Token exchange failed:", JSON.stringify(tokenData));
+    throw new Error(`Failed to get access token: ${tokenData.error_description || tokenData.error || "unknown"}`);
+  }
+  console.log("Token acquired successfully with sub impersonation");
   return tokenData.access_token;
 }
 
