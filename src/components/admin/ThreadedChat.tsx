@@ -529,7 +529,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
                                 <Mail className="w-2.5 h-2.5 text-muted-foreground" />
                               )}
                               <span className="text-[10px] font-medium">
-                                {isNote ? "Note" : isOutbound ? "You" : firstName}
+                                {isNote ? t("admin.thread.note") : isOutbound ? t("admin.thread.you") : firstName}
                               </span>
                               <span className="text-[10px] text-muted-foreground ml-auto">
                                 {new Date(msg.created_at).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
