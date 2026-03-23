@@ -20,6 +20,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Plus, Trash2, Upload, FileText, DollarSign, Camera, X, Image, Sparkles, Send, MessageSquare, Loader2 } from "lucide-react";
+import JobTimer from "@/components/admin/JobTimer";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { UserRole } from "@/pages/AdminDashboard";
 import ThreadedChat from "@/components/admin/ThreadedChat";
