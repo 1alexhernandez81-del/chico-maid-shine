@@ -208,7 +208,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
     } else {
       toast({ title: "Schedule Added" });
       setShowAddSchedule(false);
-      setNewSchedule({ service_type: "residential", frequency: "weekly", preferred_day: "monday", preferred_time: "morning", price: "" });
+      setNewSchedule({ service_type: "residential", frequency: "weekly", preferred_day: "monday", preferred_time: "09:00", price: "" });
       const { data } = await supabase.from("recurring_schedules").select("*")
         .eq("customer_id", customer.id).order("created_at", { ascending: false });
       setSchedules((data || []) as RecurringSchedule[]);
