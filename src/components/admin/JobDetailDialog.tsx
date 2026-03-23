@@ -530,7 +530,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                     className="h-7 text-xs gap-1"
                   >
                     <Camera className="w-3 h-3" />
-                    {uploadingPhoto ? "Uploading..." : "Add Photos"}
+                    {uploadingPhoto ? t("admin.job.photos.uploading") : t("admin.job.photos.add")}
                   </Button>
                 </div>
               </div>
