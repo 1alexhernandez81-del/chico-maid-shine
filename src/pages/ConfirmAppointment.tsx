@@ -39,7 +39,7 @@ const ConfirmAppointment = () => {
     const minute = parseInt(timeParts[1]) || 0;
     const scheduled = new Date(year, month - 1, day, hour, minute);
     const hoursUntil = (scheduled.getTime() - Date.now()) / (1000 * 60 * 60);
-    setIsWithin24Hours(hoursUntil < 24);
+    setHoursUntilAppointment(hoursUntil);
 
     if (b.status === 'cancelled') {
       setBooking(b);
