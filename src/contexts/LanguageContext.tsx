@@ -341,6 +341,55 @@ const translations: Record<string, Record<Lang, string>> = {
   "admin.cleaners.deleted": { en: "Deleted", es: "Eliminado" },
   "admin.cleaners.deleted.desc": { en: "removed", es: "eliminado" },
 
+  // Shared admin actions
+  "admin.save": { en: "Save", es: "Guardar" },
+  "admin.saving": { en: "Saving...", es: "Guardando..." },
+
+  // User reset password
+  "admin.users.reset.title": { en: "Reset Password", es: "Restablecer Contraseña" },
+  "admin.users.reset.desc": { en: "Set a new password for", es: "Establecer nueva contraseña para" },
+  "admin.users.reset.new": { en: "New Password", es: "Nueva Contraseña" },
+  "admin.users.reset.btn": { en: "Reset Password", es: "Restablecer Contraseña" },
+  "admin.users.resetting": { en: "Resetting...", es: "Restableciendo..." },
+  "admin.users.reset.success": { en: "Password Reset", es: "Contraseña Restablecida" },
+  "admin.users.reset.success.desc": { en: "Password updated for", es: "Contraseña actualizada para" },
+  "admin.users.reset.weak": { en: "That password is too weak or exposed. Use a longer unique password.", es: "Esa contraseña es débil o está expuesta. Use una más larga y única." },
+  "admin.users.pw.weak": { en: "Weak", es: "Débil" },
+  "admin.users.pw.fair": { en: "Fair", es: "Regular" },
+  "admin.users.pw.good": { en: "Good", es: "Buena" },
+  "admin.users.pw.strong": { en: "Strong", es: "Fuerte" },
+  "admin.users.pw.vstrong": { en: "Very Strong", es: "Muy Fuerte" },
+  "admin.users.pw.tip": { en: "use 10+ chars, uppercase, number & symbol", es: "usa 10+ caracteres, mayúscula, número y símbolo" },
+
+  // Threaded chat
+  "admin.thread.subject": { en: "Subject", es: "Asunto" },
+  "admin.thread.typemsg": { en: "Type your message...", es: "Escribe tu mensaje..." },
+  "admin.thread.sending": { en: "Sending...", es: "Enviando..." },
+  "admin.thread.sendstart": { en: "Send & Start Thread", es: "Enviar e Iniciar Hilo" },
+  "admin.thread.loading": { en: "Loading messages...", es: "Cargando mensajes..." },
+  "admin.thread.nomessages": { en: "No messages yet", es: "Aún no hay mensajes" },
+  "admin.thread.start": { en: "Start a conversation", es: "Iniciar una conversación" },
+  "admin.thread.note": { en: "Note", es: "Nota" },
+  "admin.thread.you": { en: "You", es: "Tú" },
+  "admin.thread.reply": { en: "Reply", es: "Responder" },
+  "admin.thread.replyin": { en: "Reply in this thread...", es: "Responder en este hilo..." },
+  "admin.thread.translate.fail": { en: "Translation failed", es: "Falló la traducción" },
+  "admin.thread.reply.sent": { en: "Reply Sent", es: "Respuesta Enviada" },
+  "admin.thread.reply.sent.desc": { en: "Reply sent to", es: "Respuesta enviada a" },
+  "admin.thread.reply.fail": { en: "Failed to send reply", es: "Error al enviar respuesta" },
+  "admin.thread.email.sent": { en: "Email Sent", es: "Correo Enviado" },
+  "admin.thread.email.sent.desc": { en: "New thread started with", es: "Nuevo hilo iniciado con" },
+  "admin.thread.email.fail": { en: "Failed to send email", es: "Error al enviar correo" },
+
+  // Inquiry quote box
+  "admin.inquiry.quote.enter": { en: "Enter quote amount", es: "Ingrese monto de cotización" },
+  "admin.inquiry.quote.pervisit": { en: "per visit", es: "por visita" },
+  "admin.inquiry.quote.savefail": { en: "Failed to save quote", es: "Error al guardar cotización" },
+  "admin.inquiry.quote.saved": { en: "Saved", es: "Guardado" },
+  "admin.inquiry.quote.updated": { en: "Quote updated to", es: "Cotización actualizada a" },
+  "admin.inquiry.quote.unsaved": { en: "Unsaved — click Save to update the stored price", es: "Sin guardar — haga clic en Guardar para actualizar el precio" },
+  "admin.inquiry.quote.usingsaved": { en: "Using saved price from line items:", es: "Usando precio guardado de partidas:" },
+
   // Calendar
   "admin.calendar.drag": { en: "Drag jobs to reschedule", es: "Arrastra trabajos para reprogramar" },
   "admin.calendar.today": { en: "Today", es: "Hoy" },
