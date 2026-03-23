@@ -115,7 +115,7 @@ const CustomerManagement = () => {
 
   const handleAdd = async () => {
     if (!newCustomer.name || !newCustomer.email || !newCustomer.phone) {
-      toast({ title: "Error", description: "Name, email, and phone are required", variant: "destructive" });
+      toast({ title: t("admin.error"), description: t("admin.customers.required"), variant: "destructive" });
       return;
     }
     setAdding(true);
@@ -134,10 +134,10 @@ const CustomerManagement = () => {
       .single();
 
     if (error) {
-      const msg = error.code === "23505" ? "Customer with this email already exists" : "Failed to add customer";
-      toast({ title: "Error", description: msg, variant: "destructive" });
+      const msg = error.code === "23505" ? t("admin.customers.exists") : t("admin.customers.addfail");
+      toast({ title: t("admin.error"), description: msg, variant: "destructive" });
     } else {
-      toast({ title: "Customer Added", description: `${newCustomer.name} has been added` });
+      toast({ title: t("admin.customers.added"), description: `${newCustomer.name}` });
       setCustomers((prev) => [{ ...data, booking_count: 0, total_spent: 0 }, ...prev]);
       setShowAdd(false);
       setNewCustomer({ name: "", email: "", phone: "", street: "", city: "Chico", zip: "", notes: "" });
