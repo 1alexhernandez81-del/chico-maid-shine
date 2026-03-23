@@ -685,7 +685,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                     </div>
                   </div>
                   {(!scheduledDate || !scheduledTime) && (
-                    <p className="text-xs text-destructive">⚠️ Date and time are required to schedule a job.</p>
+                    <p className="text-xs text-destructive">{t("admin.job.schedule.required")}</p>
                   )}
                 </div>
               )}
