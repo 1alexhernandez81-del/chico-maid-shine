@@ -13,16 +13,21 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    // Verify caller is admin
+    // Verify caller using anon-key client with user's JWT
     const authHeader = req.headers.get("authorization");
     if (!authHeader) throw new Error("Not authenticated");
     
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user: caller }, error: authErr } = await supabase.auth.getUser(token);
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    });
+    const { data: { user: caller }, error: authErr } = await userClient.auth.getUser();
     if (authErr || !caller) throw new Error("Invalid token");
 
     const { data: callerRoles } = await supabase
