@@ -281,38 +281,38 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
             <div className="space-y-3 border border-border rounded-lg p-4 bg-secondary/30">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs text-muted-foreground">Name</Label>
+                  <Label className="text-xs text-muted-foreground">{t("admin.cd.name")}</Label>
                   <Input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground">Phone</Label>
+                  <Label className="text-xs text-muted-foreground">{t("admin.cd.phone")}</Label>
                   <Input value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} />
                 </div>
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground">Email</Label>
+                <Label className="text-xs text-muted-foreground">{t("admin.cd.email")}</Label>
                 <Input value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} />
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground">Address</Label>
+                <Label className="text-xs text-muted-foreground">{t("admin.cd.address")}</Label>
                 <AddressAutocomplete
                   value={editForm.street}
                   onChange={(val) => setEditForm({ ...editForm, street: val })}
                   onSelect={(addr) => setEditForm({ ...editForm, street: addr.street, city: addr.city || editForm.city, zip: addr.zip || editForm.zip })}
-                  placeholder="Street"
+                  placeholder={t("admin.cd.street")}
                   className="mb-2"
                 />
                 <div className="grid grid-cols-2 gap-2">
-                  <Input value={editForm.city} onChange={(e) => setEditForm({ ...editForm, city: e.target.value })} placeholder="City" />
-                  <Input value={editForm.zip} onChange={(e) => setEditForm({ ...editForm, zip: e.target.value })} placeholder="ZIP" />
+                  <Input value={editForm.city} onChange={(e) => setEditForm({ ...editForm, city: e.target.value })} placeholder={t("admin.cd.city")} />
+                  <Input value={editForm.zip} onChange={(e) => setEditForm({ ...editForm, zip: e.target.value })} placeholder={t("admin.cd.zip")} />
                 </div>
               </div>
               <div className="flex gap-2">
                 <Button onClick={saveCustomerEdit} disabled={saving} className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 gap-1.5">
-                  <Save className="w-3.5 h-3.5" /> {saving ? "Saving..." : "Save"}
+                  <Save className="w-3.5 h-3.5" /> {saving ? t("admin.cd.saving") : t("admin.cd.save")}
                 </Button>
                 <Button variant="outline" onClick={() => setEditing(false)} className="gap-1.5">
-                  <X className="w-3.5 h-3.5" /> Cancel
+                  <X className="w-3.5 h-3.5" /> {t("admin.cd.cancel")}
                 </Button>
               </div>
             </div>
