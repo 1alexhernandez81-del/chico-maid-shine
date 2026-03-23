@@ -129,6 +129,7 @@ const InquiriesPipeline = () => {
       setEstimateTime(toTimeInputValue(booking.estimate_time));
       setPendingTemplateSubject("");
       setPendingTemplateBody("");
+      setDetailTab("details");
       console.log("[InquiriesPipeline] openDetail completed successfully");
     } catch (err) {
       console.error("[InquiriesPipeline] openDetail error:", err);
