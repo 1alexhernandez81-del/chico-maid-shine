@@ -356,7 +356,7 @@ const UserManagement = () => {
                 return (
                   <div className="space-y-1">
                     <Progress value={s.score} className="h-1.5" indicatorClassName={s.color} />
-                    <p className="text-xs text-muted-foreground">{s.label} — use 10+ chars, uppercase, number & symbol</p>
+                    <p className="text-xs text-muted-foreground">{t(s.labelKey)} — {t("admin.users.pw.tip")}</p>
                   </div>
                 );
               })()}
