@@ -139,6 +139,7 @@ Deno.serve(async (req) => {
         start: { dateTime: startDateTime, timeZone: "America/Los_Angeles" },
         end: { dateTime: endDateTime, timeZone: "America/Los_Angeles" },
         recurrence: [frequencyToRRule(schedule.frequency)],
+        attendees: [{ email: customer.email }],
       };
 
       // Update existing or create new
