@@ -755,7 +755,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
 
               {/* Time Tracking — visible to admin and moderator */}
               {(isAdmin || userRole === "moderator") && (
-                <JobTimer bookingId={booking.id} userRole={userRole} cleaners={cleaners} />
+                <JobTimer bookingId={booking.id} userRole={userRole} cleaners={cleaners} assignedCleaners={booking.assigned_cleaners || []} />
               )}
 
               {/* Action Buttons */}
