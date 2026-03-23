@@ -69,12 +69,12 @@ const DashboardStats = ({ onNavigate }: { onNavigate?: (tab: string) => void }) 
   if (!stats) return null;
 
   const cards = [
-    { label: t("admin.stats.total"), value: stats.totalBookings, icon: Inbox, color: "text-blue-400" },
-    { label: t("admin.stats.pending"), value: stats.pending, icon: Clock, color: "text-yellow-400" },
-    { label: t("admin.stats.active"), value: stats.approved, icon: CalendarCheck, color: "text-green-400" },
-    { label: t("admin.stats.completed"), value: stats.completed, icon: CheckCircle, color: "text-emerald-400" },
-    { label: t("admin.stats.revenue"), value: `$${stats.totalRevenue.toLocaleString("en-US", { minimumFractionDigits: 2 })}`, icon: DollarSign, color: "text-accent" },
-    { label: t("admin.stats.thismonth"), value: stats.thisMonthBookings, icon: TrendingUp, color: "text-purple-400" },
+    { label: t("admin.stats.total"), value: stats.totalBookings, icon: Inbox, color: "text-blue-400", tab: "inquiries" },
+    { label: t("admin.stats.pending"), value: stats.pending, icon: Clock, color: "text-yellow-400", tab: "inquiries" },
+    { label: t("admin.stats.active"), value: stats.approved, icon: CalendarCheck, color: "text-green-400", tab: "jobs" },
+    { label: t("admin.stats.completed"), value: stats.completed, icon: CheckCircle, color: "text-emerald-400", tab: "jobs" },
+    { label: t("admin.stats.revenue"), value: `$${stats.totalRevenue.toLocaleString("en-US", { minimumFractionDigits: 2 })}`, icon: DollarSign, color: "text-accent", tab: "jobs" },
+    { label: t("admin.stats.thismonth"), value: stats.thisMonthBookings, icon: TrendingUp, color: "text-purple-400", tab: "jobs" },
   ];
 
   return (
