@@ -667,12 +667,12 @@ const InquiriesPipeline = () => {
                       <DollarSign className="w-4 h-4 text-emerald-400 shrink-0" />
                       <Input
                         type="number"
-                        placeholder={selected.total_price ? `Saved: $${selected.total_price}` : "Enter quote amount"}
+                        placeholder={selected.total_price ? `${t("admin.inquiry.quote.saved")}: $${selected.total_price}` : t("admin.inquiry.quote.enter")}
                         value={quoteAmount}
                         onChange={(e) => setQuoteAmount(e.target.value)}
                         className="h-8 text-sm bg-background/50 border-emerald-500/20 focus:border-emerald-500/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
-                      <span className="text-xs text-muted-foreground shrink-0">per visit</span>
+                      <span className="text-xs text-muted-foreground shrink-0">{t("admin.inquiry.quote.pervisit")}</span>
                       <Button
                         size="sm"
                         variant="outline"
@@ -684,23 +684,23 @@ const InquiriesPipeline = () => {
                             .update({ total_price: parseFloat(quoteAmount) })
                             .eq("id", selected.id);
                           if (error) {
-                            toast({ title: "Error", description: "Failed to save quote", variant: "destructive" });
+                            toast({ title: t("admin.error"), description: t("admin.inquiry.quote.savefail"), variant: "destructive" });
                           } else {
-                            toast({ title: "Saved", description: `Quote updated to $${quoteAmount}` });
+                            toast({ title: t("admin.inquiry.quote.saved"), description: `${t("admin.inquiry.quote.updated")} $${quoteAmount}` });
                             setSelected({ ...selected, total_price: parseFloat(quoteAmount) });
                             setBookings(prev => prev.map(b => b.id === selected.id ? { ...b, total_price: parseFloat(quoteAmount) } : b));
                           }
                         }}
                       >
-                        Save
+                        {t("admin.save")}
                       </Button>
                     </div>
                     {quoteAmount && parseFloat(quoteAmount) !== selected.total_price && (
-                      <p className="text-xs text-amber-400/80 pl-6">⚠️ Unsaved — click Save to update the stored price</p>
+                      <p className="text-xs text-amber-400/80 pl-6">⚠️ {t("admin.inquiry.quote.unsaved")}</p>
                     )}
                     {selected.total_price && !quoteAmount && (
                       <p className="text-xs text-emerald-400/70 pl-6">
-                        Using saved price from line items: <strong>${selected.total_price}</strong>
+                        {t("admin.inquiry.quote.usingsaved")} <strong>${selected.total_price}</strong>
                       </p>
                     )}
                   </div>

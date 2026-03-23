@@ -266,7 +266,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       if (error) throw error;
       setTranslations((prev) => ({ ...prev, [key]: data.translated }));
     } catch {
-      toast({ title: "Error", description: "Translation failed", variant: "destructive" });
+      toast({ title: t("admin.error"), description: t("admin.thread.translate.fail"), variant: "destructive" });
     }
     setTranslating((prev) => ({ ...prev, [key]: false }));
   };
@@ -317,7 +317,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
         direction: "outbound",
       });
 
-      toast({ title: "Reply Sent", description: `Reply sent to ${customerEmail}` });
+      toast({ title: t("admin.thread.reply.sent"), description: `${t("admin.thread.reply.sent.desc")} ${customerEmail}` });
       setReplyThreadId(null);
       setReplySubject("");
       setReplyBody("");
@@ -325,7 +325,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       onEmailSent?.();
     } catch (err) {
       console.error("Send reply error:", err);
-      toast({ title: "Error", description: "Failed to send reply", variant: "destructive" });
+      toast({ title: t("admin.error"), description: t("admin.thread.reply.fail"), variant: "destructive" });
     }
     setSending(false);
   };
@@ -362,7 +362,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
         direction: "outbound",
       });
 
-      toast({ title: "Email Sent", description: `New thread started with ${customerEmail}` });
+      toast({ title: t("admin.thread.email.sent"), description: `${t("admin.thread.email.sent.desc")} ${customerEmail}` });
       setNewSubject("");
       setNewBody("");
       setActiveTemplateId(null);
@@ -371,7 +371,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       onEmailSent?.();
     } catch (err) {
       console.error("Send email error:", err);
-      toast({ title: "Error", description: "Failed to send email", variant: "destructive" });
+      toast({ title: t("admin.error"), description: t("admin.thread.email.fail"), variant: "destructive" });
     }
     setSending(false);
   };
@@ -391,17 +391,17 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       {/* Header */}
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-medium flex items-center gap-2">
-          <MessageSquare className="w-3.5 h-3.5" /> Messages with {firstName}
+          <MessageSquare className="w-3.5 h-3.5" /> {t("admin.thread.messageswith")} {firstName}
         </h4>
         <div className="flex gap-2">
           <Popover open={templatePickerOpen} onOpenChange={setTemplatePickerOpen}>
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-                <FileText className="w-3.5 h-3.5" /> Template
+                <FileText className="w-3.5 h-3.5" /> {t("admin.thread.template")}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-72 p-2" align="end">
-              <p className="text-xs font-medium text-muted-foreground px-2 py-1.5 uppercase tracking-wider">Quick Templates</p>
+              <p className="text-xs font-medium text-muted-foreground px-2 py-1.5 uppercase tracking-wider">{t("admin.thread.quicktemplates")}</p>
               <div className="space-y-1">
                 {templates.map((tmpl) => (
                   <button
@@ -427,7 +427,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
               setActiveTemplateId(null);
             }}
           >
-            <Plus className="w-3.5 h-3.5" /> New Thread
+            <Plus className="w-3.5 h-3.5" /> {t("admin.thread.newthread")}
           </Button>
         </div>
       </div>
@@ -436,19 +436,19 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       {showNewThread && (
         <div className="border border-accent/30 rounded-lg p-3 space-y-2 bg-accent/5">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-medium text-accent">✉️ New Email Thread</p>
+            <p className="text-xs font-medium text-accent">✉️ {t("admin.thread.newemailthread")}</p>
             <Button variant="ghost" size="sm" className="h-5 px-1.5 text-xs" onClick={() => setShowNewThread(false)}>
               ✕
             </Button>
           </div>
           <Input
-            placeholder="Subject"
+            placeholder={t("admin.thread.subject")}
             value={newSubject}
             onChange={(e) => setNewSubject(e.target.value)}
             className="text-sm"
           />
           <Textarea
-            placeholder="Type your message..."
+            placeholder={t("admin.thread.typemsg")}
             value={newBody}
             onChange={(e) => setNewBody(e.target.value)}
             rows={3}
@@ -461,7 +461,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
             size="sm"
           >
             {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-            {sending ? "Sending..." : "Send & Start Thread"}
+            {sending ? t("admin.thread.sending") : t("admin.thread.sendstart")}
           </Button>
         </div>
       )}
@@ -470,14 +470,14 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       <ScrollArea className="h-[320px] rounded-lg border border-border">
         {loading ? (
           <div className="flex items-center justify-center h-full text-muted-foreground text-sm p-6">
-            <Loader2 className="w-4 h-4 animate-spin mr-2" /> Loading messages...
+            <Loader2 className="w-4 h-4 animate-spin mr-2" /> {t("admin.thread.loading")}
           </div>
         ) : threads.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground text-sm p-6 gap-2">
             <MessageSquare className="w-8 h-8 opacity-30" />
-            <p>No messages yet</p>
+            <p>{t("admin.thread.nomessages")}</p>
             <Button variant="outline" size="sm" className="gap-1.5 text-xs mt-1" onClick={() => setShowNewThread(true)}>
-              <Plus className="w-3 h-3" /> Start a conversation
+              <Plus className="w-3 h-3" /> {t("admin.thread.start")}
             </Button>
           </div>
         ) : (
@@ -494,7 +494,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium truncate">{thread.subject}</p>
                         <p className="text-[10px] text-muted-foreground">
-                          {new Date(thread.firstDate).toLocaleDateString()} · {thread.messages.length} message{thread.messages.length !== 1 ? "s" : ""}
+                          {new Date(thread.firstDate).toLocaleDateString()} · {thread.messages.length} {thread.messages.length !== 1 ? t("admin.thread.messages") : t("admin.thread.message")}
                         </p>
                       </div>
                       <Badge variant="outline" className="text-[9px] shrink-0">
@@ -529,7 +529,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
                                 <Mail className="w-2.5 h-2.5 text-muted-foreground" />
                               )}
                               <span className="text-[10px] font-medium">
-                                {isNote ? "Note" : isOutbound ? "You" : firstName}
+                                {isNote ? t("admin.thread.note") : isOutbound ? t("admin.thread.you") : firstName}
                               </span>
                               <span className="text-[10px] text-muted-foreground ml-auto">
                                 {new Date(msg.created_at).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
@@ -539,7 +539,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
                               {translations[`msg-${msg.id}`] || msg.body}
                             </p>
                             {translations[`msg-${msg.id}`] && (
-                              <p className="text-[9px] text-muted-foreground italic mt-1">Auto-translated</p>
+                              <p className="text-[9px] text-muted-foreground italic mt-1">{t("admin.translate.auto")}</p>
                             )}
                             {msg.body && (
                               <Button
@@ -554,7 +554,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
                                 ) : (
                                   <Languages className="w-2.5 h-2.5" />
                                 )}
-                                {translations[`msg-${msg.id}`] ? "Show Original" : "Translate"}
+                                {translations[`msg-${msg.id}`] ? t("admin.translate.original") : t("admin.translate.btn")}
                               </Button>
                             )}
                           </div>
@@ -580,7 +580,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
                               className="gap-1.5 text-xs bg-accent text-accent-foreground hover:bg-accent/90"
                             >
                               {sending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
-                              Reply
+                              {t("admin.thread.reply")}
                             </Button>
                             <Button
                               variant="ghost"
@@ -588,7 +588,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
                               className="text-xs"
                               onClick={() => { setReplyThreadId(null); setReplyBody(""); }}
                             >
-                              Cancel
+                              {t("admin.thread.cancel")}
                             </Button>
                           </div>
                         </div>
@@ -597,7 +597,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
                           onClick={() => { setReplyThreadId(thread.threadId); setReplySubject(thread.subject); setReplyBody(""); }}
                           className="w-full text-left text-xs text-muted-foreground hover:text-foreground px-3 py-2 rounded-md border border-dashed border-border hover:border-accent/30 transition-colors mt-1"
                         >
-                          Reply in this thread...
+                          {t("admin.thread.replyin")}
                         </button>
                       )}
                     </div>

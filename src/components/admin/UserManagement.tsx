@@ -21,18 +21,18 @@ import {
 import { UserPlus, RefreshCw, Trash2, Shield, KeyRound, Eye, EyeOff } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-const getPasswordStrength = (pw: string): { score: number; label: string; color: string } => {
+const getPasswordStrength = (pw: string): { score: number; labelKey: string; color: string } => {
   let score = 0;
   if (pw.length >= 6) score++;
   if (pw.length >= 10) score++;
   if (/[A-Z]/.test(pw)) score++;
   if (/[0-9]/.test(pw)) score++;
   if (/[^A-Za-z0-9]/.test(pw)) score++;
-  if (score <= 1) return { score: 20, label: "Weak", color: "bg-destructive" };
-  if (score === 2) return { score: 40, label: "Fair", color: "bg-orange-500" };
-  if (score === 3) return { score: 60, label: "Good", color: "bg-yellow-500" };
-  if (score === 4) return { score: 80, label: "Strong", color: "bg-emerald-400" };
-  return { score: 100, label: "Very Strong", color: "bg-emerald-500" };
+  if (score <= 1) return { score: 20, labelKey: "admin.users.pw.weak", color: "bg-destructive" };
+  if (score === 2) return { score: 40, labelKey: "admin.users.pw.fair", color: "bg-orange-500" };
+  if (score === 3) return { score: 60, labelKey: "admin.users.pw.good", color: "bg-yellow-500" };
+  if (score === 4) return { score: 80, labelKey: "admin.users.pw.strong", color: "bg-emerald-400" };
+  return { score: 100, labelKey: "admin.users.pw.vstrong", color: "bg-emerald-500" };
 };
 
 type ManagedUser = {
@@ -276,7 +276,7 @@ const UserManagement = () => {
                 return (
                   <div className="space-y-1">
                     <Progress value={s.score} className="h-1.5" indicatorClassName={s.color} />
-                    <p className="text-xs text-muted-foreground">{s.label} — use 10+ chars, uppercase, number & symbol</p>
+                    <p className="text-xs text-muted-foreground">{t(s.labelKey)} — {t("admin.users.pw.tip")}</p>
                   </div>
                 );
               })()}
@@ -321,9 +321,9 @@ const UserManagement = () => {
       <Dialog open={!!resetTarget} onOpenChange={(open) => { if (!open) setResetTarget(null); }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Reset Password</DialogTitle>
+            <DialogTitle>{t("admin.users.reset.title")}</DialogTitle>
             <DialogDescription>
-              Set a new password for <strong>{resetTarget?.email}</strong>
+              {t("admin.users.reset.desc")} <strong>{resetTarget?.email}</strong>
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={async (e) => {
@@ -332,21 +332,21 @@ const UserManagement = () => {
             setResetting(true);
             try {
               await invokeManageUsers({ action: "reset_password", user_id: resetTarget.id, new_password: resetPassword });
-              toast({ title: "Password Reset", description: `Password updated for ${resetTarget.email}` });
+              toast({ title: t("admin.users.reset.success"), description: `${t("admin.users.reset.success.desc")} ${resetTarget.email}` });
               setResetTarget(null);
               setResetPassword("");
             } catch (err: any) {
               const friendlyMessage = /weak|pwned|breach|compromised/i.test(err.message)
-                ? "That password is too weak or exposed. Use a longer unique password."
+                ? t("admin.users.reset.weak")
                 : err.message;
-              toast({ title: "Error", description: friendlyMessage, variant: "destructive" });
+              toast({ title: t("admin.error"), description: friendlyMessage, variant: "destructive" });
             }
             setResetting(false);
           }} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="resetPw">New Password</Label>
+              <Label htmlFor="resetPw">{t("admin.users.reset.new")}</Label>
               <div className="relative">
-                <Input id="resetPw" type={showResetPassword ? "text" : "password"} value={resetPassword} onChange={(e) => setResetPassword(e.target.value)} required minLength={6} placeholder="Min 6 characters" className="pr-10" />
+                <Input id="resetPw" type={showResetPassword ? "text" : "password"} value={resetPassword} onChange={(e) => setResetPassword(e.target.value)} required minLength={6} placeholder={t("admin.users.password.placeholder")} className="pr-10" />
                 <button type="button" tabIndex={-1} onClick={() => setShowResetPassword(!showResetPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                   {showResetPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -356,13 +356,13 @@ const UserManagement = () => {
                 return (
                   <div className="space-y-1">
                     <Progress value={s.score} className="h-1.5" indicatorClassName={s.color} />
-                    <p className="text-xs text-muted-foreground">{s.label} — use 10+ chars, uppercase, number & symbol</p>
+                    <p className="text-xs text-muted-foreground">{t(s.labelKey)} — {t("admin.users.pw.tip")}</p>
                   </div>
                 );
               })()}
             </div>
             <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={resetting}>
-              {resetting ? "Resetting..." : "Reset Password"}
+              {resetting ? t("admin.users.resetting") : t("admin.users.reset.btn")}
             </Button>
           </form>
         </DialogContent>
