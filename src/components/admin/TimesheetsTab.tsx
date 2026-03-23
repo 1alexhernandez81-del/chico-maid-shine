@@ -125,11 +125,10 @@ const TimesheetsTab = () => {
 
     for (const e of subset) {
       const ids = e.effectiveCleaners.length > 0 ? e.effectiveCleaners : ["unassigned"];
-      const perCleanerMins = Math.round((e.total_worked_minutes || 0) / ids.length);
       for (const cid of ids) {
         const existing = cleanerMap.get(cid) || { jobs: 0, totalMins: 0 };
         existing.jobs += 1;
-        existing.totalMins += perCleanerMins;
+        existing.totalMins += e.total_worked_minutes || 0;
         cleanerMap.set(cid, existing);
       }
     }
