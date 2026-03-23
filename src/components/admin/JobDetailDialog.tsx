@@ -213,7 +213,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
       const updatedPhotos = [...photos, ...newPhotoPaths];
       setPhotos(updatedPhotos);
       await supabase.from("bookings").update({ photos: updatedPhotos } as any).eq("id", booking.id);
-      toast({ title: "Photos uploaded", description: `${newPhotoPaths.length} photo(s) added` });
+      toast({ title: t("admin.job.photos.uploaded"), description: `${newPhotoPaths.length} photo(s)` });
     }
     setUploadingPhoto(false);
     if (photoInputRef.current) photoInputRef.current.value = "";
@@ -373,8 +373,8 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
   const saveChanges = async () => {
     if (newStatus === "scheduled" && (!scheduledDate || !scheduledTime)) {
       toast({
-        title: "Missing schedule details",
-        description: "Please set a date and time before scheduling this job.",
+        title: t("admin.job.schedule.missing"),
+        description: t("admin.job.schedule.missing.desc"),
         variant: "destructive",
       });
       return;
@@ -423,7 +423,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
               )}
               {booking.confirmed_at && (
                 <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">
-                  ✅ Confirmed
+                  ✅ {t("admin.job.confirmed")}
                 </span>
               )}
             </DialogTitle>
@@ -432,11 +432,11 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
           <Tabs defaultValue="details">
             <TabsList className="w-full">
               <TabsTrigger value="details" className="flex-1 gap-1.5">
-                📋 Details
+                {t("admin.job.details.tab")}
               </TabsTrigger>
               {isAdmin && (
                 <TabsTrigger value="messages" className="flex-1 gap-1.5">
-                  <MessageSquare className="w-3.5 h-3.5" /> Messages
+                  <MessageSquare className="w-3.5 h-3.5" /> {t("admin.job.messages.tab")}
                 </TabsTrigger>
               )}
             </TabsList>
@@ -507,7 +507,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
             <div className="border-t border-border pt-4 space-y-3">
               <div className="flex items-center justify-between">
                 <label className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <Image className="w-3.5 h-3.5" /> Job Photos
+                  <Image className="w-3.5 h-3.5" /> {t("admin.job.photos")}
                 </label>
                 <div>
                   <input
@@ -526,7 +526,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                     className="h-7 text-xs gap-1"
                   >
                     <Camera className="w-3 h-3" />
-                    {uploadingPhoto ? "Uploading..." : "Add Photos"}
+                    {uploadingPhoto ? t("admin.job.photos.uploading") : t("admin.job.photos.add")}
                   </Button>
                 </div>
               </div>
@@ -550,7 +550,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                 </div>
               )}
               {photos.length === 0 && (
-                <p className="text-xs text-muted-foreground">No photos yet</p>
+                <p className="text-xs text-muted-foreground">{t("admin.job.photos.none")}</p>
               )}
             </div>
 
@@ -659,10 +659,10 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
               {/* Scheduled date/time — shown when status is scheduled */}
               {newStatus === "scheduled" && (
                 <div className="bg-secondary/50 rounded-lg p-4 space-y-3">
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">📅 Schedule Details</p>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">{t("admin.job.schedule.details")}</p>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Date</label>
+                      <label className="text-xs text-muted-foreground mb-1 block">{t("admin.job.schedule.date")}</label>
                       <Input
                         type="date"
                         value={scheduledDate}
@@ -671,7 +671,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Time</label>
+                      <label className="text-xs text-muted-foreground mb-1 block">{t("admin.job.schedule.time")}</label>
                       <Input
                         type="time"
                         value={scheduledTime}
@@ -681,7 +681,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                     </div>
                   </div>
                   {(!scheduledDate || !scheduledTime) && (
-                    <p className="text-xs text-destructive">⚠️ Date and time are required to schedule a job.</p>
+                    <p className="text-xs text-destructive">{t("admin.job.schedule.required")}</p>
                   )}
                 </div>
               )}
@@ -689,10 +689,10 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
               {/* Assigned Cleaners */}
               <div>
                 <label className="text-xs uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5" /> Assigned Cleaners
+                  <Sparkles className="w-3.5 h-3.5" /> {t("admin.job.assigncleaners")}
                 </label>
                 {cleaners.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">No cleaners added yet. Add cleaners in the Cleaners tab.</p>
+                  <p className="text-xs text-muted-foreground">{t("admin.job.nocleaners")}</p>
                 ) : (
                   <div className="space-y-2">
                     <Select
@@ -703,7 +703,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                       }}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Add a cleaner…" />
+                        <SelectValue placeholder={t("admin.job.addcleaner")} />
                       </SelectTrigger>
                       <SelectContent>
                         {cleaners
@@ -712,7 +712,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                             <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                           ))}
                         {cleaners.filter((c) => c.active && !assignedCleanerIds.includes(c.id)).length === 0 && (
-                          <p className="text-xs text-muted-foreground px-3 py-2">All cleaners assigned</p>
+                          <p className="text-xs text-muted-foreground px-3 py-2">{t("admin.job.allassigned")}</p>
                         )}
                       </SelectContent>
                     </Select>
@@ -812,14 +812,14 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
       <AlertDialog open={showUnsavedWarning} onOpenChange={setShowUnsavedWarning}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
+            <AlertDialogTitle>{t("admin.job.unsaved.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              You have unsaved changes. Do you want to save before closing?
+              {t("admin.job.unsaved.desc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => { setShowUnsavedWarning(false); onClose(); }}>
-              Discard
+              {t("admin.job.unsaved.discard")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
@@ -828,7 +828,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
               }}
               className="bg-accent text-accent-foreground hover:bg-accent/90"
             >
-              Save Changes
+              {t("admin.job.unsaved.save")}
             </AlertDialogAction>
           </AlertDialogFooter>
       </AlertDialogContent>
@@ -838,9 +838,9 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
       <AlertDialog open={showReviewConfirm} onOpenChange={setShowReviewConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Send Review Request?</AlertDialogTitle>
+            <AlertDialogTitle>{t("admin.job.review.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              This job is being marked as completed. Would you like to send a Google review request email to <strong>{booking?.name}</strong> ({booking?.email})?
+              {t("admin.job.review.desc")} <strong>{booking?.name}</strong> ({booking?.email})?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
@@ -850,7 +850,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                 await executeSave();
               }}
             >
-              Complete Without Email
+              {t("admin.job.review.skip")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
@@ -859,7 +859,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
               }}
               className="bg-accent text-accent-foreground hover:bg-accent/90"
             >
-              ⭐ Complete & Send Review Request
+              {t("admin.job.review.send")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -869,9 +869,9 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
       <AlertDialog open={showApprovalConfirm} onOpenChange={setShowApprovalConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Send Approval Email?</AlertDialogTitle>
+            <AlertDialogTitle>{t("admin.job.approval.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Would you like to send an approval confirmation email to <strong>{booking?.name}</strong> ({booking?.email})?
+              {t("admin.job.approval.desc")} <strong>{booking?.name}</strong> ({booking?.email})?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
@@ -881,7 +881,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                 await executeSave();
               }}
             >
-              Save Only
+              {t("admin.job.saveonly")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
@@ -890,7 +890,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
               }}
               className="bg-accent text-accent-foreground hover:bg-accent/90"
             >
-              Save & Send Email
+              {t("admin.job.saveandsend")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -900,9 +900,9 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
       <AlertDialog open={showScheduleConfirm} onOpenChange={setShowScheduleConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Send Calendar Invite?</AlertDialogTitle>
+            <AlertDialogTitle>{t("admin.job.invite.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Would you like to send the calendar invite and scheduling email to <strong>{booking?.name}</strong> ({booking?.email})?
+              {t("admin.job.invite.desc")} <strong>{booking?.name}</strong> ({booking?.email})?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
@@ -912,7 +912,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                 await executeSave();
               }}
             >
-              Save Only
+              {t("admin.job.saveonly")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
@@ -921,7 +921,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
               }}
               className="bg-accent text-accent-foreground hover:bg-accent/90"
             >
-              Save & Send Invite
+              {t("admin.job.invite.send")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -931,9 +931,9 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
       <AlertDialog open={showRescheduleConfirm} onOpenChange={setShowRescheduleConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Send Updated Invite?</AlertDialogTitle>
+            <AlertDialogTitle>{t("admin.job.reschedule.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              The schedule has changed. Would you like to send an updated calendar invite to <strong>{booking?.name}</strong> ({booking?.email})?
+              {t("admin.job.reschedule.desc")} <strong>{booking?.name}</strong> ({booking?.email})?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
@@ -943,7 +943,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                 await executeSave();
               }}
             >
-              Save Only
+              {t("admin.job.saveonly")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
@@ -952,7 +952,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
               }}
               className="bg-accent text-accent-foreground hover:bg-accent/90"
             >
-              Save & Send Invite
+              {t("admin.job.invite.send")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +27,7 @@ interface JobTimerProps {
 
 const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobTimerProps) => {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [timerState, setTimerState] = useState<TimerState>("idle");
   const [entry, setEntry] = useState<JobTimeEntry | null>(null);
   const [elapsed, setElapsed] = useState(0);
@@ -40,7 +42,6 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
 
   const isAdmin = userRole === "admin";
 
-  // Fetch existing entry for this booking
   const fetchEntry = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -69,7 +70,6 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
 
   useEffect(() => { fetchEntry(); }, [fetchEntry]);
 
-  // Live timer
   useEffect(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
 
@@ -104,7 +104,6 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
   };
 
   const handleStartClock = () => {
-    // Pre-select assigned cleaners from the booking
     if (assignedCleaners.length > 0 && selectedCleaners.length === 0) {
       setSelectedCleaners(assignedCleaners);
     }
@@ -134,13 +133,13 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
       .single();
 
     if (error) {
-      toast({ title: "Error", description: "Failed to start clock", variant: "destructive" });
+      toast({ title: t("admin.error"), description: t("admin.timer.error.start"), variant: "destructive" });
     } else {
       setEntry(data as any as JobTimeEntry);
       setSelectedCleaners(cleanerIds);
       setTimerState("running");
       pausedAccumulatorRef.current = 0;
-      toast({ title: "⏱️ Clock Started", description: "Timer is running" });
+      toast({ title: t("admin.timer.started"), description: t("admin.timer.started.desc") });
     }
     setSaving(false);
   };
@@ -157,7 +156,7 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
     if (!error) {
       setEntry((prev) => prev ? { ...prev, paused_at: now } : prev);
       setTimerState("paused");
-      toast({ title: "⏸️ Paused" });
+      toast({ title: "⏸️" });
     }
     setSaving(false);
   };
@@ -183,7 +182,7 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
     if (!error) {
       setEntry((prev) => prev ? { ...prev, paused_at: null, resumed_at: now.toISOString(), total_paused_minutes: newTotalPaused } : prev);
       setTimerState("running");
-      toast({ title: "▶️ Resumed" });
+      toast({ title: "▶️" });
     }
     setSaving(false);
   };
@@ -193,7 +192,6 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
     setSaving(true);
     const now = new Date();
 
-    // If currently paused, add pause time
     let finalPaused = entry.total_paused_minutes || 0;
     if (entry.paused_at) {
       const pausedAt = new Date(entry.paused_at);
@@ -223,7 +221,7 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
         total_worked_minutes: workedMinutes,
       } : prev);
       setTimerState("completed");
-      toast({ title: "⏹️ Clock Stopped", description: `Total: ${Math.floor(workedMinutes / 60)}h ${workedMinutes % 60}m` });
+      toast({ title: "⏹️", description: `Total: ${Math.floor(workedMinutes / 60)}h ${workedMinutes % 60}m` });
     }
     setSaving(false);
   };
@@ -277,10 +275,10 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
         total_worked_minutes: workedMinutes,
         notes: editData.notes || null,
       } : prev);
-      toast({ title: "✅ Time Entry Updated" });
+      toast({ title: t("admin.timer.updated") });
       setShowEdit(false);
     } else {
-      toast({ title: "Error", description: "Failed to update", variant: "destructive" });
+      toast({ title: t("admin.error"), description: t("admin.timer.error.update"), variant: "destructive" });
     }
     setSaving(false);
   };
@@ -288,7 +286,7 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
   if (loading) {
     return (
       <div className="flex items-center justify-center py-4 text-muted-foreground text-sm">
-        <Loader2 className="w-4 h-4 animate-spin mr-2" /> Loading timer...
+        <Loader2 className="w-4 h-4 animate-spin mr-2" /> {t("admin.timer.loading")}
       </div>
     );
   }
@@ -296,7 +294,7 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
   return (
     <div className="border-t border-border pt-4 space-y-3">
       <label className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-        <Clock className="w-3.5 h-3.5" /> Time Tracking
+        <Clock className="w-3.5 h-3.5" /> {t("admin.timer.title")}
       </label>
 
       {timerState === "idle" && (
@@ -306,23 +304,21 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
           className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-          Start Clock
+          {t("admin.timer.start")}
         </Button>
       )}
 
       {(timerState === "running" || timerState === "paused") && (
         <div className="space-y-3">
-          {/* Timer display */}
           <div className={`text-center py-4 rounded-lg border ${timerState === "running" ? "bg-emerald-500/10 border-emerald-500/30" : "bg-yellow-500/10 border-yellow-500/30"}`}>
             <p className="text-3xl font-mono font-bold tracking-wider">
               {formatElapsed(elapsed)}
             </p>
             <p className="text-xs text-muted-foreground mt-1 uppercase tracking-wider">
-              {timerState === "running" ? "⏱️ Running" : "⏸️ Paused"}
+              {timerState === "running" ? t("admin.timer.running") : t("admin.timer.paused")}
             </p>
           </div>
 
-          {/* Assigned cleaners display */}
           {selectedCleaners.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {selectedCleaners.map((id) => {
@@ -336,22 +332,21 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
             </div>
           )}
 
-          {/* Controls */}
           <div className="grid grid-cols-2 gap-2">
             {timerState === "running" ? (
               <Button onClick={handlePause} disabled={saving} variant="outline" className="gap-2">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Pause className="w-4 h-4" />}
-                Pause
+                {t("admin.timer.pause")}
               </Button>
             ) : (
               <Button onClick={handleResume} disabled={saving} variant="outline" className="gap-2 border-emerald-500/30 text-emerald-400">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-                Resume
+                {t("admin.timer.resume")}
               </Button>
             )}
             <Button onClick={handleStop} disabled={saving} variant="outline" className="gap-2 border-destructive/30 text-destructive">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Square className="w-4 h-4" />}
-              Stop Clock
+              {t("admin.timer.stop")}
             </Button>
           </div>
         </div>
@@ -361,24 +356,24 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
         <div className="space-y-3">
           <div className="bg-secondary/50 rounded-lg p-4 space-y-2">
             <div className="flex items-center justify-between">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">✅ Completed</p>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">{t("admin.timer.completed")}</p>
               {canEdit() && (
                 <Button variant="ghost" size="sm" onClick={openEdit} className="h-7 text-xs gap-1">
-                  <Edit2 className="w-3 h-3" /> Edit Time
+                  <Edit2 className="w-3 h-3" /> {t("admin.timer.edittime")}
                 </Button>
               )}
             </div>
             <div className="grid grid-cols-3 gap-3 text-sm">
               <div>
-                <p className="text-[10px] uppercase text-muted-foreground">Clock In</p>
+                <p className="text-[10px] uppercase text-muted-foreground">{t("admin.timer.clockin")}</p>
                 <p className="font-medium">{entry.started_at ? new Date(entry.started_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}</p>
               </div>
               <div>
-                <p className="text-[10px] uppercase text-muted-foreground">Clock Out</p>
+                <p className="text-[10px] uppercase text-muted-foreground">{t("admin.timer.clockout")}</p>
                 <p className="font-medium">{entry.stopped_at ? new Date(entry.stopped_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}</p>
               </div>
               <div>
-                <p className="text-[10px] uppercase text-muted-foreground">Break</p>
+                <p className="text-[10px] uppercase text-muted-foreground">{t("admin.timer.break")}</p>
                 <p className="font-medium">{entry.total_paused_minutes || 0}m</p>
               </div>
             </div>
@@ -386,7 +381,7 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
               <p className="text-lg font-semibold text-accent">
                 {Math.floor((entry.total_worked_minutes || 0) / 60)}h {(entry.total_worked_minutes || 0) % 60}m
               </p>
-              <p className="text-[10px] uppercase text-muted-foreground">Total Worked</p>
+              <p className="text-[10px] uppercase text-muted-foreground">{t("admin.timer.totalworked")}</p>
             </div>
             {entry.notes && (
               <p className="text-xs text-muted-foreground italic">{entry.notes}</p>
@@ -411,8 +406,8 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
       <Dialog open={showCleanerPicker} onOpenChange={setShowCleanerPicker}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Select Cleaners</DialogTitle>
-            <DialogDescription>Choose the crew members for this job</DialogDescription>
+            <DialogTitle>{t("admin.timer.selectcleaners")}</DialogTitle>
+            <DialogDescription>{t("admin.timer.selectcleaners.desc")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             {cleaners.filter((c) => c.active).map((c) => (
@@ -431,7 +426,7 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
               </label>
             ))}
             {cleaners.filter((c) => c.active).length === 0 && (
-              <p className="text-sm text-muted-foreground">No active cleaners</p>
+              <p className="text-sm text-muted-foreground">{t("admin.timer.nocleaners")}</p>
             )}
             <Button
               onClick={() => startClock(selectedCleaners)}
@@ -439,7 +434,7 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-              Start Clock {selectedCleaners.length > 0 ? `(${selectedCleaners.length} cleaners)` : ""}
+              {t("admin.timer.start")} {selectedCleaners.length > 0 ? `(${selectedCleaners.length} ${t("admin.timer.cleaners")})` : ""}
             </Button>
           </div>
         </DialogContent>
@@ -449,12 +444,12 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
       <Dialog open={showEdit} onOpenChange={setShowEdit}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Edit Time Entry</DialogTitle>
-            <DialogDescription>Adjust the time entry manually</DialogDescription>
+            <DialogTitle>{t("admin.timer.edit.title")}</DialogTitle>
+            <DialogDescription>{t("admin.timer.edit.desc")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <label className="text-xs uppercase tracking-wider text-muted-foreground mb-1 block">Start Time</label>
+              <label className="text-xs uppercase tracking-wider text-muted-foreground mb-1 block">{t("admin.timer.starttime")}</label>
               <Input
                 type="datetime-local"
                 value={editData.startTime}
@@ -462,7 +457,7 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
               />
             </div>
             <div>
-              <label className="text-xs uppercase tracking-wider text-muted-foreground mb-1 block">Stop Time</label>
+              <label className="text-xs uppercase tracking-wider text-muted-foreground mb-1 block">{t("admin.timer.stoptime")}</label>
               <Input
                 type="datetime-local"
                 value={editData.stopTime}
@@ -470,7 +465,7 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
               />
             </div>
             <div>
-              <label className="text-xs uppercase tracking-wider text-muted-foreground mb-1 block">Break (minutes)</label>
+              <label className="text-xs uppercase tracking-wider text-muted-foreground mb-1 block">{t("admin.timer.breakmins")}</label>
               <Input
                 type="number"
                 value={editData.breakMinutes}
@@ -479,7 +474,7 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
               />
             </div>
             <div>
-              <label className="text-xs uppercase tracking-wider text-muted-foreground mb-1 block">Notes</label>
+              <label className="text-xs uppercase tracking-wider text-muted-foreground mb-1 block">{t("admin.timer.notes")}</label>
               <Textarea
                 value={editData.notes}
                 onChange={(e) => setEditData({ ...editData, notes: e.target.value })}
@@ -488,7 +483,7 @@ const JobTimer = ({ bookingId, userRole, cleaners, assignedCleaners = [] }: JobT
             </div>
             <Button onClick={saveEdit} disabled={saving} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
               {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              Save Changes
+              {t("admin.timer.save")}
             </Button>
           </div>
         </DialogContent>

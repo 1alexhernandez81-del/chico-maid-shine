@@ -114,10 +114,10 @@ const AdminDashboard = () => {
                   <UserCheck className="w-4 h-4" /> {t("admin.tab.customers")}
                 </TabsTrigger>
                 <TabsTrigger value="cleaners" className="gap-2">
-                  <Sparkles className="w-4 h-4" /> Cleaners
+                  <Sparkles className="w-4 h-4" /> {t("admin.tab.cleaners")}
                 </TabsTrigger>
                 <TabsTrigger value="timesheets" className="gap-2">
-                  <Clock className="w-4 h-4" /> Timesheets
+                  <Clock className="w-4 h-4" /> {t("admin.tab.timesheets")}
                 </TabsTrigger>
                 <TabsTrigger value="activity" className="gap-2">
                   <Activity className="w-4 h-4" /> {t("admin.tab.activity")}
