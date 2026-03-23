@@ -191,7 +191,7 @@ const CustomerManagement = () => {
       }
     }
 
-    toast({ title: "Import Complete", description: `${imported} customers imported from bookings` });
+    toast({ title: t("admin.customers.importdone"), description: `${imported} ${t("admin.customers.import")}` });
     setShowImport(false);
     fetchCustomers();
     setImporting(false);
