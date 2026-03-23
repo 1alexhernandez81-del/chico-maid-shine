@@ -498,7 +498,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
                     </div>
                   </div>
                   <div>
-                    <Label className="text-xs text-muted-foreground">Price per Visit ($)</Label>
+                    <Label className="text-xs text-muted-foreground">{t("admin.cd.pricepervisit")}</Label>
                     <Input
                       type="number"
                       value={newSchedule.price}
@@ -508,9 +508,9 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
                   </div>
                   <div className="flex gap-2">
                     <Button onClick={addSchedule} disabled={addingSchedule} className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90">
-                      {addingSchedule ? "Adding..." : "Add Schedule"}
+                      {addingSchedule ? t("admin.cd.adding") : t("admin.cd.addschedule")}
                     </Button>
-                    <Button variant="outline" onClick={() => setShowAddSchedule(false)}>Cancel</Button>
+                    <Button variant="outline" onClick={() => setShowAddSchedule(false)}>{t("admin.cd.cancel")}</Button>
                   </div>
                 </div>
               )}
