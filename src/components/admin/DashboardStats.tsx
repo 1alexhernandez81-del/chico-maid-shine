@@ -13,7 +13,7 @@ type Stats = {
   thisMonthBookings: number;
 };
 
-const DashboardStats = () => {
+const DashboardStats = ({ onNavigate }: { onNavigate?: (tab: string) => void }) => {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(false);
   const { t } = useLanguage();
