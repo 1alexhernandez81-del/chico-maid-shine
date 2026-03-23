@@ -693,10 +693,10 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
               {/* Assigned Cleaners */}
               <div>
                 <label className="text-xs uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5" /> Assigned Cleaners
+                  <Sparkles className="w-3.5 h-3.5" /> {t("admin.job.assigncleaners")}
                 </label>
                 {cleaners.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">No cleaners added yet. Add cleaners in the Cleaners tab.</p>
+                  <p className="text-xs text-muted-foreground">{t("admin.job.nocleaners")}</p>
                 ) : (
                   <div className="space-y-2">
                     <Select
