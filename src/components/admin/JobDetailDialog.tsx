@@ -47,6 +47,9 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
   const [showReviewConfirm, setShowReviewConfirm] = useState(false);
+  const [showScheduleConfirm, setShowScheduleConfirm] = useState(false);
+  const [showApprovalConfirm, setShowApprovalConfirm] = useState(false);
+  const [showRescheduleConfirm, setShowRescheduleConfirm] = useState(false);
   const [cleaners, setCleaners] = useState<Cleaner[]>([]);
   const [assignedCleanerIds, setAssignedCleanerIds] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
