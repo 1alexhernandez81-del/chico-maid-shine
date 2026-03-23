@@ -229,9 +229,9 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
     });
 
     if (error) {
-      toast({ title: "Error", description: "Failed to add schedule", variant: "destructive" });
+      toast({ title: t("admin.error"), description: t("admin.cd.schedulefail"), variant: "destructive" });
     } else {
-      toast({ title: "Schedule Added" });
+      toast({ title: t("admin.cd.scheduleadded") });
       setShowAddSchedule(false);
       setNewSchedule({ service_type: "residential", frequency: "weekly", preferred_day: "monday", preferred_time: "09:00", price: "" });
       const { data } = await supabase.from("recurring_schedules").select("*")
