@@ -649,9 +649,14 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                 <Select value={newStatus} onValueChange={setNewStatus}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {availableStatuses.map((s) => (
-                      <SelectItem key={s} value={s}>{s.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())}</SelectItem>
-                    ))}
+                    {availableStatuses.map((s) => {
+                      const label = t(`admin.inquiry.${s}`) !== `admin.inquiry.${s}`
+                        ? t(`admin.inquiry.${s}`)
+                        : t(`admin.job.${s}`) !== `admin.job.${s}`
+                          ? t(`admin.job.${s}`)
+                          : s.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+                      return <SelectItem key={s} value={s}>{label}</SelectItem>;
+                    })}
                   </SelectContent>
                 </Select>
               </div>
