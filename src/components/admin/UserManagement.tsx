@@ -18,7 +18,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { UserPlus, RefreshCw, Trash2, Shield } from "lucide-react";
+import { UserPlus, RefreshCw, Trash2, Shield, KeyRound } from "lucide-react";
 
 type ManagedUser = {
   id: string;
@@ -33,6 +33,9 @@ const UserManagement = () => {
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ManagedUser | null>(null);
+  const [resetTarget, setResetTarget] = useState<ManagedUser | null>(null);
+  const [resetPassword, setResetPassword] = useState("");
+  const [resetting, setResetting] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newName, setNewName] = useState("");
@@ -186,14 +189,25 @@ const UserManagement = () => {
                       : t("admin.users.never")}
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      onClick={() => setDeleteTarget(u)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-accent"
+                        title="Reset Password"
+                        onClick={() => { setResetTarget(u); setResetPassword(""); }}
+                      >
+                        <KeyRound className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={() => setDeleteTarget(u)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -257,6 +271,40 @@ const UserManagement = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Reset Password Dialog */}
+      <Dialog open={!!resetTarget} onOpenChange={(open) => { if (!open) setResetTarget(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Reset Password</DialogTitle>
+            <DialogDescription>
+              Set a new password for <strong>{resetTarget?.email}</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            if (!resetTarget) return;
+            setResetting(true);
+            try {
+              await invokeManageUsers({ action: "reset_password", user_id: resetTarget.id, new_password: resetPassword });
+              toast({ title: "Password Reset", description: `Password updated for ${resetTarget.email}` });
+              setResetTarget(null);
+              setResetPassword("");
+            } catch (err: any) {
+              toast({ title: "Error", description: err.message, variant: "destructive" });
+            }
+            setResetting(false);
+          }} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="resetPw">New Password</Label>
+              <Input id="resetPw" type="password" value={resetPassword} onChange={(e) => setResetPassword(e.target.value)} required minLength={6} placeholder="Min 6 characters" />
+            </div>
+            <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={resetting}>
+              {resetting ? "Resetting..." : "Reset Password"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

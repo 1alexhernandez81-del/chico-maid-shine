@@ -95,6 +95,21 @@ Deno.serve(async (req) => {
         });
       }
 
+      case "reset_password": {
+        const { user_id, new_password } = body;
+        if (!user_id || !new_password) throw new Error("Missing user_id or new_password");
+        if (new_password.length < 6) throw new Error("Password must be at least 6 characters");
+
+        const { error: resetErr } = await supabase.auth.admin.updateUserById(user_id, {
+          password: new_password,
+        });
+        if (resetErr) throw resetErr;
+
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       case "delete": {
         const { user_id } = body;
         // Prevent self-delete
