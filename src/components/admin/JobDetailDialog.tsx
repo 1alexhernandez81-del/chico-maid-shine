@@ -716,7 +716,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                             <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                           ))}
                         {cleaners.filter((c) => c.active && !assignedCleanerIds.includes(c.id)).length === 0 && (
-                          <p className="text-xs text-muted-foreground px-3 py-2">All cleaners assigned</p>
+                          <p className="text-xs text-muted-foreground px-3 py-2">{t("admin.job.allassigned")}</p>
                         )}
                       </SelectContent>
                     </Select>
