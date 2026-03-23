@@ -87,16 +87,17 @@ const DashboardStats = ({ onNavigate }: { onNavigate?: (tab: string) => void }) 
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
       {cards.map((card) => (
-        <div
+        <button
           key={card.label}
-          className="bg-card border border-border rounded-lg p-4 flex flex-col gap-1"
+          onClick={() => onNavigate?.(card.tab)}
+          className="bg-card border border-border rounded-lg p-4 flex flex-col gap-1 text-left hover:border-accent/50 hover:bg-accent/5 transition-colors cursor-pointer"
         >
           <div className="flex items-center justify-between">
             <card.icon className={`w-4 h-4 ${card.color}`} />
           </div>
           <p className="text-xl font-semibold mt-1">{card.value}</p>
           <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{card.label}</p>
-        </div>
+        </button>
       ))}
       </div>
     </div>
