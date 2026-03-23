@@ -409,6 +409,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
               setShowNewThread(true);
               setNewSubject("");
               setNewBody("");
+              setActiveTemplateId(null);
             }}
           >
             <Plus className="w-3.5 h-3.5" /> New Thread
