@@ -719,8 +719,8 @@ const InquiriesPipeline = () => {
                         className={`gap-1.5 text-xs justify-start ${tmpl.color}`}
                         onClick={() => {
                           applyTemplate(tmpl);
-                          const messagesTab = document.querySelector('[value="messages"]') as HTMLButtonElement;
-                          messagesTab?.click();
+                          setDetailTab("messages");
+                        }}
                         }}
                       >
                         {tmpl.icon} {tmpl.name}
