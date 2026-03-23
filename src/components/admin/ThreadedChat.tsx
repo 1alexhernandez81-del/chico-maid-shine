@@ -494,7 +494,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium truncate">{thread.subject}</p>
                         <p className="text-[10px] text-muted-foreground">
-                          {new Date(thread.firstDate).toLocaleDateString()} · {thread.messages.length} message{thread.messages.length !== 1 ? "s" : ""}
+                          {new Date(thread.firstDate).toLocaleDateString()} · {thread.messages.length} {thread.messages.length !== 1 ? t("admin.thread.messages") : t("admin.thread.message")}
                         </p>
                       </div>
                       <Badge variant="outline" className="text-[9px] shrink-0">
