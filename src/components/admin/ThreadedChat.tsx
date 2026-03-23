@@ -13,6 +13,9 @@ import {
 } from "@/components/ui/collapsible";
 import { Send, MessageSquare, Loader2, FileText, ChevronDown, ChevronRight, Plus, Languages, Mail, StickyNote } from "lucide-react";
 
+const QUOTE_CTA_TEMPLATE_IDS = new Set(["send-quote", "general-followup"]);
+const APPROVE_QUOTE_CTA_LABEL = "✅ Approve Quote & Book Cleaning";
+
 export type Communication = {
   id: string;
   booking_id: string | null;
@@ -76,6 +79,8 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
   const [newSubject, setNewSubject] = useState("");
   const [newBody, setNewBody] = useState("");
   const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
+  const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
+  const [approveQuoteUrl, setApproveQuoteUrl] = useState<string | null>(null);
 
   // Translation
   const [translations, setTranslations] = useState<Record<string, string>>({});
@@ -110,9 +115,74 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
     setLoading(false);
   };
 
+  const normalizeSubject = (value: string) => value.replace(/^re:\s*/i, "").trim().toLowerCase();
+
+  const getTemplateIdBySubject = (subject: string) => {
+    const normalized = normalizeSubject(subject);
+    return templates.find((tmpl) => normalizeSubject(tmpl.subject) === normalized)?.id ?? null;
+  };
+
+  const shouldAttachQuoteCta = (templateId: string | null, subject: string, body: string) => {
+    if (templateId && QUOTE_CTA_TEMPLATE_IDS.has(templateId)) return true;
+
+    const subjectLower = subject.toLowerCase();
+    const bodyLower = body.toLowerCase();
+    return (subjectLower.includes("estimate") || subjectLower.includes("quote")) && bodyLower.includes("estimated quote");
+  };
+
+  const attachQuoteCta = (
+    emailPayload: Record<string, string>,
+    subject: string,
+    body: string,
+    templateId: string | null,
+  ) => {
+    const approveUrlMatch = body.match(/(https:\/\/[^\s]*\/approve-quote\?token=[^\s]+)/);
+    if (approveUrlMatch) {
+      emailPayload.ctaUrl = approveUrlMatch[1];
+      emailPayload.ctaLabel = APPROVE_QUOTE_CTA_LABEL;
+      return;
+    }
+
+    if (approveQuoteUrl && shouldAttachQuoteCta(templateId, subject, body)) {
+      emailPayload.ctaUrl = approveQuoteUrl;
+      emailPayload.ctaLabel = APPROVE_QUOTE_CTA_LABEL;
+    }
+  };
+
   useEffect(() => {
     fetchCommunications();
   }, [bookingId, bookingIds?.join(","), customerId]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchApproveQuoteUrl = async () => {
+      if (!bookingId) {
+        if (isMounted) setApproveQuoteUrl(null);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("bookings")
+        .select("confirmation_token")
+        .eq("id", bookingId)
+        .single();
+
+      if (!isMounted) return;
+      if (error || !data?.confirmation_token) {
+        setApproveQuoteUrl(null);
+        return;
+      }
+
+      setApproveQuoteUrl(`https://maidforchico.com/approve-quote?token=${data.confirmation_token}`);
+    };
+
+    fetchApproveQuoteUrl();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [bookingId]);
 
   // Handle initial subject/body from quick-email buttons
   useEffect(() => {
@@ -120,9 +190,11 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       setShowNewThread(true);
       setNewSubject(initialSubject);
       setNewBody(initialBody);
+      const matchedTemplateId = templates.find((tmpl) => tmpl.subject === initialSubject && tmpl.body === initialBody)?.id ?? null;
+      setActiveTemplateId(matchedTemplateId);
       onInitialConsumed?.();
     }
-  }, [initialSubject, initialBody]);
+  }, [initialSubject, initialBody, templates, onInitialConsumed]);
 
   // Group into threads
   const threads: Thread[] = useMemo(() => {
@@ -192,24 +264,23 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       const thread = threads.find((t) => t.threadId === threadId);
       const lastMsg = thread?.messages[thread.messages.length - 1];
       const inReplyTo = lastMsg?.email_message_id || null;
+      const templateId = getTemplateIdBySubject(subject);
+
       // Build references chain
       const refs = thread?.messages
         .map((m) => m.email_message_id)
         .filter(Boolean)
         .join(" ") || null;
 
-      // Detect CTA
-      const approveUrlMatch = body.match(/(https:\/\/[^\s]*\/approve-quote\?token=[^\s]+)/);
       const emailPayload: Record<string, string> = {
         customerEmail,
         customerName,
         subject: `Re: ${subject}`,
         body,
       };
-      if (approveUrlMatch) {
-        emailPayload.ctaUrl = approveUrlMatch[1];
-        emailPayload.ctaLabel = "✅ Approve Estimate & Book Cleaning";
-      }
+
+      attachQuoteCta(emailPayload, subject, body, templateId);
+
       if (inReplyTo) emailPayload.inReplyTo = inReplyTo;
       if (refs) emailPayload.references = refs;
 
@@ -248,17 +319,14 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
     if (!newBody.trim() || !newSubject.trim()) return;
     setSending(true);
     try {
-      const approveUrlMatch = newBody.match(/(https:\/\/[^\s]*\/approve-quote\?token=[^\s]+)/);
       const emailPayload: Record<string, string> = {
         customerEmail,
         customerName,
         subject: newSubject,
         body: newBody,
       };
-      if (approveUrlMatch) {
-        emailPayload.ctaUrl = approveUrlMatch[1];
-        emailPayload.ctaLabel = "✅ Approve Estimate & Book Cleaning";
-      }
+
+      attachQuoteCta(emailPayload, newSubject, newBody, activeTemplateId);
 
       const { data, error } = await supabase.functions.invoke("send-customer-email", {
         body: emailPayload,
@@ -282,6 +350,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       toast({ title: "Email Sent", description: `New thread started with ${customerEmail}` });
       setNewSubject("");
       setNewBody("");
+      setActiveTemplateId(null);
       setShowNewThread(false);
       fetchCommunications();
       onEmailSent?.();
@@ -295,6 +364,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
   const applyTemplate = (tmpl: EmailTemplate) => {
     setNewSubject(tmpl.subject);
     setNewBody(tmpl.body);
+    setActiveTemplateId(tmpl.id);
     setTemplatePickerOpen(false);
     setShowNewThread(true);
   };
@@ -339,6 +409,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
               setShowNewThread(true);
               setNewSubject("");
               setNewBody("");
+              setActiveTemplateId(null);
             }}
           >
             <Plus className="w-3.5 h-3.5" /> New Thread
