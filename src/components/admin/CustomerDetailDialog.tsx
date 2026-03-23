@@ -522,7 +522,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
                 <Input
                   value={noteBody}
                   onChange={(e) => setNoteBody(e.target.value)}
-                  placeholder="Add a quick note..."
+                  placeholder={t("admin.cd.addnote")}
                   onKeyDown={(e) => e.key === "Enter" && addNote()}
                 />
                 <Button variant="outline" onClick={addNote} disabled={!noteBody}>
@@ -531,21 +531,21 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
               </div>
 
               <div>
-                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Internal Notes</Label>
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.cd.internalnotes")}</Label>
                 <Textarea
                   value={editNotes}
                   onChange={(e) => setEditNotes(e.target.value)}
-                  placeholder="Detailed internal notes about this customer..."
+                  placeholder={t("admin.cd.detailednotes")}
                   rows={3}
                 />
                 <Button variant="outline" size="sm" onClick={saveNotes} disabled={saving} className="mt-2">
-                  {saving ? "Saving..." : "Save Notes"}
+                  {saving ? t("admin.cd.saving") : t("admin.cd.savenotes")}
                 </Button>
               </div>
 
               {communications.length > 0 && (
                 <div className="border-t border-border pt-4">
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-3">Activity Log</p>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-3">{t("admin.cd.activitylog")}</p>
                   <div className="space-y-2">
                     {communications.map((c) => (
                       <div key={c.id} className="flex gap-3 p-2.5 rounded-lg bg-secondary/30 text-sm">
