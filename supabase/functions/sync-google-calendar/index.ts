@@ -11,6 +11,7 @@ async function getAccessToken(serviceAccountJson: string): Promise<string> {
   const header = { alg: "RS256", typ: "JWT" };
   const claimSet = {
     iss: sa.client_email,
+    sub: "info@maidforchico.com",
     scope: "https://www.googleapis.com/auth/calendar",
     aud: "https://oauth2.googleapis.com/token",
     exp: now + 3600,
