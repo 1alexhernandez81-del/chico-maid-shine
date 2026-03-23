@@ -255,7 +255,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
     setSendingEmail(null);
   };
 
-  const executeSave = async (sendReviewEmail: boolean = false) => {
+  const executeSave = async (opts: { sendReviewEmail?: boolean; sendApprovalEmail?: boolean; sendScheduledEmail?: boolean; sendRescheduleEmail?: boolean } = {}) => {
     setSaving(true);
     const cleanItems = lineItems.filter((item) => item.description.trim() !== "");
     const statusChanged = newStatus !== booking.status;
@@ -296,7 +296,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
 
       toast({ title: t("admin.bookings.updated"), description: t("admin.bookings.updated.msg") });
 
-      if (isNewlyApproved) {
+      if (isNewlyApproved && opts.sendApprovalEmail) {
         supabase.functions.invoke('send-job-email', {
           body: { bookingId: booking.id, type: 'approval' },
         }).then(({ error: emailErr }) => {
@@ -305,7 +305,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
         });
       }
 
-      if (isNewlyScheduled) {
+      if (isNewlyScheduled && opts.sendScheduledEmail) {
         supabase.functions.invoke('send-job-email', {
           body: { bookingId: booking.id, type: 'scheduled' },
         }).then(({ error: emailErr }) => {
@@ -325,13 +325,13 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
         });
       }
 
-      // Update Google Calendar when rescheduled (same status, different date/time)
-      if (isRescheduled) {
-        supabase.functions.invoke('sync-google-calendar', {
-          body: { bookingId: booking.id, action: 'update' },
-        }).then(({ error: gcalErr }) => {
-          if (gcalErr) console.error("Google Calendar update error:", gcalErr);
-          else toast({ title: "📅 Calendar updated!", description: "Google Calendar event rescheduled" });
+      // Send reschedule email if opted in
+      if (isRescheduled && opts.sendRescheduleEmail) {
+        supabase.functions.invoke('send-job-email', {
+          body: { bookingId: booking.id, type: 'scheduled' },
+        }).then(({ error: emailErr }) => {
+          if (emailErr) console.error("Reschedule email error:", emailErr);
+          else toast({ title: "📅 Updated invite sent!", description: `Rescheduled email sent to ${booking.email}` });
         });
       }
 
@@ -345,7 +345,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
         });
       }
 
-      if (isNewlyCompleted && sendReviewEmail) {
+      if (isNewlyCompleted && opts.sendReviewEmail) {
         supabase.functions.invoke('send-review-request', {
           body: { bookingId: booking.id, email: booking.email, name: booking.name },
         }).then(({ error: emailErr }) => {
