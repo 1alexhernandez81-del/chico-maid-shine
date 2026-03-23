@@ -169,12 +169,27 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
         .single();
 
       if (!isMounted) return;
-      if (error || !data?.confirmation_token) {
+      if (error) {
         setApproveQuoteUrl(null);
         return;
       }
 
-      setApproveQuoteUrl(`https://maidforchico.com/approve-quote?token=${data.confirmation_token}`);
+      let token = data?.confirmation_token ?? null;
+
+      if (!token) {
+        token = crypto.randomUUID();
+        const { error: tokenError } = await supabase
+          .from("bookings")
+          .update({ confirmation_token: token })
+          .eq("id", bookingId);
+
+        if (tokenError) {
+          setApproveQuoteUrl(null);
+          return;
+        }
+      }
+
+      setApproveQuoteUrl(`https://maidforchico.com/approve-quote?token=${token}`);
     };
 
     fetchApproveQuoteUrl();

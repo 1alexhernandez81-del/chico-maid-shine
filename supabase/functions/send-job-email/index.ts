@@ -50,11 +50,24 @@ Deno.serve(async (req) => {
     let bodyText = "";
     let ctaUrl = "";
     let ctaLabel = "";
+    let confirmationToken: string | null = booking.confirmation_token;
+
+    if (type === "quote" && !confirmationToken) {
+      confirmationToken = crypto.randomUUID();
+      const { error: tokenError } = await supabase
+        .from("bookings")
+        .update({ confirmation_token: confirmationToken })
+        .eq("id", bookingId);
+
+      if (tokenError) {
+        throw new Error("Unable to create quote approval link");
+      }
+    }
 
     switch (type) {
       case "quote": {
-        const approveUrl = booking.confirmation_token
-          ? `https://maidforchico.com/approve-quote?token=${booking.confirmation_token}`
+        const approveUrl = confirmationToken
+          ? `https://maidforchico.com/approve-quote?token=${confirmationToken}`
           : "";
         subject = "Your Cleaning Estimate — Maid for Chico";
         bodyText = `Thank you for letting us visit your home! Based on our walk-through, here is your personalized cleaning estimate:\n\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n📐 Size: ${booking.sqft ? booking.sqft + " sqft" : "N/A"} | ${booking.bedrooms || "—"} bed / ${booking.bathrooms || "—"} bath\n📋 Frequency: ${formatLabel(booking.frequency)}\n\n💰 Estimated Quote: ${total} per visit\n\n⚠️ Please note: This is an estimate and is subject to change depending on additional services requested or removed at the time of cleaning.\n\n💳 DEPOSIT: A 25% deposit is required to secure your cleaning date. We'll collect the deposit once you approve. The remaining balance is due on the day of your cleaning.\n\nOr call us at (530) 966-0752.\n\nWe'd love to make your home sparkle!\nBetty & the Maid for Chico Team`;
