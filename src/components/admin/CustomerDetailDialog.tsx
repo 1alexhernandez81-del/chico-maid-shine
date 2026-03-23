@@ -264,6 +264,14 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
   };
 
   const deleteSchedule = async (scheduleId: string) => {
+    // Delete recurring GCal event first
+    try {
+      await supabase.functions.invoke("sync-google-calendar", {
+        body: { scheduleId, action: "delete-recurring" },
+      });
+    } catch (e) {
+      console.error("GCal delete error:", e);
+    }
     await supabase.from("recurring_schedules").delete().eq("id", scheduleId);
     setSchedules((prev) => prev.filter((s) => s.id !== scheduleId));
     toast({ title: t("admin.cd.scheduleremoved") });
