@@ -325,7 +325,7 @@ const CustomerManagement = () => {
             {paged.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center text-muted-foreground py-12">
-                  {loading ? "Loading..." : "No customers found"}
+                  {loading ? t("admin.customers.loading") : t("admin.customers.nocustfound")}
                 </TableCell>
               </TableRow>
             ) : (
