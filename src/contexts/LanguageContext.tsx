@@ -627,6 +627,8 @@ const translations: Record<string, Record<Lang, string>> = {
   "admin.ts.allcleaners": { en: "All Cleaners", es: "Todos los Limpiadores" },
   "admin.ts.refresh": { en: "Refresh", es: "Actualizar" },
   "admin.ts.export": { en: "Export for Payroll", es: "Exportar para Nómina" },
+  "admin.ts.exportexcel": { en: "Export Excel", es: "Exportar Excel" },
+  "admin.ts.excel.exported": { en: "Timesheet exported as Excel file", es: "Hoja de horas exportada como archivo Excel" },
   "admin.ts.date": { en: "Date", es: "Fecha" },
   "admin.ts.customer": { en: "Customer", es: "Cliente" },
   "admin.ts.address": { en: "Address", es: "Dirección" },
