@@ -432,7 +432,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
                         onClick={() => toggleScheduleActive(s.id, s.active)}
                         className="h-8 text-xs"
                       >
-                        {s.active ? "Pause" : "Resume"}
+                        {s.active ? t("admin.cd.pause") : t("admin.cd.resume")}
                       </Button>
                       <Button
                         variant="ghost"
