@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
 
     const langName = targetLang === "es" ? "Spanish" : targetLang === "en" ? "English" : targetLang;
 
-    const response = await fetch("https://ai-gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
