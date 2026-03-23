@@ -95,9 +95,8 @@ const TimesheetsTab = () => {
     for (const e of filtered) {
       const cleanerIds = e.effectiveCleaners.length > 0 ? e.effectiveCleaners : ["unassigned"];
       const sharedWith = cleanerIds.length;
-      // Split hours evenly among cleaners on this job
-      const perCleanerMins = Math.round((e.total_worked_minutes || 0) / sharedWith);
-      const perCleanerBreak = Math.round((e.total_paused_minutes || 0) / sharedWith);
+      const totalMins = e.total_worked_minutes || 0;
+      const breakMins = e.total_paused_minutes || 0;
 
       for (const cid of cleanerIds) {
         rows.push({
