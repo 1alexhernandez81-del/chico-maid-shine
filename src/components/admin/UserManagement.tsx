@@ -21,18 +21,18 @@ import {
 import { UserPlus, RefreshCw, Trash2, Shield, KeyRound, Eye, EyeOff } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-const getPasswordStrength = (pw: string): { score: number; label: string; color: string } => {
+const getPasswordStrength = (pw: string): { score: number; labelKey: string; color: string } => {
   let score = 0;
   if (pw.length >= 6) score++;
   if (pw.length >= 10) score++;
   if (/[A-Z]/.test(pw)) score++;
   if (/[0-9]/.test(pw)) score++;
   if (/[^A-Za-z0-9]/.test(pw)) score++;
-  if (score <= 1) return { score: 20, label: "Weak", color: "bg-destructive" };
-  if (score === 2) return { score: 40, label: "Fair", color: "bg-orange-500" };
-  if (score === 3) return { score: 60, label: "Good", color: "bg-yellow-500" };
-  if (score === 4) return { score: 80, label: "Strong", color: "bg-emerald-400" };
-  return { score: 100, label: "Very Strong", color: "bg-emerald-500" };
+  if (score <= 1) return { score: 20, labelKey: "admin.users.pw.weak", color: "bg-destructive" };
+  if (score === 2) return { score: 40, labelKey: "admin.users.pw.fair", color: "bg-orange-500" };
+  if (score === 3) return { score: 60, labelKey: "admin.users.pw.good", color: "bg-yellow-500" };
+  if (score === 4) return { score: 80, labelKey: "admin.users.pw.strong", color: "bg-emerald-400" };
+  return { score: 100, labelKey: "admin.users.pw.vstrong", color: "bg-emerald-500" };
 };
 
 type ManagedUser = {
