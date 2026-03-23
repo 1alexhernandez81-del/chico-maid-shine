@@ -283,13 +283,15 @@ const ConfirmAppointment = () => {
               </p>
             </div>
 
-            {cancelResult && cancelResult.fee > 0 && (
+            {cancelResult && (cancelResult.fee > 0 || cancelResult.depositForfeited) && (
               <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4">
                 <p className="text-sm text-destructive font-semibold">
-                  A ${cancelResult.fee} late cancellation fee applies.
+                  {cancelResult.fee > 0
+                    ? `Your deposit is forfeited and a $${cancelResult.fee} rebooking fee applies.`
+                    : "Your 25% deposit is non-refundable for this cancellation."}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  We will contact you regarding payment. Questions? Call us at (530) 966-0752.
+                  We will contact you regarding any charges. Questions? Call us at (530) 966-0752.
                 </p>
               </div>
             )}
