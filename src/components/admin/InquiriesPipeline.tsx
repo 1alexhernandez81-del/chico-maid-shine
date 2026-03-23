@@ -443,7 +443,7 @@ const InquiriesPipeline = () => {
             <DialogDescription>{t("admin.inquiry.details.desc")}</DialogDescription>
           </DialogHeader>
           {selected && (
-            <Tabs defaultValue="details" className="w-full">
+            <Tabs value={detailTab} onValueChange={setDetailTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="details" className="gap-1.5">
                   <Eye className="w-3.5 h-3.5" /> {t("admin.inquiry.details.tab")}
