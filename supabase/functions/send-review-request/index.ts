@@ -37,6 +37,7 @@ Deno.serve(async (req) => {
         <a href="https://maidforchico.com/refer" style="color: #b5a26a;">Share your referral link →</a>
       </p>
       <p style="font-size: 15px; color: #333;">Betty & the Maid for Chico Team</p>
+      </div>
     </div>`;
 
     await fetch("https://api.resend.com/emails", {
