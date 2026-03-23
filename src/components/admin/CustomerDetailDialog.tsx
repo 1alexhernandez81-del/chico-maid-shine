@@ -486,7 +486,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
                       </Select>
                     </div>
                     <div>
-                      <Label className="text-xs text-muted-foreground">Time</Label>
+                      <Label className="text-xs text-muted-foreground">{t("admin.cd.time")}</Label>
                       <Select value={newSchedule.preferred_time} onValueChange={(v) => setNewSchedule({ ...newSchedule, preferred_time: v })}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent className="max-h-60">
