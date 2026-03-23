@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Clock, RefreshCw, Calendar, Copy, Loader2, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { JobTimeEntry, Cleaner, Booking } from "./shared/types";
 
 type EntryWithBooking = JobTimeEntry & { booking?: Booking; effectiveCleaners: string[] };
@@ -23,6 +24,7 @@ const TimesheetsTab = () => {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const fetchData = async () => {
     setLoading(true);
@@ -43,7 +45,6 @@ const TimesheetsTab = () => {
     const raw = ((entriesRes.data || []) as any[]) as JobTimeEntry[];
     setEntries(raw.map((e) => {
       const booking = bookingsMap.get(e.booking_id);
-      // Use time entry cleaners first, fall back to booking's assigned_cleaners
       const entryCleaners = Array.isArray(e.cleaners) && e.cleaners.length > 0 ? e.cleaners : [];
       const bookingCleaners = booking && Array.isArray((booking as any).assigned_cleaners) && (booking as any).assigned_cleaners.length > 0
         ? (booking as any).assigned_cleaners
@@ -75,7 +76,6 @@ const TimesheetsTab = () => {
     });
   }, [entries, cleanerFilter, dateFrom, dateTo]);
 
-  // For per-cleaner rows in the detail table
   const expandedRows = useMemo(() => {
     const rows: Array<{
       entryId: string;
@@ -89,7 +89,7 @@ const TimesheetsTab = () => {
       breakMins: number;
       totalMins: number;
       notes: string;
-      sharedWith: number; // how many cleaners shared this job
+      sharedWith: number;
     }> = [];
 
     for (const e of filtered) {
@@ -155,23 +155,23 @@ const TimesheetsTab = () => {
     : [];
 
   const copyToClipboard = (data: typeof weekSummary) => {
-    const lines = ["Cleaner\tJobs\tTotal Hours\tAvg Hours/Job"];
+    const lines = [`${t("admin.ts.cleaner")}\t${t("admin.ts.jobs")}\t${t("admin.ts.totalhours")}\t${t("admin.ts.avghours")}`];
     for (const r of data) {
       lines.push(`${r.cleanerName}\t${r.jobs}\t${r.totalHours}\t${r.avgHours}`);
     }
     navigator.clipboard.writeText(lines.join("\n"));
-    toast({ title: "Copied!", description: "Summary copied to clipboard for payroll" });
+    toast({ title: t("admin.ts.copied"), description: t("admin.ts.copied.desc") });
   };
 
   const copyDetailedToClipboard = () => {
-    const lines = ["Cleaner\tDate\tCustomer\tAddress\tClock In\tClock Out\tBreak\tTotal Hours\tNotes"];
+    const lines = [`${t("admin.ts.cleaner")}\t${t("admin.ts.date")}\t${t("admin.ts.customer")}\t${t("admin.ts.address")}\t${t("admin.ts.clockin")}\t${t("admin.ts.clockout")}\t${t("admin.ts.break")}\t${t("admin.ts.totalhours")}\t${t("admin.ts.notes")}`];
     for (const r of expandedRows) {
       const hours = Math.floor(r.totalMins / 60);
       const mins = r.totalMins % 60;
       lines.push(`${r.cleanerName}\t${r.date}\t${r.customerName}\t${r.address}\t${r.clockIn}\t${r.clockOut}\t${r.breakMins}m\t${hours}h ${mins}m\t${r.notes}`);
     }
     navigator.clipboard.writeText(lines.join("\n"));
-    toast({ title: "Copied!", description: "Detailed timesheet copied for payroll" });
+    toast({ title: t("admin.ts.copied"), description: t("admin.ts.detailed.copied") });
   };
 
   const SummaryTable = ({ title, data }: { title: string; data: typeof weekSummary }) => (
@@ -180,20 +180,20 @@ const TimesheetsTab = () => {
         <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{title}</h3>
         {data.length > 0 && (
           <Button variant="ghost" size="sm" onClick={() => copyToClipboard(data)} className="h-6 text-[10px] gap-1">
-            <Copy className="w-3 h-3" /> Copy
+            <Copy className="w-3 h-3" /> {t("admin.ts.copy")}
           </Button>
         )}
       </div>
       {data.length === 0 ? (
-        <p className="text-xs text-muted-foreground">No entries</p>
+        <p className="text-xs text-muted-foreground">{t("admin.ts.noentries")}</p>
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="text-xs">Cleaner</TableHead>
-              <TableHead className="text-xs text-center">Jobs</TableHead>
-              <TableHead className="text-xs text-center">Total Hours</TableHead>
-              <TableHead className="text-xs text-center">Avg Hours/Job</TableHead>
+              <TableHead className="text-xs">{t("admin.ts.cleaner")}</TableHead>
+              <TableHead className="text-xs text-center">{t("admin.ts.jobs")}</TableHead>
+              <TableHead className="text-xs text-center">{t("admin.ts.totalhours")}</TableHead>
+              <TableHead className="text-xs text-center">{t("admin.ts.avghours")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -215,9 +215,9 @@ const TimesheetsTab = () => {
     <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <SummaryTable title="📅 This Week" data={weekSummary} />
-        <SummaryTable title="📆 This Month" data={monthSummary} />
-        <SummaryTable title="🔍 Custom Range" data={customSummary} />
+        <SummaryTable title={t("admin.ts.thisweek")} data={weekSummary} />
+        <SummaryTable title={t("admin.ts.thismonth")} data={monthSummary} />
+        <SummaryTable title={t("admin.ts.custom")} data={customSummary} />
       </div>
 
       {/* Filters */}
@@ -228,25 +228,23 @@ const TimesheetsTab = () => {
             type="date"
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
-            placeholder="From"
             className="w-[150px]"
           />
-          <span className="text-muted-foreground text-sm">to</span>
+          <span className="text-muted-foreground text-sm">{t("admin.ts.to")}</span>
           <Input
             type="date"
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
-            placeholder="To"
             className="w-[150px]"
           />
         </div>
         {cleaners.length > 0 && (
           <Select value={cleanerFilter} onValueChange={setCleanerFilter}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="All Cleaners" />
+              <SelectValue placeholder={t("admin.ts.allcleaners")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Cleaners</SelectItem>
+              <SelectItem value="all">{t("admin.ts.allcleaners")}</SelectItem>
               {cleaners.map((c) => (
                 <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
               ))}
@@ -254,11 +252,11 @@ const TimesheetsTab = () => {
           </Select>
         )}
         <Button variant="outline" onClick={fetchData} disabled={loading} className="gap-2">
-          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Refresh
+          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> {t("admin.ts.refresh")}
         </Button>
         {expandedRows.length > 0 && (
           <Button variant="outline" onClick={copyDetailedToClipboard} className="gap-2">
-            <Copy className="w-4 h-4" /> Export for Payroll
+            <Copy className="w-4 h-4" /> {t("admin.ts.export")}
           </Button>
         )}
       </div>
@@ -268,28 +266,28 @@ const TimesheetsTab = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-secondary/50">
-              <TableHead className="text-xs">Cleaner</TableHead>
-              <TableHead className="text-xs">Date</TableHead>
-              <TableHead className="text-xs">Customer</TableHead>
-              <TableHead className="text-xs hidden md:table-cell">Address</TableHead>
-              <TableHead className="text-xs text-center">Clock In</TableHead>
-              <TableHead className="text-xs text-center">Clock Out</TableHead>
-              <TableHead className="text-xs text-center">Break</TableHead>
-              <TableHead className="text-xs text-center">Hours</TableHead>
-              <TableHead className="text-xs hidden md:table-cell">Notes</TableHead>
+              <TableHead className="text-xs">{t("admin.ts.cleaner")}</TableHead>
+              <TableHead className="text-xs">{t("admin.ts.date")}</TableHead>
+              <TableHead className="text-xs">{t("admin.ts.customer")}</TableHead>
+              <TableHead className="text-xs hidden md:table-cell">{t("admin.ts.address")}</TableHead>
+              <TableHead className="text-xs text-center">{t("admin.ts.clockin")}</TableHead>
+              <TableHead className="text-xs text-center">{t("admin.ts.clockout")}</TableHead>
+              <TableHead className="text-xs text-center">{t("admin.ts.break")}</TableHead>
+              <TableHead className="text-xs text-center">{t("admin.ts.hours")}</TableHead>
+              <TableHead className="text-xs hidden md:table-cell">{t("admin.ts.notes")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
                 <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
-                  <Loader2 className="w-4 h-4 animate-spin inline mr-2" /> Loading...
+                  <Loader2 className="w-4 h-4 animate-spin inline mr-2" /> {t("admin.ts.loading")}
                 </TableCell>
               </TableRow>
             ) : expandedRows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
-                  No time entries found
+                  {t("admin.ts.nodata")}
                 </TableCell>
               </TableRow>
             ) : (
