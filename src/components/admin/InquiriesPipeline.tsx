@@ -191,10 +191,10 @@ const InquiriesPipeline = () => {
         body: { bookingId: selected.id, action: selected.google_calendar_event_id ? "update" : "create" },
       });
       if (calError) throw calError;
-      toast({ title: "Calendar Synced", description: "Estimate visit added to Google Calendar" });
+      toast({ title: t("admin.cal.synced"), description: t("admin.cal.synced.desc") });
     } catch (err) {
       console.error("Calendar sync error:", err);
-      toast({ title: "Calendar Sync Failed", description: "Saved estimate but failed to sync calendar", variant: "destructive" });
+      toast({ title: t("admin.cal.syncfail"), description: t("admin.cal.syncfail.desc"), variant: "destructive" });
     }
     setSyncingCalendar(false);
 
@@ -235,10 +235,10 @@ const InquiriesPipeline = () => {
         body: `Estimate visit invite sent for ${visitDate} at ${visitTime}`,
       });
 
-      toast({ title: "Invite Sent", description: `Estimate visit invite sent to ${selected.email}` });
+      toast({ title: t("admin.invite.sent"), description: `${t("admin.invite.sent.desc")} ${selected.email}` });
     } catch (err) {
       console.error("Send invite error:", err);
-      toast({ title: t("admin.error"), description: "Failed to send estimate invite", variant: "destructive" });
+      toast({ title: t("admin.error"), description: t("admin.invite.fail"), variant: "destructive" });
     }
     setSendingInvite(false);
     setShowInviteApproval(false);
@@ -278,7 +278,7 @@ const InquiriesPipeline = () => {
     if (error) {
       toast({ title: t("admin.error"), description: error.message, variant: "destructive" });
     } else {
-      toast({ title: t("admin.bulk.delete"), description: `${ids.length} inquiry(ies) deleted` });
+      toast({ title: t("admin.bulk.delete"), description: `${ids.length} ${t("admin.inquiries.deleted.desc")}` });
       setBookings((prev) => prev.filter((b) => !selectedIds.has(b.id)));
       setSelectedIds(new Set());
     }
@@ -801,7 +801,7 @@ const InquiriesPipeline = () => {
               disabled={bulkActioning}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {bulkActioning ? "Deleting..." : t("admin.bulk.delete")}
+              {bulkActioning ? t("admin.deleting") : t("admin.bulk.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

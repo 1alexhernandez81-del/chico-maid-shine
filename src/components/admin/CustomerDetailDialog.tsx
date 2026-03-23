@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Input } from "@/components/ui/input";
 import AddressAutocomplete from "@/components/ui/address-autocomplete";
 import { Textarea } from "@/components/ui/textarea";
@@ -81,6 +82,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
   const [editNotes, setEditNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   // Edit customer info
   const [editing, setEditing] = useState(false);
@@ -115,10 +117,9 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
   });
 
   const formatTimeDisplay = (time: string | null) => {
-    if (!time) return "Flexible";
+    if (!time) return t("admin.cd.flexible");
     const slot = timeSlots.find((s) => s.value === time);
     if (slot) return slot.label;
-    // Fallback for legacy values
     return time.charAt(0).toUpperCase() + time.slice(1);
   };
   const [addingSchedule, setAddingSchedule] = useState(false);
@@ -157,7 +158,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
   const saveNotes = async () => {
     setSaving(true);
     await supabase.from("customers").update({ notes: editNotes }).eq("id", customer.id);
-    toast({ title: "Saved", description: "Customer notes updated" });
+    toast({ title: t("admin.cd.saved"), description: t("admin.cd.notesupdated") });
     setSaving(false);
   };
 
@@ -173,9 +174,9 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
     }).eq("id", customer.id);
 
     if (error) {
-      toast({ title: "Error", description: "Failed to update customer", variant: "destructive" });
+      toast({ title: t("admin.error"), description: t("admin.cd.updatefail"), variant: "destructive" });
     } else {
-      toast({ title: "Saved", description: "Customer info updated" });
+      toast({ title: t("admin.cd.saved"), description: t("admin.cd.infoupdated") });
       setEditing(false);
       onUpdated();
     }
@@ -193,7 +194,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
     const { data } = await supabase.from("customer_communications").select("*")
       .eq("customer_id", customer.id).order("created_at", { ascending: false });
     setCommunications((data || []) as Communication[]);
-    toast({ title: "Note Added" });
+    toast({ title: t("admin.cd.noteadded") });
   };
 
   const computeNextServiceDate = (preferredDay: string) => {
@@ -228,9 +229,9 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
     });
 
     if (error) {
-      toast({ title: "Error", description: "Failed to add schedule", variant: "destructive" });
+      toast({ title: t("admin.error"), description: t("admin.cd.schedulefail"), variant: "destructive" });
     } else {
-      toast({ title: "Schedule Added" });
+      toast({ title: t("admin.cd.scheduleadded") });
       setShowAddSchedule(false);
       setNewSchedule({ service_type: "residential", frequency: "weekly", preferred_day: "monday", preferred_time: "09:00", price: "" });
       const { data } = await supabase.from("recurring_schedules").select("*")
@@ -248,7 +249,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
   const deleteSchedule = async (scheduleId: string) => {
     await supabase.from("recurring_schedules").delete().eq("id", scheduleId);
     setSchedules((prev) => prev.filter((s) => s.id !== scheduleId));
-    toast({ title: "Schedule Removed" });
+    toast({ title: t("admin.cd.scheduleremoved") });
   };
 
   return (
@@ -259,17 +260,17 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
             <div className="flex items-center justify-between">
               <div>
                 <DialogTitle className="flex items-center gap-2">
-                  <span>{editing ? "Edit Customer" : customer.name}</span>
+                  <span>{editing ? t("admin.cd.editcustomer") : customer.name}</span>
                 </DialogTitle>
                 <DialogDescription className="flex flex-wrap gap-3 text-sm mt-1">
                   <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" /> {customer.email}</span>
                   <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {customer.phone}</span>
-                  <span className="flex items-center gap-1"><DollarSign className="w-3.5 h-3.5" /> ${totalSpent.toFixed(0)} total</span>
+                  <span className="flex items-center gap-1"><DollarSign className="w-3.5 h-3.5" /> ${totalSpent.toFixed(0)} {t("admin.cd.total")}</span>
                 </DialogDescription>
               </div>
               {!editing && (
                 <Button variant="outline" size="sm" onClick={() => setEditing(true)} className="gap-1.5 shrink-0">
-                  <Pencil className="w-3.5 h-3.5" /> Edit
+                  <Pencil className="w-3.5 h-3.5" /> {t("admin.cd.edit")}
                 </Button>
               )}
             </div>
@@ -280,38 +281,38 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
             <div className="space-y-3 border border-border rounded-lg p-4 bg-secondary/30">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs text-muted-foreground">Name</Label>
+                  <Label className="text-xs text-muted-foreground">{t("admin.cd.name")}</Label>
                   <Input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground">Phone</Label>
+                  <Label className="text-xs text-muted-foreground">{t("admin.cd.phone")}</Label>
                   <Input value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} />
                 </div>
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground">Email</Label>
+                <Label className="text-xs text-muted-foreground">{t("admin.cd.email")}</Label>
                 <Input value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} />
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground">Address</Label>
+                <Label className="text-xs text-muted-foreground">{t("admin.cd.address")}</Label>
                 <AddressAutocomplete
                   value={editForm.street}
                   onChange={(val) => setEditForm({ ...editForm, street: val })}
                   onSelect={(addr) => setEditForm({ ...editForm, street: addr.street, city: addr.city || editForm.city, zip: addr.zip || editForm.zip })}
-                  placeholder="Street"
+                  placeholder={t("admin.cd.street")}
                   className="mb-2"
                 />
                 <div className="grid grid-cols-2 gap-2">
-                  <Input value={editForm.city} onChange={(e) => setEditForm({ ...editForm, city: e.target.value })} placeholder="City" />
-                  <Input value={editForm.zip} onChange={(e) => setEditForm({ ...editForm, zip: e.target.value })} placeholder="ZIP" />
+                  <Input value={editForm.city} onChange={(e) => setEditForm({ ...editForm, city: e.target.value })} placeholder={t("admin.cd.city")} />
+                  <Input value={editForm.zip} onChange={(e) => setEditForm({ ...editForm, zip: e.target.value })} placeholder={t("admin.cd.zip")} />
                 </div>
               </div>
               <div className="flex gap-2">
                 <Button onClick={saveCustomerEdit} disabled={saving} className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 gap-1.5">
-                  <Save className="w-3.5 h-3.5" /> {saving ? "Saving..." : "Save"}
+                  <Save className="w-3.5 h-3.5" /> {saving ? t("admin.cd.saving") : t("admin.cd.save")}
                 </Button>
                 <Button variant="outline" onClick={() => setEditing(false)} className="gap-1.5">
-                  <X className="w-3.5 h-3.5" /> Cancel
+                  <X className="w-3.5 h-3.5" /> {t("admin.cd.cancel")}
                 </Button>
               </div>
             </div>
@@ -319,24 +320,24 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
 
           <Tabs defaultValue="history" className="mt-2">
             <TabsList className="w-full grid grid-cols-4">
-              <TabsTrigger value="history" className="gap-1.5 text-xs"><Calendar className="w-3.5 h-3.5" /> History</TabsTrigger>
-              <TabsTrigger value="messages" className="gap-1.5 text-xs"><Mail className="w-3.5 h-3.5" /> Messages</TabsTrigger>
-              <TabsTrigger value="schedule" className="gap-1.5 text-xs"><Repeat className="w-3.5 h-3.5" /> Schedule</TabsTrigger>
-              <TabsTrigger value="notes" className="gap-1.5 text-xs"><MessageSquare className="w-3.5 h-3.5" /> Notes</TabsTrigger>
+              <TabsTrigger value="history" className="gap-1.5 text-xs"><Calendar className="w-3.5 h-3.5" /> {t("admin.cd.tab.history")}</TabsTrigger>
+              <TabsTrigger value="messages" className="gap-1.5 text-xs"><Mail className="w-3.5 h-3.5" /> {t("admin.cd.tab.messages")}</TabsTrigger>
+              <TabsTrigger value="schedule" className="gap-1.5 text-xs"><Repeat className="w-3.5 h-3.5" /> {t("admin.cd.tab.schedule")}</TabsTrigger>
+              <TabsTrigger value="notes" className="gap-1.5 text-xs"><MessageSquare className="w-3.5 h-3.5" /> {t("admin.cd.tab.notes")}</TabsTrigger>
             </TabsList>
 
             {/* Booking History */}
             <TabsContent value="history" className="space-y-4 mt-4">
               {bookings.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">No booking history</p>
+                <p className="text-center text-muted-foreground py-8">{t("admin.cd.nohistory")}</p>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-secondary/50">
-                      <TableHead className="text-xs">Date</TableHead>
-                      <TableHead className="text-xs">Service</TableHead>
-                      <TableHead className="text-xs">Status</TableHead>
-                      <TableHead className="text-xs text-right">Price</TableHead>
+                      <TableHead className="text-xs">{t("admin.cd.date")}</TableHead>
+                      <TableHead className="text-xs">{t("admin.cd.service")}</TableHead>
+                      <TableHead className="text-xs">{t("admin.cd.status")}</TableHead>
+                      <TableHead className="text-xs text-right">{t("admin.cd.price")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -378,10 +379,10 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
             <TabsContent value="schedule" className="space-y-4 mt-4">
               <div className="flex justify-between items-center">
                 <p className="text-sm text-muted-foreground">
-                  {schedules.length === 0 ? "No recurring schedules" : `${schedules.filter((s) => s.active).length} active schedules`}
+                  {schedules.length === 0 ? t("admin.cd.noschedules") : `${schedules.filter((s) => s.active).length} ${t("admin.cd.activeschedules")}`}
                 </p>
                 <Button variant="outline" size="sm" onClick={() => setShowAddSchedule(true)} className="gap-1.5">
-                  <Plus className="w-3.5 h-3.5" /> Add Schedule
+                  <Plus className="w-3.5 h-3.5" /> {t("admin.cd.addschedule")}
                 </Button>
               </div>
 
@@ -393,16 +394,16 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
                       <p className="text-xs text-muted-foreground capitalize mt-0.5">
                         {s.frequency.replace("-", " ")} · {s.preferred_day || "Flexible"} · {formatTimeDisplay(s.preferred_time)}
                       </p>
-                      {s.price && <p className="text-accent font-medium text-sm mt-1">${s.price}/visit</p>}
+                      {s.price && <p className="text-accent font-medium text-sm mt-1">${s.price}{t("admin.cd.pervisit")}</p>}
                       {s.active && (
                         <div className="flex items-center gap-1 mt-1">
-                          <span className="text-xs text-muted-foreground">📅 Next:</span>
+                          <span className="text-xs text-muted-foreground">📅 {t("admin.cd.next")}</span>
                           <Popover>
                             <PopoverTrigger asChild>
                               <Button variant="ghost" size="sm" className="h-6 px-1.5 text-xs text-muted-foreground hover:text-foreground gap-1">
                                 {s.next_service_date
                                   ? new Date(s.next_service_date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
-                                  : "Set date"}
+                                  : t("admin.cd.setdate")}
                                 <Pencil className="w-3 h-3" />
                               </Button>
                             </PopoverTrigger>
@@ -415,7 +416,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
                                   const iso = format(date, "yyyy-MM-dd");
                                   await supabase.from("recurring_schedules").update({ next_service_date: iso }).eq("id", s.id);
                                   setSchedules(prev => prev.map(sc => sc.id === s.id ? { ...sc, next_service_date: iso } : sc));
-                                  toast({ title: "Next service date updated" });
+                                  toast({ title: t("admin.cd.dateupdated") });
                                 }}
                                 className={cn("p-3 pointer-events-auto")}
                               />
@@ -431,7 +432,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
                         onClick={() => toggleScheduleActive(s.id, s.active)}
                         className="h-8 text-xs"
                       >
-                        {s.active ? "Pause" : "Resume"}
+                        {s.active ? t("admin.cd.pause") : t("admin.cd.resume")}
                       </Button>
                       <Button
                         variant="ghost"
@@ -448,44 +449,44 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
 
               {showAddSchedule && (
                 <div className="border border-border rounded-lg p-4 space-y-3">
-                  <p className="text-sm font-medium">New Recurring Schedule</p>
+                  <p className="text-sm font-medium">{t("admin.cd.newschedule")}</p>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label className="text-xs text-muted-foreground">Service</Label>
+                      <Label className="text-xs text-muted-foreground">{t("admin.cd.servicelabel")}</Label>
                       <Select value={newSchedule.service_type} onValueChange={(v) => setNewSchedule({ ...newSchedule, service_type: v })}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="residential">Residential</SelectItem>
-                          <SelectItem value="commercial">Commercial</SelectItem>
-                          <SelectItem value="construction">Construction</SelectItem>
+                          <SelectItem value="residential">{t("admin.cd.residential")}</SelectItem>
+                          <SelectItem value="commercial">{t("admin.cd.commercial")}</SelectItem>
+                          <SelectItem value="construction">{t("admin.cd.construction")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <Label className="text-xs text-muted-foreground">Frequency</Label>
+                      <Label className="text-xs text-muted-foreground">{t("admin.cd.frequency")}</Label>
                       <Select value={newSchedule.frequency} onValueChange={(v) => setNewSchedule({ ...newSchedule, frequency: v })}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="weekly">Weekly</SelectItem>
-                          <SelectItem value="bi-weekly">Bi-Weekly</SelectItem>
-                          <SelectItem value="every-3-weeks">Every 3 Weeks</SelectItem>
-                          <SelectItem value="monthly">Monthly</SelectItem>
+                          <SelectItem value="weekly">{t("admin.cd.weekly")}</SelectItem>
+                          <SelectItem value="bi-weekly">{t("admin.cd.biweekly")}</SelectItem>
+                          <SelectItem value="every-3-weeks">{t("admin.cd.every3weeks")}</SelectItem>
+                          <SelectItem value="monthly">{t("admin.cd.monthly")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <Label className="text-xs text-muted-foreground">Day</Label>
+                      <Label className="text-xs text-muted-foreground">{t("admin.cd.day")}</Label>
                       <Select value={newSchedule.preferred_day} onValueChange={(v) => setNewSchedule({ ...newSchedule, preferred_day: v })}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
                           {["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"].map((d) => (
-                            <SelectItem key={d} value={d} className="capitalize">{d}</SelectItem>
+                            <SelectItem key={d} value={d}>{t(`admin.day.${d}`)}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <Label className="text-xs text-muted-foreground">Time</Label>
+                      <Label className="text-xs text-muted-foreground">{t("admin.cd.time")}</Label>
                       <Select value={newSchedule.preferred_time} onValueChange={(v) => setNewSchedule({ ...newSchedule, preferred_time: v })}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent className="max-h-60">
@@ -497,7 +498,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
                     </div>
                   </div>
                   <div>
-                    <Label className="text-xs text-muted-foreground">Price per Visit ($)</Label>
+                    <Label className="text-xs text-muted-foreground">{t("admin.cd.pricepervisit")}</Label>
                     <Input
                       type="number"
                       value={newSchedule.price}
@@ -507,9 +508,9 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
                   </div>
                   <div className="flex gap-2">
                     <Button onClick={addSchedule} disabled={addingSchedule} className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90">
-                      {addingSchedule ? "Adding..." : "Add Schedule"}
+                      {addingSchedule ? t("admin.cd.adding") : t("admin.cd.addschedule")}
                     </Button>
-                    <Button variant="outline" onClick={() => setShowAddSchedule(false)}>Cancel</Button>
+                    <Button variant="outline" onClick={() => setShowAddSchedule(false)}>{t("admin.cd.cancel")}</Button>
                   </div>
                 </div>
               )}
@@ -521,7 +522,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
                 <Input
                   value={noteBody}
                   onChange={(e) => setNoteBody(e.target.value)}
-                  placeholder="Add a quick note..."
+                  placeholder={t("admin.cd.addnote")}
                   onKeyDown={(e) => e.key === "Enter" && addNote()}
                 />
                 <Button variant="outline" onClick={addNote} disabled={!noteBody}>
@@ -530,21 +531,21 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
               </div>
 
               <div>
-                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Internal Notes</Label>
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.cd.internalnotes")}</Label>
                 <Textarea
                   value={editNotes}
                   onChange={(e) => setEditNotes(e.target.value)}
-                  placeholder="Detailed internal notes about this customer..."
+                  placeholder={t("admin.cd.detailednotes")}
                   rows={3}
                 />
                 <Button variant="outline" size="sm" onClick={saveNotes} disabled={saving} className="mt-2">
-                  {saving ? "Saving..." : "Save Notes"}
+                  {saving ? t("admin.cd.saving") : t("admin.cd.savenotes")}
                 </Button>
               </div>
 
               {communications.length > 0 && (
                 <div className="border-t border-border pt-4">
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-3">Activity Log</p>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-3">{t("admin.cd.activitylog")}</p>
                   <div className="space-y-2">
                     {communications.map((c) => (
                       <div key={c.id} className="flex gap-3 p-2.5 rounded-lg bg-secondary/30 text-sm">
