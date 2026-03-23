@@ -14,11 +14,17 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarWidget } from "@/components/ui/calendar";
+import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  Mail, MessageSquare, Calendar, DollarSign, Plus, Repeat, Trash2, Clock, Pencil, Save, X,
+  Mail, MessageSquare, Calendar, DollarSign, Plus, Repeat, Trash2, Clock, Pencil, Save, X, CalendarIcon,
 } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import JobDetailDialog from "./JobDetailDialog";
 import ThreadedChat from "./ThreadedChat";
 import { STATUS_COLORS } from "./shared/utils";
