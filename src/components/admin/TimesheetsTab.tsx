@@ -175,6 +175,30 @@ const TimesheetsTab = () => {
     toast({ title: t("admin.ts.copied"), description: t("admin.ts.detailed.copied") });
   };
 
+  const exportToExcel = () => {
+    const headers = [
+      t("admin.ts.cleaner"), t("admin.ts.date"), t("admin.ts.customer"),
+      t("admin.ts.address"), t("admin.ts.clockin"), t("admin.ts.clockout"),
+      t("admin.ts.break"), t("admin.ts.totalhours"), t("admin.ts.notes"),
+    ];
+    const data = expandedRows.map((r) => {
+      const hours = Math.floor(r.totalMins / 60);
+      const mins = r.totalMins % 60;
+      return [r.cleanerName, r.date, r.customerName, r.address, r.clockIn, r.clockOut, `${r.breakMins}m`, `${hours}h ${mins}m`, r.notes];
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+    // Auto-size columns
+    ws["!cols"] = headers.map((_, i) => ({
+      wch: Math.max(headers[i].length, ...data.map((row) => String(row[i] || "").length)) + 2,
+    }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Timesheet");
+    const dateStr = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `timesheet_${dateStr}.xlsx`);
+    toast({ title: t("admin.ts.copied"), description: t("admin.ts.excel.exported") });
+  };
+
   const SummaryTable = ({ title, data }: { title: string; data: typeof weekSummary }) => (
     <div className="bg-card border border-border rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
