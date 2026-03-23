@@ -9,7 +9,8 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Clock, RefreshCw, Calendar, Copy, Loader2, Users } from "lucide-react";
+import { Clock, RefreshCw, Calendar, Copy, Loader2, Users, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { JobTimeEntry, Cleaner, Booking } from "./shared/types";
@@ -174,6 +175,30 @@ const TimesheetsTab = () => {
     toast({ title: t("admin.ts.copied"), description: t("admin.ts.detailed.copied") });
   };
 
+  const exportToExcel = () => {
+    const headers = [
+      t("admin.ts.cleaner"), t("admin.ts.date"), t("admin.ts.customer"),
+      t("admin.ts.address"), t("admin.ts.clockin"), t("admin.ts.clockout"),
+      t("admin.ts.break"), t("admin.ts.totalhours"), t("admin.ts.notes"),
+    ];
+    const data = expandedRows.map((r) => {
+      const hours = Math.floor(r.totalMins / 60);
+      const mins = r.totalMins % 60;
+      return [r.cleanerName, r.date, r.customerName, r.address, r.clockIn, r.clockOut, `${r.breakMins}m`, `${hours}h ${mins}m`, r.notes];
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+    // Auto-size columns
+    ws["!cols"] = headers.map((_, i) => ({
+      wch: Math.max(headers[i].length, ...data.map((row) => String(row[i] || "").length)) + 2,
+    }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Timesheet");
+    const dateStr = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `timesheet_${dateStr}.xlsx`);
+    toast({ title: t("admin.ts.copied"), description: t("admin.ts.excel.exported") });
+  };
+
   const SummaryTable = ({ title, data }: { title: string; data: typeof weekSummary }) => (
     <div className="bg-card border border-border rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
@@ -255,9 +280,14 @@ const TimesheetsTab = () => {
           <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> {t("admin.ts.refresh")}
         </Button>
         {expandedRows.length > 0 && (
-          <Button variant="outline" onClick={copyDetailedToClipboard} className="gap-2">
-            <Copy className="w-4 h-4" /> {t("admin.ts.export")}
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={copyDetailedToClipboard} className="gap-2">
+              <Copy className="w-4 h-4" /> {t("admin.ts.copy")}
+            </Button>
+            <Button variant="outline" onClick={exportToExcel} className="gap-2">
+              <Download className="w-4 h-4" /> {t("admin.ts.exportexcel")}
+            </Button>
+          </div>
         )}
       </div>
 
