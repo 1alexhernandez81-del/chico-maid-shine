@@ -554,7 +554,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                 </div>
               )}
               {photos.length === 0 && (
-                <p className="text-xs text-muted-foreground">No photos yet</p>
+                <p className="text-xs text-muted-foreground">{t("admin.job.photos.none")}</p>
               )}
             </div>
 
