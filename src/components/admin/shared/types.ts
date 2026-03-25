@@ -34,6 +34,12 @@ export type Booking = {
   assigned_cleaners?: string[] | null;
   assigned_cleaner_id?: string | null;
   accepted_by?: string | null;
+  payment_status?: string;
+  payment_method?: string | null;
+  processing_fee?: number | null;
+  total_paid?: number;
+  paid_at?: string | null;
+  payment_reference?: string | null;
 };
 
 export type LineItem = { description: string; amount: number };

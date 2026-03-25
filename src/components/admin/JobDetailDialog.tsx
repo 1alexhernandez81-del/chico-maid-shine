@@ -26,6 +26,7 @@ import type { UserRole } from "@/pages/AdminDashboard";
 import ThreadedChat from "@/components/admin/ThreadedChat";
 import { formatLabel } from "./shared/utils";
 import type { Booking, LineItem, Cleaner } from "./shared/types";
+import PaymentTracking from "./PaymentTracking";
 
 interface JobDetailDialogProps {
   booking: Booking | null;
@@ -661,6 +662,11 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
               </div>
             )}
 
+            {/* Payment Tracking — Admin only */}
+            {isAdmin && (
+              <PaymentTracking booking={booking} balanceDue={total} onUpdated={onUpdated} />
+            )}
+
             {/* Invoice Upload — Admin only */}
             {isAdmin && (
               <div className="border-t border-border pt-4 space-y-3">
@@ -852,7 +858,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={sendingEmail !== null}
+                      disabled={sendingEmail !== null || booking.payment_status === 'paid'}
                       onClick={() => handleSendEmail('ach-payment')}
                       className="gap-1.5 text-xs"
                     >
@@ -861,7 +867,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={sendingEmail !== null}
+                      disabled={sendingEmail !== null || booking.payment_status === 'paid'}
                       onClick={() => handleSendEmail('cc-payment')}
                       className="gap-1.5 text-xs"
                     >
