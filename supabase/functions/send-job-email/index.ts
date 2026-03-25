@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { bookingId, type, checkoutUrl, balanceDue: ccBalanceParam, ccFee: ccFeeParam, totalWithFee: ccTotalParam } = await req.json();
+    const { bookingId, type, checkoutUrl, balanceDue: ccBalanceParam, ccFee: ccFeeParam, totalWithFee: ccTotalParam, paymentMethod: pmMethod } = await req.json();
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY not set");
@@ -190,7 +190,7 @@ Deno.serve(async (req) => {
           pricingBlock += `💰 Total: ${total}`;
         }
 
-        bodyText = `Thank you for choosing Maid for Chico! Here is your invoice:\n\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n📅 Date: ${booking.scheduled_date || booking.preferred_date}\n\n${pricingBlock}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━\n💳 Payment Options\n━━━━━━━━━━━━━━━━━━━━━━━━━\n\n✅ Zelle (preferred — no fees)\nSend to: (530) 966-0752\n\n✅ ACH Bank Transfer (no fees)\nRouting: 121000248\nAccount: 3250717659\nAccount Name: Maid For Chico LLC\n\n💳 Credit Card\nAvailable upon request — we can send a separate secure credit card payment link.\nPlease note: a processing fee applies to credit card payments.\n\nWe accept payment by Zelle or ACH bank transfer. If you would like to pay by credit card, we can send a separate secure credit card payment link. Please note that a processing fee applies to credit card payments.\n\nThank you for your business!\nBetty & the Maid for Chico Team`;
+        bodyText = `Thank you for choosing Maid for Chico! Here is your invoice:\n\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n📅 Date: ${booking.scheduled_date || booking.preferred_date}\n\n${pricingBlock}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━\n💳 Payment Options\n━━━━━━━━━━━━━━━━━━━━━━━━━\n\n✅ Zelle (preferred — no fees)\nSend to: (530) 966-0752\n\n🏦 ACH Bank Transfer\nAvailable upon request — we can send a separate secure ACH payment link.\nA small processing fee applies (0.8%, max $5).\n\n💳 Credit Card\nAvailable upon request — we can send a separate secure credit card payment link.\nPlease note: a processing fee applies to credit card payments.\n\nWe accept payment by Zelle (no fees). If you would like to pay by ACH bank transfer or credit card, we can send a separate secure payment link. Please note that processing fees apply to ACH and credit card payments.\n\nThank you for your business!\nBetty & the Maid for Chico Team`;
         break;
       }
       case "receipt": {
@@ -220,6 +220,19 @@ Deno.serve(async (req) => {
         if (checkoutUrl) {
           ctaUrl = checkoutUrl;
           ctaLabel = "💳 Pay by Credit Card";
+        }
+        break;
+      }
+      case "ach-payment": {
+        const achBalance = ccBalanceParam || balanceCalc.toFixed(2);
+        const achRawFee = Number(achBalance) * 0.008;
+        const achFeeAmt = ccFeeParam || Math.min(achRawFee, 5).toFixed(2);
+        const achTotal = ccTotalParam || (Number(achBalance) + Number(achFeeAmt)).toFixed(2);
+        subject = `ACH Bank Transfer Payment Option — Maid For Chico`;
+        bodyText = `Per your request, here is the ACH bank transfer payment option for your invoice.\n\nA small processing fee of 0.8% (max $5) applies to ACH payments.\n\n💰 Original balance: $${achBalance}\n🏦 ACH processing fee (0.8%, max $5): $${achFeeAmt}\n━━━━━━━━━━━━━━━━━━━━━━━━━\n💵 Total due by ACH: $${achTotal}\n\nIf you would prefer to avoid the processing fee, you can still pay by Zelle to (530) 966-0752 (no fees).\n\nThank you,\nMaid For Chico`;
+        if (checkoutUrl) {
+          ctaUrl = checkoutUrl;
+          ctaLabel = "🏦 Pay by ACH Bank Transfer";
         }
         break;
       }
