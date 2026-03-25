@@ -717,9 +717,53 @@ const InquiriesPipeline = () => {
                         variant="outline"
                         size="sm"
                         className={`gap-1.5 text-xs justify-start ${tmpl.color}`}
-                        onClick={() => {
-                          applyTemplate(tmpl);
-                          setDetailTab("messages");
+                        onClick={async () => {
+                          if (tmpl.id === "estimate-confirm" && selected.estimate_date) {
+                            // Confirm Estimate: use the customer's proposed date, save + calendar + send invite
+                            const confirmDate = toDateInputValue(selected.estimate_date);
+                            const confirmTime = toTimeInputValue(selected.estimate_time);
+                            setEstimateDate(confirmDate);
+                            setEstimateTime(confirmTime);
+                            setSaving(true);
+                            const { error } = await supabase
+                              .from("bookings")
+                              .update({
+                                estimate_date: confirmDate,
+                                estimate_time: confirmTime || null,
+                                status: "estimate-scheduled",
+                                admin_notes: adminNotes,
+                              })
+                              .eq("id", selected.id);
+                            if (error) {
+                              toast({ title: t("admin.error"), description: t("admin.bookings.error.update"), variant: "destructive" });
+                              setSaving(false);
+                              return;
+                            }
+                            // Sync Google Calendar
+                            setSyncingCalendar(true);
+                            try {
+                              const { error: calError } = await supabase.functions.invoke("sync-google-calendar", {
+                                body: { bookingId: selected.id, action: selected.google_calendar_event_id ? "update" : "create" },
+                              });
+                              if (calError) throw calError;
+                              toast({ title: t("admin.cal.synced"), description: t("admin.cal.synced.desc") });
+                            } catch (err) {
+                              console.error("Calendar sync error:", err);
+                              toast({ title: t("admin.cal.syncfail"), description: t("admin.cal.syncfail.desc"), variant: "destructive" });
+                            }
+                            setSyncingCalendar(false);
+                            // Update local state
+                            setBookings((prev) =>
+                              prev.map((b) => b.id === selected.id ? { ...b, status: "estimate-scheduled", estimate_date: confirmDate, estimate_time: confirmTime || null, admin_notes: adminNotes } : b)
+                            );
+                            // Prompt to send invite email
+                            setPendingEstimateBookingId(selected.id);
+                            setShowInviteApproval(true);
+                            setSaving(false);
+                          } else {
+                            applyTemplate(tmpl);
+                            setDetailTab("messages");
+                          }
                         }}
                       >
                         {tmpl.icon} {tmpl.name}
