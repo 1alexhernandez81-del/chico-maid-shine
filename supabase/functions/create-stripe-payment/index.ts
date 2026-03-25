@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
     }
     params.append("line_items[0][price_data][currency]", "usd");
     params.append("line_items[0][price_data][product_data][name]", `Cleaning Service — ${customerName}`);
-    params.append("line_items[0][price_data][product_data][description]", `Invoice INV-${String(booking.invoice_number || "").padStart(4, "0")} | Balance + ${feeLabel}`);
+    params.append("line_items[0][price_data][product_data][description]", isACH ? `Invoice INV-${String(booking.invoice_number || "").padStart(4, "0")} | Balance` : `Invoice INV-${String(booking.invoice_number || "").padStart(4, "0")} | Balance + ${feeLabel}`);
     params.append("line_items[0][price_data][unit_amount]", String(totalCents));
     params.append("line_items[0][quantity]", "1");
     params.append("metadata[booking_id]", bookingId);
