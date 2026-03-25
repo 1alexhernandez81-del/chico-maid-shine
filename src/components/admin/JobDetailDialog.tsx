@@ -853,6 +853,15 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                       variant="outline"
                       size="sm"
                       disabled={sendingEmail !== null}
+                      onClick={() => handleSendEmail('ach-payment')}
+                      className="gap-1.5 text-xs"
+                    >
+                      🏦 {sendingEmail === 'ach-payment' ? t("admin.job.sending") : "ACH Payment"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={sendingEmail !== null}
                       onClick={() => handleSendEmail('cc-payment')}
                       className="gap-1.5 text-xs"
                     >

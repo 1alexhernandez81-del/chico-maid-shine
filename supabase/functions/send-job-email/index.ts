@@ -223,6 +223,19 @@ Deno.serve(async (req) => {
         }
         break;
       }
+      case "ach-payment": {
+        const achBalance = ccBalanceParam || balanceCalc.toFixed(2);
+        const achRawFee = Number(achBalance) * 0.008;
+        const achFeeAmt = ccFeeParam || Math.min(achRawFee, 5).toFixed(2);
+        const achTotal = ccTotalParam || (Number(achBalance) + Number(achFeeAmt)).toFixed(2);
+        subject = `ACH Bank Transfer Payment Option — Maid For Chico`;
+        bodyText = `Per your request, here is the ACH bank transfer payment option for your invoice.\n\nA small processing fee of 0.8% (max $5) applies to ACH payments.\n\n💰 Original balance: $${achBalance}\n🏦 ACH processing fee (0.8%, max $5): $${achFeeAmt}\n━━━━━━━━━━━━━━━━━━━━━━━━━\n💵 Total due by ACH: $${achTotal}\n\nIf you would prefer to avoid the processing fee, you can still pay by Zelle to (530) 966-0752 (no fees).\n\nThank you,\nMaid For Chico`;
+        if (checkoutUrl) {
+          ctaUrl = checkoutUrl;
+          ctaLabel = "🏦 Pay by ACH Bank Transfer";
+        }
+        break;
+      }
       case "approval": {
         subject = `Your Cleaning Has Been Approved! — Maid for Chico`;
         bodyText = `Great news — your cleaning request has been approved! 🎉\n\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n💰 Price: ${total}\n\nWe'll be in touch shortly to schedule your cleaning date. If you have any questions, call us at (530) 966-0752.\n\nBetty & the Maid for Chico Team`;
