@@ -74,19 +74,8 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
         ? booking.line_items
         : [{ description: "", amount: 0 }];
 
-      // Auto-add deposit line item if booking has a quoted price and no deposit line exists yet
-      if (booking.total_price && booking.total_price > 0) {
-        const hasDepositLine = items.some((item) =>
-          item.description.toLowerCase().includes("deposit")
-        );
-        if (!hasDepositLine) {
-          const depositAmount = -(booking.total_price * 0.25);
-          items = [
-            ...items,
-            { description: "Deposit Collected (25%)", amount: depositAmount },
-          ];
-        }
-      }
+      // Filter out any legacy deposit line items
+      items = items.filter((item) => !item.description.toLowerCase().includes("deposit"));
 
       setAdminNotes(notes);
       setNewStatus(booking.status);
@@ -171,7 +160,10 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
 
   if (!booking) return null;
 
-  const total = lineItems.reduce((sum, item) => sum + (item.amount || 0), 0);
+  const serviceItems = lineItems.filter((item) => !item.description.toLowerCase().includes("deposit"));
+  const subtotal = serviceItems.reduce((sum, item) => sum + (item.amount || 0), 0);
+  const depositAmount = booking.total_price && booking.total_price > 0 ? booking.total_price * 0.25 : 0;
+  const total = subtotal - depositAmount;
 
   const updateLineItem = (index: number, field: keyof LineItem, value: string | number) => {
     setLineItems((prev) =>
@@ -617,9 +609,21 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                     </div>
                   ))}
                 </div>
-                <div className="flex justify-end items-center gap-2 pt-1 border-t border-border">
-                  <span className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.job.total")}</span>
-                  <span className="text-lg font-semibold text-accent">${total.toFixed(2)}</span>
+                <div className="pt-1 border-t border-border space-y-1">
+                  <div className="flex justify-end items-center gap-2">
+                    <span className="text-xs uppercase tracking-wider text-muted-foreground">Subtotal</span>
+                    <span className="text-sm font-medium">${subtotal.toFixed(2)}</span>
+                  </div>
+                  {depositAmount > 0 && (
+                    <div className="flex justify-end items-center gap-2">
+                      <span className="text-xs tracking-wider text-muted-foreground">Deposit collected (25%)</span>
+                      <span className="text-sm text-green-400">-${depositAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-end items-center gap-2 pt-1 border-t border-border">
+                    <span className="text-xs uppercase tracking-wider text-muted-foreground">Balance Due</span>
+                    <span className="text-lg font-semibold text-accent">${total.toFixed(2)}</span>
+                  </div>
                 </div>
               </div>
             )}

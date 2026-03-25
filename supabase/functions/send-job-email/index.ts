@@ -169,29 +169,27 @@ Deno.serve(async (req) => {
       }
       case "receipt": {
         subject = `Cleaning Receipt — ${booking.scheduled_date || booking.preferred_date}`;
-        const items: Array<{ description: string; amount: number }> = Array.isArray(booking.line_items) ? booking.line_items : [];
-        
-        // Auto-add deposit line if total_price exists and no deposit line present
-        const hasDepositLine = items.some((i: any) => (i.description || "").toLowerCase().includes("deposit"));
-        if (!hasDepositLine && booking.total_price && Number(booking.total_price) > 0) {
-          const depositAmount = -(Number(booking.total_price) * 0.25);
-          items.push({ description: "Deposit Collected (25%)", amount: depositAmount });
+        const rawItems: Array<{ description: string; amount: number }> = Array.isArray(booking.line_items) ? booking.line_items : [];
+        // Filter out any legacy deposit line items
+        const serviceItems = rawItems.filter((i: any) => !(i.description || "").toLowerCase().includes("deposit"));
+        const itemsList = serviceItems.map((i: any) => `• ${i.description}: $${Number(i.amount).toFixed(2)}`).join("\n");
+        const subtotal = serviceItems.reduce((sum: number, i: any) => sum + Number(i.amount || 0), 0);
+        const depositAmt = booking.total_price && Number(booking.total_price) > 0 ? Number(booking.total_price) * 0.25 : 0;
+        const balanceDue = subtotal - depositAmt;
+
+        let pricingBlock = "";
+        if (itemsList) {
+          pricingBlock += `Services:\n${itemsList}\n\n`;
+          pricingBlock += `Subtotal: $${subtotal.toFixed(2)}\n`;
+          if (depositAmt > 0) {
+            pricingBlock += `Deposit already collected (25%): ($${depositAmt.toFixed(2)})\n`;
+          }
+          pricingBlock += `Balance due: $${balanceDue.toFixed(2)}`;
+        } else {
+          pricingBlock += `💰 Total: ${total}`;
         }
 
-        // Sort so deposit (negative) items appear last
-        const sortedItems = [...items].sort((a, b) => {
-          const aIsDeposit = Number(a.amount) < 0 ? 1 : 0;
-          const bIsDeposit = Number(b.amount) < 0 ? 1 : 0;
-          return aIsDeposit - bIsDeposit;
-        });
-        const itemsList = sortedItems.map((i: any) => {
-          const amt = Number(i.amount);
-          return amt < 0
-            ? `• ${i.description}: -$${Math.abs(amt).toFixed(2)}`
-            : `• ${i.description}: $${amt.toFixed(2)}`;
-        }).join("\n");
-        const receiptTotal = items.reduce((sum: number, i: any) => sum + Number(i.amount || 0), 0);
-        bodyText = `Thank you for choosing Maid for Chico! Here's your receipt:\n\n📅 Date: ${booking.scheduled_date || booking.preferred_date}\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n\n${itemsList ? "Services:\n" + itemsList + "\n\n" : ""}💰 Total: $${receiptTotal.toFixed(2)}\n\nThank you for your business!\nBetty & the Maid for Chico Team`;
+        bodyText = `Thank you for choosing Maid for Chico! Here's your receipt:\n\n📅 Date: ${booking.scheduled_date || booking.preferred_date}\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n\n${pricingBlock}\n\nThank you for your business!\nBetty & the Maid for Chico Team`;
         break;
       }
       case "approval": {
