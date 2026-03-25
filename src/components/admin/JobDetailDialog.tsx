@@ -19,7 +19,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Trash2, Upload, FileText, DollarSign, Camera, X, Image, Sparkles, Send, MessageSquare, Loader2, CalendarCheck } from "lucide-react";
+import { Plus, Trash2, Upload, FileText, DollarSign, Camera, X, Image, Sparkles, Send, MessageSquare, Loader2, CalendarCheck, CreditCard } from "lucide-react";
 import JobTimer from "@/components/admin/JobTimer";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { UserRole } from "@/pages/AdminDashboard";
@@ -245,17 +245,47 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
     if (data?.signedUrl) window.open(data.signedUrl, "_blank");
   };
 
-  const handleSendEmail = async (type: 'quote' | 'receipt') => {
+  const handleSendEmail = async (type: 'quote' | 'receipt' | 'invoice' | 'cc-payment') => {
     setSendingEmail(type);
     try {
-      const { error } = await supabase.functions.invoke('send-job-email', {
-        body: { bookingId: booking.id, type },
-      });
-      if (error) throw error;
-      toast({
-        title: type === 'quote' ? t("admin.job.quote.sent") : t("admin.job.receipt.sent"),
-        description: `${t("admin.job.email.sentto")} ${booking.email}`,
-      });
+      if (type === 'cc-payment') {
+        // Step 1: Create Stripe Checkout Session
+        const { data: stripeData, error: stripeErr } = await supabase.functions.invoke('create-stripe-payment', {
+          body: { bookingId: booking.id },
+        });
+        if (stripeErr || !stripeData?.checkoutUrl) throw stripeErr || new Error("Failed to create payment link");
+
+        // Step 2: Send the CC payment email with the checkout URL
+        const { error } = await supabase.functions.invoke('send-job-email', {
+          body: {
+            bookingId: booking.id,
+            type: 'cc-payment',
+            checkoutUrl: stripeData.checkoutUrl,
+            balanceDue: stripeData.balanceDue,
+            ccFee: stripeData.ccFee,
+            totalWithFee: stripeData.totalWithFee,
+          },
+        });
+        if (error) throw error;
+        toast({
+          title: "💳 CC Payment email sent!",
+          description: `Credit card payment link sent to ${booking.email}`,
+        });
+      } else {
+        const { error } = await supabase.functions.invoke('send-job-email', {
+          body: { bookingId: booking.id, type },
+        });
+        if (error) throw error;
+        const titles: Record<string, string> = {
+          quote: t("admin.job.quote.sent"),
+          invoice: "📧 Invoice sent!",
+          receipt: t("admin.job.receipt.sent"),
+        };
+        toast({
+          title: titles[type] || "Email sent!",
+          description: `${t("admin.job.email.sentto")} ${booking.email}`,
+        });
+      }
     } catch (err) {
       console.error("Send email error:", err);
       toast({ title: t("admin.error"), description: t("admin.job.email.error"), variant: "destructive" });
@@ -796,15 +826,16 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                   {saving ? t("admin.bookings.saving") : t("admin.bookings.save")}
                 </Button>
                 {isAdmin && (
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       disabled={sendingEmail !== null}
-                      onClick={() => handleSendEmail('quote')}
+                      onClick={() => handleSendEmail('invoice')}
                       className="gap-1.5 text-xs"
                     >
-                      📧 {sendingEmail === 'quote' ? t("admin.job.sending") : t("admin.job.sendquote")}
+                      <FileText className="w-3 h-3" />
+                      {sendingEmail === 'invoice' ? t("admin.job.sending") : "Send Invoice"}
                     </Button>
                     <Button
                       variant="outline"
@@ -814,6 +845,16 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                       className="gap-1.5 text-xs"
                     >
                       📧 {sendingEmail === 'receipt' ? t("admin.job.sending") : t("admin.job.sendreceipt")}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={sendingEmail !== null}
+                      onClick={() => handleSendEmail('cc-payment')}
+                      className="gap-1.5 text-xs"
+                    >
+                      <CreditCard className="w-3 h-3" />
+                      {sendingEmail === 'cc-payment' ? t("admin.job.sending") : "CC Payment"}
                     </Button>
                   </div>
                 )}

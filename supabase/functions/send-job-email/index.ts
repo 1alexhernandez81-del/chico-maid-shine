@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { bookingId, type } = await req.json();
+    const { bookingId, type, checkoutUrl, balanceDue: ccBalanceParam, ccFee: ccFeeParam, totalWithFee: ccTotalParam } = await req.json();
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY not set");
@@ -154,6 +154,14 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Helper: compute line item pricing
+    const rawItems: Array<{ description: string; amount: number }> = Array.isArray(booking.line_items) ? booking.line_items : [];
+    const svcItems = rawItems.filter((i: any) => !(i.description || "").toLowerCase().includes("deposit"));
+    const itemsList = svcItems.map((i: any) => `• ${i.description}: $${Number(i.amount).toFixed(2)}`).join("\n");
+    const subtotalCalc = svcItems.reduce((sum: number, i: any) => sum + Number(i.amount || 0), 0);
+    const depositCalc = booking.total_price && Number(booking.total_price) > 0 ? Number(booking.total_price) * 0.25 : 0;
+    const balanceCalc = subtotalCalc - depositCalc;
+
     switch (type) {
       case "quote": {
         const approveUrl = confirmationToken
@@ -167,29 +175,52 @@ Deno.serve(async (req) => {
         }
         break;
       }
-      case "receipt": {
-        subject = `Cleaning Receipt — ${booking.scheduled_date || booking.preferred_date}`;
-        const rawItems: Array<{ description: string; amount: number }> = Array.isArray(booking.line_items) ? booking.line_items : [];
-        // Filter out any legacy deposit line items
-        const serviceItems = rawItems.filter((i: any) => !(i.description || "").toLowerCase().includes("deposit"));
-        const itemsList = serviceItems.map((i: any) => `• ${i.description}: $${Number(i.amount).toFixed(2)}`).join("\n");
-        const subtotal = serviceItems.reduce((sum: number, i: any) => sum + Number(i.amount || 0), 0);
-        const depositAmt = booking.total_price && Number(booking.total_price) > 0 ? Number(booking.total_price) * 0.25 : 0;
-        const balanceDue = subtotal - depositAmt;
+      case "invoice": {
+        subject = `Cleaning Invoice — Maid for Chico`;
 
         let pricingBlock = "";
         if (itemsList) {
           pricingBlock += `Services:\n${itemsList}\n\n`;
-          pricingBlock += `Subtotal: $${subtotal.toFixed(2)}\n`;
-          if (depositAmt > 0) {
-            pricingBlock += `Deposit already collected (25%): ($${depositAmt.toFixed(2)})\n`;
+          pricingBlock += `Subtotal: $${subtotalCalc.toFixed(2)}\n`;
+          if (depositCalc > 0) {
+            pricingBlock += `Deposit applied (25%): ($${depositCalc.toFixed(2)})\n`;
           }
-          pricingBlock += `Balance due: $${balanceDue.toFixed(2)}`;
+          pricingBlock += `Balance due: $${balanceCalc.toFixed(2)}`;
+        } else {
+          pricingBlock += `💰 Total: ${total}`;
+        }
+
+        bodyText = `Thank you for choosing Maid for Chico! Here is your invoice:\n\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n📅 Date: ${booking.scheduled_date || booking.preferred_date}\n\n${pricingBlock}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━\n💳 Payment Options\n━━━━━━━━━━━━━━━━━━━━━━━━━\n\n✅ Zelle (preferred — no fees)\nSend to: (530) 966-0752\n\n✅ ACH Bank Transfer (no fees)\nContact us for ACH transfer details.\n\n💳 Credit Card\nAvailable on request — we can send a separate secure credit card payment link if needed.\n\nWe accept payment by Zelle or ACH bank transfer. If you would like to pay by credit card, we can send a separate secure credit card payment link upon request.\n\nThank you for your business!\nBetty & the Maid for Chico Team`;
+        break;
+      }
+      case "receipt": {
+        subject = `Cleaning Receipt — ${booking.scheduled_date || booking.preferred_date}`;
+
+        let pricingBlock = "";
+        if (itemsList) {
+          pricingBlock += `Services:\n${itemsList}\n\n`;
+          pricingBlock += `Subtotal: $${subtotalCalc.toFixed(2)}\n`;
+          if (depositCalc > 0) {
+            pricingBlock += `Deposit received (25%): ($${depositCalc.toFixed(2)})\n`;
+          }
+          pricingBlock += `Remaining balance: $${balanceCalc.toFixed(2)}`;
         } else {
           pricingBlock += `💰 Total: ${total}`;
         }
 
         bodyText = `Thank you for choosing Maid for Chico! Here's your receipt:\n\n📅 Date: ${booking.scheduled_date || booking.preferred_date}\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n\n${pricingBlock}\n\nThank you for your business!\nBetty & the Maid for Chico Team`;
+        break;
+      }
+      case "cc-payment": {
+        const ccBalance = ccBalanceParam || balanceCalc.toFixed(2);
+        const ccFeeAmt = ccFeeParam || (balanceCalc * 0.03).toFixed(2);
+        const ccTotal = ccTotalParam || (balanceCalc * 1.03).toFixed(2);
+        subject = `Credit Card Payment Option for Your Maid For Chico Invoice`;
+        bodyText = `Per your request, here is the credit card payment option for your invoice.\n\nPlease note that a 3% credit card processing fee applies to credit card payments.\n\n💰 Original balance: $${ccBalance}\n💳 Credit card processing fee (3%): $${ccFeeAmt}\n━━━━━━━━━━━━━━━━━━━━━━━━━\n💵 Total due by credit card: $${ccTotal}\n\nIf you would prefer to avoid the credit card processing fee, you can still pay by Zelle to (530) 966-0752 or ACH bank transfer.\n\nThank you,\nMaid For Chico`;
+        if (checkoutUrl) {
+          ctaUrl = checkoutUrl;
+          ctaLabel = "💳 Pay by Credit Card";
+        }
         break;
       }
       case "approval": {
