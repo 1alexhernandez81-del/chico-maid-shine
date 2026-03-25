@@ -862,7 +862,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                       onClick={() => handleSendEmail('ach-payment')}
                       className="gap-1.5 text-xs"
                     >
-                      🏦 {sendingEmail === 'ach-payment' ? t("admin.job.sending") : "ACH Payment"}
+                      🏦 {sendingEmail === 'ach-payment' ? t("admin.job.sending") : t("admin.job.achpayment")}
                     </Button>
                     <Button
                       variant="outline"
