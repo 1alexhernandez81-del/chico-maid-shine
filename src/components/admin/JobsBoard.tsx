@@ -314,10 +314,10 @@ const JobsBoard = ({ userRole = "admin" as UserRole }: { userRole?: UserRole }) 
         {cleanersList.length > 0 && (
           <Select value={cleanerFilter} onValueChange={(v) => { setCleanerFilter(v); setPage(0); }}>
             <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="All cleaners" />
+              <SelectValue placeholder={t("admin.cleaners.all")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Cleaners</SelectItem>
+              <SelectItem value="all">{t("admin.cleaners.all")}</SelectItem>
               {cleanersList.map((c) => (
                 <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
               ))}
