@@ -756,7 +756,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                       className="w-full gap-2 bg-green-600 text-white hover:bg-green-700"
                     >
                       <Send className="w-4 h-4" />
-                      {saving ? t("admin.bookings.saving") : "Send Scheduled Cleaning"}
+                      {saving ? t("admin.bookings.saving") : t("admin.job.sendscheduled")}
                     </Button>
                   )}
                 </div>
