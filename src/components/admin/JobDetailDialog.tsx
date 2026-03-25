@@ -26,6 +26,7 @@ import type { UserRole } from "@/pages/AdminDashboard";
 import ThreadedChat from "@/components/admin/ThreadedChat";
 import { formatLabel } from "./shared/utils";
 import type { Booking, LineItem, Cleaner } from "./shared/types";
+import PaymentTracking from "./PaymentTracking";
 
 interface JobDetailDialogProps {
   booking: Booking | null;
