@@ -650,7 +650,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                   </div>
                   {depositAmount > 0 && (
                     <div className="flex justify-end items-center gap-2">
-                      <span className="text-xs tracking-wider text-muted-foreground">Deposit collected (25%)</span>
+                      <span className="text-xs tracking-wider text-muted-foreground">{t("admin.job.deposit")} (25%)</span>
                       <span className="text-sm text-green-400">-${depositAmount.toFixed(2)}</span>
                     </div>
                   )}
