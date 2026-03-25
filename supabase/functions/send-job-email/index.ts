@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { bookingId, type, checkoutUrl, balanceDue: ccBalanceParam, ccFee: ccFeeParam, totalWithFee: ccTotalParam } = await req.json();
+    const { bookingId, type, checkoutUrl, balanceDue: ccBalanceParam, ccFee: ccFeeParam, totalWithFee: ccTotalParam, paymentMethod: pmMethod } = await req.json();
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY not set");
