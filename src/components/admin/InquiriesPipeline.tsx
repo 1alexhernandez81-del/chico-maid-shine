@@ -48,6 +48,7 @@ const InquiriesPipeline = () => {
   const [showInviteApproval, setShowInviteApproval] = useState(false);
   const [pendingEstimateBookingId, setPendingEstimateBookingId] = useState<string | null>(null);
   const [sendingInvite, setSendingInvite] = useState(false);
+  const [pendingCalendarSync, setPendingCalendarSync] = useState(false);
 
   // Communications
   const [pendingTemplateSubject, setPendingTemplateSubject] = useState("");
@@ -719,7 +720,7 @@ const InquiriesPipeline = () => {
                         className={`gap-1.5 text-xs justify-start ${tmpl.color}`}
                         onClick={async () => {
                           if (tmpl.id === "estimate-confirm" && selected.estimate_date) {
-                            // Confirm Estimate: use the customer's proposed date, save + calendar + send invite
+                            // Save estimate date + status first, then go to Messages tab
                             const confirmDate = toDateInputValue(selected.estimate_date);
                             const confirmTime = toTimeInputValue(selected.estimate_time);
                             setEstimateDate(confirmDate);
@@ -739,27 +740,17 @@ const InquiriesPipeline = () => {
                               setSaving(false);
                               return;
                             }
-                            // Sync Google Calendar
-                            setSyncingCalendar(true);
-                            try {
-                              const { error: calError } = await supabase.functions.invoke("sync-google-calendar", {
-                                body: { bookingId: selected.id, action: selected.google_calendar_event_id ? "update" : "create" },
-                              });
-                              if (calError) throw calError;
-                              toast({ title: t("admin.cal.synced"), description: t("admin.cal.synced.desc") });
-                            } catch (err) {
-                              console.error("Calendar sync error:", err);
-                              toast({ title: t("admin.cal.syncfail"), description: t("admin.cal.syncfail.desc"), variant: "destructive" });
-                            }
-                            setSyncingCalendar(false);
                             // Update local state
                             setBookings((prev) =>
                               prev.map((b) => b.id === selected.id ? { ...b, status: "estimate-scheduled", estimate_date: confirmDate, estimate_time: confirmTime || null, admin_notes: adminNotes } : b)
                             );
-                            // Prompt to send invite email
-                            setPendingEstimateBookingId(selected.id);
-                            setShowInviteApproval(true);
+                            setSelected({ ...selected, status: "estimate-scheduled", estimate_date: confirmDate, estimate_time: confirmTime || null });
                             setSaving(false);
+                            // Flag calendar sync for when email is sent
+                            setPendingCalendarSync(true);
+                            // Pre-fill template and switch to messages tab
+                            applyTemplate(tmpl);
+                            setDetailTab("messages");
                           } else {
                             applyTemplate(tmpl);
                             setDetailTab("messages");
@@ -794,6 +785,24 @@ const InquiriesPipeline = () => {
                   initialSubject={pendingTemplateSubject}
                   initialBody={pendingTemplateBody}
                   onInitialConsumed={() => { setPendingTemplateSubject(""); setPendingTemplateBody(""); }}
+                  onEmailSent={async () => {
+                    if (pendingCalendarSync && selected) {
+                      // Sync Google Calendar after confirm estimate email is sent
+                      setSyncingCalendar(true);
+                      try {
+                        const { error: calError } = await supabase.functions.invoke("sync-google-calendar", {
+                          body: { bookingId: selected.id, action: selected.google_calendar_event_id ? "update" : "create" },
+                        });
+                        if (calError) throw calError;
+                        toast({ title: t("admin.cal.synced"), description: t("admin.cal.synced.desc") });
+                      } catch (err) {
+                        console.error("Calendar sync error:", err);
+                        toast({ title: t("admin.cal.syncfail"), description: t("admin.cal.syncfail.desc"), variant: "destructive" });
+                      }
+                      setSyncingCalendar(false);
+                      setPendingCalendarSync(false);
+                    }
+                  }}
                 />
               </TabsContent>
             </Tabs>
