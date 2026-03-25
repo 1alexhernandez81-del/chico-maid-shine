@@ -19,7 +19,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Trash2, Upload, FileText, DollarSign, Camera, X, Image, Sparkles, Send, MessageSquare, Loader2 } from "lucide-react";
+import { Plus, Trash2, Upload, FileText, DollarSign, Camera, X, Image, Sparkles, Send, MessageSquare, Loader2, CalendarCheck } from "lucide-react";
 import JobTimer from "@/components/admin/JobTimer";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { UserRole } from "@/pages/AdminDashboard";
@@ -703,6 +703,19 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                   {(!scheduledDate || !scheduledTime) && (
                     <p className="text-xs text-destructive">{t("admin.job.schedule.required")}</p>
                   )}
+                  {/* Send Scheduled Cleaning button — right under schedule details */}
+                  {scheduledDate && scheduledTime && (
+                    <Button
+                      onClick={() => {
+                        setShowScheduleConfirm(true);
+                      }}
+                      disabled={saving || sendingEmail !== null}
+                      className="w-full gap-2 bg-green-600 text-white hover:bg-green-700"
+                    >
+                      <Send className="w-4 h-4" />
+                      {saving ? t("admin.bookings.saving") : "Send Scheduled Cleaning"}
+                    </Button>
+                  )}
                 </div>
               )}
 
@@ -773,12 +786,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                 />
               </div>
 
-              {/* Time Tracking — visible to admin and moderator */}
-              {(isAdmin || userRole === "moderator") && (
-                <JobTimer bookingId={booking.id} userRole={userRole} cleaners={cleaners} assignedCleaners={booking.assigned_cleaners || []} />
-              )}
-
-              {/* Action Buttons */}
+              {/* Action Buttons — Save + Email actions above Job Timer */}
               <div className="grid grid-cols-1 gap-2">
                 <Button onClick={saveChanges} disabled={saving} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
                   {saving ? t("admin.bookings.saving") : t("admin.bookings.save")}
@@ -806,6 +814,11 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                   </div>
                 )}
               </div>
+
+              {/* Time Tracking — below save actions */}
+              {(isAdmin || userRole === "moderator") && (
+                <JobTimer bookingId={booking.id} userRole={userRole} cleaners={cleaners} assignedCleaners={booking.assigned_cleaners || []} />
+              )}
             </div>
             </TabsContent>
 
