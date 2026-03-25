@@ -645,7 +645,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                 </div>
                 <div className="pt-1 border-t border-border space-y-1">
                   <div className="flex justify-end items-center gap-2">
-                    <span className="text-xs uppercase tracking-wider text-muted-foreground">Subtotal</span>
+                    <span className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.job.subtotal")}</span>
                     <span className="text-sm font-medium">${subtotal.toFixed(2)}</span>
                   </div>
                   {depositAmount > 0 && (
