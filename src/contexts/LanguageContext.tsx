@@ -837,6 +837,53 @@ const translations: Record<string, Record<Lang, string>> = {
   "admin.day.friday": { en: "Friday", es: "Viernes" },
   "admin.day.saturday": { en: "Saturday", es: "Sábado" },
   "admin.day.sunday": { en: "Sunday", es: "Domingo" },
+
+  // Payment Tracking
+  "admin.payment.tracking": { en: "Payment Tracking", es: "Seguimiento de Pago" },
+  "admin.payment.paid": { en: "Paid", es: "Pagado" },
+  "admin.payment.partially_paid": { en: "Partially Paid", es: "Parcialmente Pagado" },
+  "admin.payment.unpaid": { en: "Unpaid", es: "No Pagado" },
+  "admin.payment.original_balance": { en: "Original Balance", es: "Balance Original" },
+  "admin.payment.processing_fee": { en: "Processing Fee", es: "Tarifa de Procesamiento" },
+  "admin.payment.total_paid": { en: "Total Paid", es: "Total Pagado" },
+  "admin.payment.remaining_balance": { en: "Remaining Balance", es: "Balance Restante" },
+  "admin.payment.method": { en: "Payment Method", es: "Método de Pago" },
+  "admin.payment.paid_at": { en: "Paid At", es: "Pagado el" },
+  "admin.payment.reference": { en: "Reference", es: "Referencia" },
+  "admin.payment.record": { en: "Record Manual Payment", es: "Registrar Pago Manual" },
+  "admin.payment.record_title": { en: "Record Payment", es: "Registrar Pago" },
+  "admin.payment.save": { en: "Save Payment", es: "Guardar Pago" },
+  "admin.payment.edit": { en: "Edit Payment", es: "Editar Pago" },
+  "admin.payment.save_changes": { en: "Save Changes", es: "Guardar Cambios" },
+  "admin.payment.status": { en: "Status", es: "Estado" },
+  "admin.payment.amount": { en: "Amount", es: "Monto" },
+  "admin.payment.date": { en: "Date", es: "Fecha" },
+  "admin.payment.ref_note": { en: "Reference / Note (optional)", es: "Referencia / Nota (opcional)" },
+  "admin.payment.ref_placeholder": { en: "Zelle confirmation, check #, etc.", es: "Confirmación de Zelle, # de cheque, etc." },
+  "admin.payment.ref_edit_placeholder": { en: "Stripe ID, Zelle confirmation, etc.", es: "ID de Stripe, confirmación de Zelle, etc." },
+  "admin.payment.error": { en: "Failed to save payment.", es: "Error al guardar el pago." },
+  "admin.payment.recorded": { en: "💰 Payment recorded", es: "💰 Pago registrado" },
+  "admin.payment.updated": { en: "✅ Payment updated", es: "✅ Pago actualizado" },
+  "admin.payment.update_error": { en: "Failed to update payment.", es: "Error al actualizar el pago." },
+  "admin.payment.missing": { en: "Please fill in payment method and amount.", es: "Complete el método de pago y el monto." },
+  "admin.payment.zelle": { en: "Zelle", es: "Zelle" },
+  "admin.payment.ach": { en: "ACH", es: "ACH" },
+  "admin.payment.credit_card": { en: "Credit Card", es: "Tarjeta de Crédito" },
+  "admin.payment.cash": { en: "Cash", es: "Efectivo" },
+  "admin.payment.check": { en: "Check", es: "Cheque" },
+  "admin.payment.other": { en: "Other", es: "Otro" },
+
+  // Job email actions
+  "admin.job.sendinvoice": { en: "Send Invoice", es: "Enviar Factura" },
+  "admin.job.sendreceipt_btn": { en: "Send Receipt", es: "Enviar Recibo" },
+  "admin.job.ccpayment": { en: "CC Payment", es: "Pago con Tarjeta" },
+  "admin.job.achpayment": { en: "ACH Payment", es: "Pago ACH" },
+
+  // Line items section
+  "admin.job.subtotal": { en: "Subtotal", es: "Subtotal" },
+  "admin.job.deposit": { en: "Deposit collected", es: "Depósito cobrado" },
+  "admin.job.balancedue": { en: "Balance Due", es: "Balance Pendiente" },
+  "admin.job.sendscheduled": { en: "Send Scheduled Cleaning", es: "Enviar Limpieza Programada" },
 };
 
 const fallbackLanguageContext: LanguageContextType = {

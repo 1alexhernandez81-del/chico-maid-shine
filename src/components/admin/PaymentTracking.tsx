@@ -8,6 +8,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { DollarSign, CheckCircle, Clock, AlertCircle, Plus, Pencil } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { Booking } from "./shared/types";
 
 interface PaymentTrackingProps {
@@ -17,21 +18,22 @@ interface PaymentTrackingProps {
 }
 
 const PAYMENT_METHODS = [
-  { value: "zelle", label: "Zelle" },
-  { value: "ach", label: "ACH" },
-  { value: "credit_card", label: "Credit Card" },
-  { value: "cash", label: "Cash" },
-  { value: "check", label: "Check" },
-  { value: "other", label: "Other" },
+  { value: "zelle", key: "admin.payment.zelle" },
+  { value: "ach", key: "admin.payment.ach" },
+  { value: "credit_card", key: "admin.payment.credit_card" },
+  { value: "cash", key: "admin.payment.cash" },
+  { value: "check", key: "admin.payment.check" },
+  { value: "other", key: "admin.payment.other" },
 ];
 
 const PAYMENT_STATUSES = [
-  { value: "unpaid", label: "Unpaid" },
-  { value: "partially_paid", label: "Partially Paid" },
-  { value: "paid", label: "Paid" },
+  { value: "unpaid", key: "admin.payment.unpaid" },
+  { value: "partially_paid", key: "admin.payment.partially_paid" },
+  { value: "paid", key: "admin.payment.paid" },
 ];
 
 const PaymentTracking = ({ booking, balanceDue, onUpdated }: PaymentTrackingProps) => {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [showManualForm, setShowManualForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
@@ -59,17 +61,22 @@ const PaymentTracking = ({ booking, balanceDue, onUpdated }: PaymentTrackingProp
   const statusBadge = () => {
     switch (paymentStatus) {
       case "paid":
-        return <Badge className="bg-green-500/20 text-green-400 border-green-500/30 gap-1"><CheckCircle className="w-3 h-3" /> Paid</Badge>;
+        return <Badge className="bg-green-500/20 text-green-400 border-green-500/30 gap-1"><CheckCircle className="w-3 h-3" /> {t("admin.payment.paid")}</Badge>;
       case "partially_paid":
-        return <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 gap-1"><Clock className="w-3 h-3" /> Partially Paid</Badge>;
+        return <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 gap-1"><Clock className="w-3 h-3" /> {t("admin.payment.partially_paid")}</Badge>;
       default:
-        return <Badge className="bg-red-500/20 text-red-400 border-red-500/30 gap-1"><AlertCircle className="w-3 h-3" /> Unpaid</Badge>;
+        return <Badge className="bg-red-500/20 text-red-400 border-red-500/30 gap-1"><AlertCircle className="w-3 h-3" /> {t("admin.payment.unpaid")}</Badge>;
     }
+  };
+
+  const getMethodLabel = (method: string) => {
+    const found = PAYMENT_METHODS.find(m => m.value === method);
+    return found ? t(found.key) : method.replace(/_/g, " ");
   };
 
   const handleManualPayment = async () => {
     if (!manualMethod || !manualAmount || parseFloat(manualAmount) <= 0) {
-      toast({ title: "Missing fields", description: "Please fill in payment method and amount.", variant: "destructive" });
+      toast({ title: t("admin.error"), description: t("admin.payment.missing"), variant: "destructive" });
       return;
     }
     setSaving(true);
@@ -98,9 +105,9 @@ const PaymentTracking = ({ booking, balanceDue, onUpdated }: PaymentTrackingProp
       .eq("id", booking.id);
 
     if (error) {
-      toast({ title: "Error", description: "Failed to save payment.", variant: "destructive" });
+      toast({ title: t("admin.error"), description: t("admin.payment.error"), variant: "destructive" });
     } else {
-      toast({ title: "💰 Payment recorded", description: `$${amount.toFixed(2)} via ${manualMethod}` });
+      toast({ title: t("admin.payment.recorded"), description: `$${amount.toFixed(2)} via ${getMethodLabel(manualMethod)}` });
       onUpdated({
         ...booking,
         payment_status: newStatus,
@@ -148,9 +155,9 @@ const PaymentTracking = ({ booking, balanceDue, onUpdated }: PaymentTrackingProp
       .eq("id", booking.id);
 
     if (error) {
-      toast({ title: "Error", description: "Failed to update payment.", variant: "destructive" });
+      toast({ title: t("admin.error"), description: t("admin.payment.update_error"), variant: "destructive" });
     } else {
-      toast({ title: "✅ Payment updated" });
+      toast({ title: t("admin.payment.updated") });
       onUpdated({
         ...booking,
         payment_status: editStatus,
@@ -169,7 +176,7 @@ const PaymentTracking = ({ booking, balanceDue, onUpdated }: PaymentTrackingProp
     <div className="border-t border-border pt-4 space-y-3">
       <div className="flex items-center justify-between">
         <label className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-          <DollarSign className="w-3.5 h-3.5" /> Payment Tracking
+          <DollarSign className="w-3.5 h-3.5" /> {t("admin.payment.tracking")}
         </label>
         <div className="flex items-center gap-2">
           {statusBadge()}
@@ -184,30 +191,30 @@ const PaymentTracking = ({ booking, balanceDue, onUpdated }: PaymentTrackingProp
       {/* Edit form */}
       {showEditForm ? (
         <div className="bg-secondary/30 border border-border rounded-lg p-3 space-y-3">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Edit Payment</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">{t("admin.payment.edit")}</p>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Status</label>
+              <label className="text-xs text-muted-foreground mb-1 block">{t("admin.payment.status")}</label>
               <Select value={editStatus} onValueChange={setEditStatus}>
                 <SelectTrigger className="text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {PAYMENT_STATUSES.map((s) => (
-                    <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                    <SelectItem key={s.value} value={s.value}>{t(s.key)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Method</label>
+              <label className="text-xs text-muted-foreground mb-1 block">{t("admin.payment.method")}</label>
               <Select value={editMethod} onValueChange={setEditMethod}>
                 <SelectTrigger className="text-sm">
-                  <SelectValue placeholder="Select..." />
+                  <SelectValue placeholder={t("admin.bookings.status")} />
                 </SelectTrigger>
                 <SelectContent>
                   {PAYMENT_METHODS.map((m) => (
-                    <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                    <SelectItem key={m.value} value={m.value}>{t(m.key)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -215,7 +222,7 @@ const PaymentTracking = ({ booking, balanceDue, onUpdated }: PaymentTrackingProp
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Total Paid</label>
+              <label className="text-xs text-muted-foreground mb-1 block">{t("admin.payment.total_paid")}</label>
               <div className="relative">
                 <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
                 <Input
@@ -229,7 +236,7 @@ const PaymentTracking = ({ booking, balanceDue, onUpdated }: PaymentTrackingProp
               </div>
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Processing Fee</label>
+              <label className="text-xs text-muted-foreground mb-1 block">{t("admin.payment.processing_fee")}</label>
               <div className="relative">
                 <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
                 <Input
@@ -244,7 +251,7 @@ const PaymentTracking = ({ booking, balanceDue, onUpdated }: PaymentTrackingProp
             </div>
           </div>
           <div>
-            <label className="text-xs text-muted-foreground mb-1 block">Paid At</label>
+            <label className="text-xs text-muted-foreground mb-1 block">{t("admin.payment.paid_at")}</label>
             <Input
               type="datetime-local"
               value={editPaidAt}
@@ -253,20 +260,20 @@ const PaymentTracking = ({ booking, balanceDue, onUpdated }: PaymentTrackingProp
             />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground mb-1 block">Reference</label>
+            <label className="text-xs text-muted-foreground mb-1 block">{t("admin.payment.reference")}</label>
             <Input
               value={editReference}
               onChange={(e) => setEditReference(e.target.value)}
-              placeholder="Stripe ID, Zelle confirmation, etc."
+              placeholder={t("admin.payment.ref_edit_placeholder")}
               className="text-sm"
             />
           </div>
           <div className="flex gap-2">
             <Button size="sm" onClick={handleEditSave} disabled={saving} className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground text-xs">
-              {saving ? "Saving..." : "Save Changes"}
+              {saving ? t("admin.saving") : t("admin.payment.save_changes")}
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setShowEditForm(false)} className="text-xs">
-              Cancel
+              {t("admin.cancel")}
             </Button>
           </div>
         </div>
@@ -275,22 +282,22 @@ const PaymentTracking = ({ booking, balanceDue, onUpdated }: PaymentTrackingProp
           {/* Payment summary grid */}
           <div className="bg-secondary/50 rounded-lg p-3 space-y-2 text-sm">
             <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
-              <span className="text-muted-foreground text-xs">Original Balance</span>
+              <span className="text-muted-foreground text-xs">{t("admin.payment.original_balance")}</span>
               <span className="text-right font-medium">${balanceDue.toFixed(2)}</span>
 
               {processingFee > 0 && (
                 <>
-                  <span className="text-muted-foreground text-xs">Processing Fee</span>
+                  <span className="text-muted-foreground text-xs">{t("admin.payment.processing_fee")}</span>
                   <span className="text-right font-medium">${processingFee.toFixed(2)}</span>
                 </>
               )}
 
-              <span className="text-muted-foreground text-xs">Total Paid</span>
+              <span className="text-muted-foreground text-xs">{t("admin.payment.total_paid")}</span>
               <span className="text-right font-medium text-green-400">${totalPaid.toFixed(2)}</span>
 
               <div className="col-span-2 border-t border-border my-1" />
 
-              <span className="text-muted-foreground text-xs font-semibold">Remaining Balance</span>
+              <span className="text-muted-foreground text-xs font-semibold">{t("admin.payment.remaining_balance")}</span>
               <span className={`text-right font-bold ${remainingBalance <= 0 ? "text-green-400" : "text-accent"}`}>
                 ${remainingBalance.toFixed(2)}
               </span>
@@ -298,21 +305,21 @@ const PaymentTracking = ({ booking, balanceDue, onUpdated }: PaymentTrackingProp
 
             {booking.payment_method && (
               <div className="grid grid-cols-2 gap-x-4 pt-1 border-t border-border">
-                <span className="text-muted-foreground text-xs">Payment Method</span>
-                <span className="text-right text-xs capitalize">{(booking.payment_method || "").replace(/_/g, " ")}</span>
+                <span className="text-muted-foreground text-xs">{t("admin.payment.method")}</span>
+                <span className="text-right text-xs capitalize">{getMethodLabel(booking.payment_method)}</span>
               </div>
             )}
 
             {booking.paid_at && (
               <div className="grid grid-cols-2 gap-x-4">
-                <span className="text-muted-foreground text-xs">Paid At</span>
+                <span className="text-muted-foreground text-xs">{t("admin.payment.paid_at")}</span>
                 <span className="text-right text-xs">{new Date(booking.paid_at).toLocaleString()}</span>
               </div>
             )}
 
             {booking.payment_reference && (
               <div className="pt-1 border-t border-border">
-                <span className="text-muted-foreground text-xs block mb-1">Reference</span>
+                <span className="text-muted-foreground text-xs block mb-1">{t("admin.payment.reference")}</span>
                 <p className="text-xs bg-background/50 rounded p-2 whitespace-pre-wrap font-mono">{booking.payment_reference}</p>
               </div>
             )}
@@ -326,29 +333,29 @@ const PaymentTracking = ({ booking, balanceDue, onUpdated }: PaymentTrackingProp
               onClick={() => setShowManualForm(true)}
               className="w-full gap-1.5 text-xs"
             >
-              <Plus className="w-3 h-3" /> Record Manual Payment
+              <Plus className="w-3 h-3" /> {t("admin.payment.record")}
             </Button>
           )}
 
           {showManualForm && (
             <div className="bg-secondary/30 border border-border rounded-lg p-3 space-y-3">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Record Payment</p>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">{t("admin.payment.record_title")}</p>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Method</label>
+                  <label className="text-xs text-muted-foreground mb-1 block">{t("admin.payment.method")}</label>
                   <Select value={manualMethod} onValueChange={setManualMethod}>
                     <SelectTrigger className="text-sm">
-                      <SelectValue placeholder="Select..." />
+                      <SelectValue placeholder={t("admin.bookings.status")} />
                     </SelectTrigger>
                     <SelectContent>
                       {PAYMENT_METHODS.map((m) => (
-                        <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                        <SelectItem key={m.value} value={m.value}>{t(m.key)}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Amount</label>
+                  <label className="text-xs text-muted-foreground mb-1 block">{t("admin.payment.amount")}</label>
                   <div className="relative">
                     <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
                     <Input
@@ -364,24 +371,24 @@ const PaymentTracking = ({ booking, balanceDue, onUpdated }: PaymentTrackingProp
                 </div>
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Date</label>
+                <label className="text-xs text-muted-foreground mb-1 block">{t("admin.payment.date")}</label>
                 <Input type="date" value={manualDate} onChange={(e) => setManualDate(e.target.value)} className="text-sm" />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Reference / Note (optional)</label>
+                <label className="text-xs text-muted-foreground mb-1 block">{t("admin.payment.ref_note")}</label>
                 <Input
                   value={manualRef}
                   onChange={(e) => setManualRef(e.target.value)}
-                  placeholder="Zelle confirmation, check #, etc."
+                  placeholder={t("admin.payment.ref_placeholder")}
                   className="text-sm"
                 />
               </div>
               <div className="flex gap-2">
                 <Button size="sm" onClick={handleManualPayment} disabled={saving} className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs">
-                  {saving ? "Saving..." : "Save Payment"}
+                  {saving ? t("admin.saving") : t("admin.payment.save")}
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => setShowManualForm(false)} className="text-xs">
-                  Cancel
+                  {t("admin.cancel")}
                 </Button>
               </div>
             </div>

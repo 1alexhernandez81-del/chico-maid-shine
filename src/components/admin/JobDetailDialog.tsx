@@ -645,17 +645,17 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                 </div>
                 <div className="pt-1 border-t border-border space-y-1">
                   <div className="flex justify-end items-center gap-2">
-                    <span className="text-xs uppercase tracking-wider text-muted-foreground">Subtotal</span>
+                    <span className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.job.subtotal")}</span>
                     <span className="text-sm font-medium">${subtotal.toFixed(2)}</span>
                   </div>
                   {depositAmount > 0 && (
                     <div className="flex justify-end items-center gap-2">
-                      <span className="text-xs tracking-wider text-muted-foreground">Deposit collected (25%)</span>
+                      <span className="text-xs tracking-wider text-muted-foreground">{t("admin.job.deposit")} (25%)</span>
                       <span className="text-sm text-green-400">-${depositAmount.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="flex justify-end items-center gap-2 pt-1 border-t border-border">
-                    <span className="text-xs uppercase tracking-wider text-muted-foreground">Balance Due</span>
+                    <span className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.job.balancedue")}</span>
                     <span className="text-lg font-semibold text-accent">${total.toFixed(2)}</span>
                   </div>
                 </div>
@@ -756,7 +756,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                       className="w-full gap-2 bg-green-600 text-white hover:bg-green-700"
                     >
                       <Send className="w-4 h-4" />
-                      {saving ? t("admin.bookings.saving") : "Send Scheduled Cleaning"}
+                      {saving ? t("admin.bookings.saving") : t("admin.job.sendscheduled")}
                     </Button>
                   )}
                 </div>
@@ -844,7 +844,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                       className="gap-1.5 text-xs"
                     >
                       <FileText className="w-3 h-3" />
-                      {sendingEmail === 'invoice' ? t("admin.job.sending") : "Send Invoice"}
+                      {sendingEmail === 'invoice' ? t("admin.job.sending") : t("admin.job.sendinvoice")}
                     </Button>
                     <Button
                       variant="outline"
@@ -862,7 +862,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                       onClick={() => handleSendEmail('ach-payment')}
                       className="gap-1.5 text-xs"
                     >
-                      🏦 {sendingEmail === 'ach-payment' ? t("admin.job.sending") : "ACH Payment"}
+                      🏦 {sendingEmail === 'ach-payment' ? t("admin.job.sending") : t("admin.job.achpayment")}
                     </Button>
                     <Button
                       variant="outline"
@@ -872,7 +872,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                       className="gap-1.5 text-xs"
                     >
                       <CreditCard className="w-3 h-3" />
-                      {sendingEmail === 'cc-payment' ? t("admin.job.sending") : "CC Payment"}
+                      {sendingEmail === 'cc-payment' ? t("admin.job.sending") : t("admin.job.ccpayment")}
                     </Button>
                   </div>
                 )}
