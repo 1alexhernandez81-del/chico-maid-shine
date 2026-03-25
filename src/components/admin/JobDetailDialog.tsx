@@ -160,7 +160,10 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
 
   if (!booking) return null;
 
-  const total = lineItems.reduce((sum, item) => sum + (item.amount || 0), 0);
+  const serviceItems = lineItems.filter((item) => !item.description.toLowerCase().includes("deposit"));
+  const subtotal = serviceItems.reduce((sum, item) => sum + (item.amount || 0), 0);
+  const depositAmount = booking.total_price && booking.total_price > 0 ? booking.total_price * 0.25 : 0;
+  const total = subtotal - depositAmount;
 
   const updateLineItem = (index: number, field: keyof LineItem, value: string | number) => {
     setLineItems((prev) =>
