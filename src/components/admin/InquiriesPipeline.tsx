@@ -48,6 +48,7 @@ const InquiriesPipeline = () => {
   const [showInviteApproval, setShowInviteApproval] = useState(false);
   const [pendingEstimateBookingId, setPendingEstimateBookingId] = useState<string | null>(null);
   const [sendingInvite, setSendingInvite] = useState(false);
+  const [pendingCalendarSync, setPendingCalendarSync] = useState(false);
 
   // Communications
   const [pendingTemplateSubject, setPendingTemplateSubject] = useState("");
