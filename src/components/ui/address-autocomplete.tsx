@@ -1,18 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
-interface AddressSuggestion {
-  display_name: string;
-  address: {
-    house_number?: string;
-    road?: string;
-    city?: string;
-    town?: string;
-    village?: string;
-    postcode?: string;
-    state?: string;
-  };
+interface Suggestion {
+  description: string;
+  street: string;
+  city: string;
+  zip: string;
 }
 
 interface AddressAutocompleteProps {
@@ -30,26 +26,31 @@ const AddressAutocomplete = ({
   placeholder = "123 Main St",
   className,
 }: AddressAutocompleteProps) => {
-  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [loading, setLoading] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const sessionTokenRef = useRef(crypto.randomUUID());
 
   const fetchSuggestions = useCallback(async (query: string) => {
     if (query.length < 4) {
       setSuggestions([]);
       return;
     }
+    setLoading(true);
     try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&countrycodes=us&limit=5&q=${encodeURIComponent(query + " California")}`
-      );
-      const data = await res.json();
-      setSuggestions(data || []);
+      const { data, error } = await supabase.functions.invoke("google-places-autocomplete", {
+        body: { input: query, sessionToken: sessionTokenRef.current },
+      });
+      if (error) throw error;
+      setSuggestions(data?.suggestions || []);
       setShowSuggestions(true);
     } catch {
       setSuggestions([]);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -69,14 +70,13 @@ const AddressAutocomplete = ({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const handleSelect = (s: AddressSuggestion) => {
-    const street = [s.address.house_number, s.address.road].filter(Boolean).join(" ");
-    const city = s.address.city || s.address.town || s.address.village || "";
-    const zip = s.address.postcode || "";
-    onChange(street);
-    onSelect?.({ street, city, zip });
+  const handleSelect = (s: Suggestion) => {
+    onChange(s.street);
+    onSelect?.({ street: s.street, city: s.city, zip: s.zip });
     setShowSuggestions(false);
     setSuggestions([]);
+    // Reset session token after selection (Google best practice)
+    sessionTokenRef.current = crypto.randomUUID();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -97,14 +97,19 @@ const AddressAutocomplete = ({
 
   return (
     <div ref={wrapperRef} className="relative">
-      <Input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        className={className}
-      />
+      <div className="relative">
+        <Input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          className={className}
+        />
+        {loading && (
+          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+        )}
+      </div>
       {showSuggestions && suggestions.length > 0 && (
         <ul className="absolute z-50 mt-1 w-full rounded-md border border-border bg-popover shadow-lg max-h-48 overflow-auto">
           {suggestions.map((s, i) => (
@@ -116,7 +121,7 @@ const AddressAutocomplete = ({
                 i === highlightedIndex && "bg-accent/20"
               )}
             >
-              {s.display_name}
+              {s.description}
             </li>
           ))}
         </ul>
