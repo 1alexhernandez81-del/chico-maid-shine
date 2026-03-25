@@ -662,6 +662,11 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
               </div>
             )}
 
+            {/* Payment Tracking — Admin only */}
+            {isAdmin && (
+              <PaymentTracking booking={booking} balanceDue={total} onUpdated={onUpdated} />
+            )}
+
             {/* Invoice Upload — Admin only */}
             {isAdmin && (
               <div className="border-t border-border pt-4 space-y-3">
