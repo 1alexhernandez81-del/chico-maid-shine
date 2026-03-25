@@ -655,7 +655,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                     </div>
                   )}
                   <div className="flex justify-end items-center gap-2 pt-1 border-t border-border">
-                    <span className="text-xs uppercase tracking-wider text-muted-foreground">Balance Due</span>
+                    <span className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.job.balancedue")}</span>
                     <span className="text-lg font-semibold text-accent">${total.toFixed(2)}</span>
                   </div>
                 </div>
