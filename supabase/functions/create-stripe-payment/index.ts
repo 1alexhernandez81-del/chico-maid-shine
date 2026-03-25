@@ -40,16 +40,13 @@ Deno.serve(async (req) => {
 
     if (balanceDue <= 0) throw new Error("No balance due");
 
-    // ACH: 0.8% capped at $5; CC: 3%
-    const feePercent = isACH ? 0.008 : CC_FEE_PERCENT;
-    const rawFee = balanceDue * feePercent;
-    const fee = isACH ? Math.min(rawFee, 5) : rawFee;
-    const feeRounded = Math.round(fee * 100) / 100;
+    // ACH: no fee passed to customer (absorbed); CC: 3%
+    const feeRounded = isACH ? 0 : Math.round(balanceDue * CC_FEE_PERCENT * 100) / 100;
     const totalWithFee = balanceDue + feeRounded;
     const totalCents = Math.round(totalWithFee * 100);
 
     const customerName = (booking.name || "Customer").trim();
-    const feeLabel = isACH ? "ACH processing fee (0.8%, max $5)" : "CC processing fee (3%)";
+    const feeLabel = isACH ? "" : "CC processing fee (3%)";
 
     // Create a Stripe Checkout Session
     const params = new URLSearchParams();
