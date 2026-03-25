@@ -74,19 +74,8 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
         ? booking.line_items
         : [{ description: "", amount: 0 }];
 
-      // Auto-add deposit line item if booking has a quoted price and no deposit line exists yet
-      if (booking.total_price && booking.total_price > 0) {
-        const hasDepositLine = items.some((item) =>
-          item.description.toLowerCase().includes("deposit")
-        );
-        if (!hasDepositLine) {
-          const depositAmount = -(booking.total_price * 0.25);
-          items = [
-            ...items,
-            { description: "Deposit Collected (25%)", amount: depositAmount },
-          ];
-        }
-      }
+      // Filter out any legacy deposit line items
+      items = items.filter((item) => !item.description.toLowerCase().includes("deposit"));
 
       setAdminNotes(notes);
       setNewStatus(booking.status);
