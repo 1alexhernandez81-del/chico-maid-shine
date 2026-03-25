@@ -49,9 +49,20 @@ Deno.serve(async (req) => {
     const feeLabel = isACH ? "" : "CC processing fee (3%)";
 
     // Create a Stripe Checkout Session
+    // Build success URL with payment metadata for auto-tracking
+    const successParams = new URLSearchParams({
+      payment: "success",
+      booking_id: bookingId,
+      method: isACH ? "ach" : "credit_card",
+      amount: totalWithFee.toFixed(2),
+      fee: feeRounded.toFixed(2),
+      balance: balanceDue.toFixed(2),
+    });
+    const successUrl = `https://maidforchico.com/?${successParams.toString()}`;
+
     const params = new URLSearchParams();
     params.append("mode", "payment");
-    params.append("success_url", "https://maidforchico.com/?payment=success");
+    params.append("success_url", successUrl);
     params.append("cancel_url", "https://maidforchico.com/?payment=cancelled");
     params.append("customer_email", booking.email);
     if (isACH) {
