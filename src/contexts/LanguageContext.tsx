@@ -322,6 +322,7 @@ const translations: Record<string, Record<Lang, string>> = {
   "admin.cleaners.empty": { en: "No cleaners added yet. Add your first team member!", es: "Aún no hay limpiadores. ¡Agrega tu primer miembro del equipo!" },
   "admin.cleaners.active": { en: "Active", es: "Activo" },
   "admin.cleaners.inactive": { en: "Inactive", es: "Inactivo" },
+  "admin.cleaners.all": { en: "All Cleaners", es: "Todos los Limpiadores" },
   "admin.cleaners.add.title": { en: "Add Cleaner", es: "Agregar Limpiador" },
   "admin.cleaners.add.desc": { en: "Add a new team member", es: "Agrega un nuevo miembro del equipo" },
   "admin.cleaners.add.btn": { en: "Add Cleaner", es: "Agregar Limpiador" },
