@@ -517,7 +517,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
               )}
               {booking.bedrooms && (
                 <div>
-                  <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">BEDROOMS</p>
+                  <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("admin.bookings.bedrooms")}</p>
                   <p>{booking.bedrooms}</p>
                 </div>
               )}
