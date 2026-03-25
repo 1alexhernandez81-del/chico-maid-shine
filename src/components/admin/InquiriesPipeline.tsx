@@ -785,6 +785,24 @@ const InquiriesPipeline = () => {
                   initialSubject={pendingTemplateSubject}
                   initialBody={pendingTemplateBody}
                   onInitialConsumed={() => { setPendingTemplateSubject(""); setPendingTemplateBody(""); }}
+                  onEmailSent={async () => {
+                    if (pendingCalendarSync && selected) {
+                      // Sync Google Calendar after confirm estimate email is sent
+                      setSyncingCalendar(true);
+                      try {
+                        const { error: calError } = await supabase.functions.invoke("sync-google-calendar", {
+                          body: { bookingId: selected.id, action: selected.google_calendar_event_id ? "update" : "create" },
+                        });
+                        if (calError) throw calError;
+                        toast({ title: t("admin.cal.synced"), description: t("admin.cal.synced.desc") });
+                      } catch (err) {
+                        console.error("Calendar sync error:", err);
+                        toast({ title: t("admin.cal.syncfail"), description: t("admin.cal.syncfail.desc"), variant: "destructive" });
+                      }
+                      setSyncingCalendar(false);
+                      setPendingCalendarSync(false);
+                    }
+                  }}
                 />
               </TabsContent>
             </Tabs>
