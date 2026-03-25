@@ -872,7 +872,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                       className="gap-1.5 text-xs"
                     >
                       <CreditCard className="w-3 h-3" />
-                      {sendingEmail === 'cc-payment' ? t("admin.job.sending") : "CC Payment"}
+                      {sendingEmail === 'cc-payment' ? t("admin.job.sending") : t("admin.job.ccpayment")}
                     </Button>
                   </div>
                 )}
