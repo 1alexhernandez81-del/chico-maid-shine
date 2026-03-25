@@ -609,9 +609,21 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                     </div>
                   ))}
                 </div>
-                <div className="flex justify-end items-center gap-2 pt-1 border-t border-border">
-                  <span className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.job.total")}</span>
-                  <span className="text-lg font-semibold text-accent">${total.toFixed(2)}</span>
+                <div className="pt-1 border-t border-border space-y-1">
+                  <div className="flex justify-end items-center gap-2">
+                    <span className="text-xs uppercase tracking-wider text-muted-foreground">Subtotal</span>
+                    <span className="text-sm font-medium">${subtotal.toFixed(2)}</span>
+                  </div>
+                  {depositAmount > 0 && (
+                    <div className="flex justify-end items-center gap-2">
+                      <span className="text-xs tracking-wider text-muted-foreground">Deposit collected (25%)</span>
+                      <span className="text-sm text-green-400">-${depositAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-end items-center gap-2 pt-1 border-t border-border">
+                    <span className="text-xs uppercase tracking-wider text-muted-foreground">Balance Due</span>
+                    <span className="text-lg font-semibold text-accent">${total.toFixed(2)}</span>
+                  </div>
                 </div>
               </div>
             )}
