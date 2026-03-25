@@ -826,15 +826,16 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                   {saving ? t("admin.bookings.saving") : t("admin.bookings.save")}
                 </Button>
                 {isAdmin && (
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       disabled={sendingEmail !== null}
-                      onClick={() => handleSendEmail('quote')}
+                      onClick={() => handleSendEmail('invoice')}
                       className="gap-1.5 text-xs"
                     >
-                      📧 {sendingEmail === 'quote' ? t("admin.job.sending") : t("admin.job.sendquote")}
+                      <FileText className="w-3 h-3" />
+                      {sendingEmail === 'invoice' ? t("admin.job.sending") : "Send Invoice"}
                     </Button>
                     <Button
                       variant="outline"
@@ -844,6 +845,16 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                       className="gap-1.5 text-xs"
                     >
                       📧 {sendingEmail === 'receipt' ? t("admin.job.sending") : t("admin.job.sendreceipt")}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={sendingEmail !== null}
+                      onClick={() => handleSendEmail('cc-payment')}
+                      className="gap-1.5 text-xs"
+                    >
+                      <CreditCard className="w-3 h-3" />
+                      {sendingEmail === 'cc-payment' ? t("admin.job.sending") : "CC Payment"}
                     </Button>
                   </div>
                 )}
