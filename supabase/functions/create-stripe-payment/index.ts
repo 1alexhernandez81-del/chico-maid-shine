@@ -91,8 +91,9 @@ Deno.serve(async (req) => {
         success: true,
         checkoutUrl: session.url,
         balanceDue: balanceDue.toFixed(2),
-        ccFee: ccFee.toFixed(2),
+        fee: feeRounded.toFixed(2),
         totalWithFee: totalWithFee.toFixed(2),
+        paymentMethod: isACH ? "ach" : "card",
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
