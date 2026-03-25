@@ -858,7 +858,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={sendingEmail !== null}
+                      disabled={sendingEmail !== null || booking.payment_status === 'paid'}
                       onClick={() => handleSendEmail('ach-payment')}
                       className="gap-1.5 text-xs"
                     >
@@ -867,7 +867,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={sendingEmail !== null}
+                      disabled={sendingEmail !== null || booking.payment_status === 'paid'}
                       onClick={() => handleSendEmail('cc-payment')}
                       className="gap-1.5 text-xs"
                     >
