@@ -178,7 +178,13 @@ Deno.serve(async (req) => {
           items.push({ description: "Deposit Collected (25%)", amount: depositAmount });
         }
 
-        const itemsList = items.map((i: any) => {
+        // Sort so deposit (negative) items appear last
+        const sortedItems = [...items].sort((a, b) => {
+          const aIsDeposit = Number(a.amount) < 0 ? 1 : 0;
+          const bIsDeposit = Number(b.amount) < 0 ? 1 : 0;
+          return aIsDeposit - bIsDeposit;
+        });
+        const itemsList = sortedItems.map((i: any) => {
           const amt = Number(i.amount);
           return amt < 0
             ? `• ${i.description}: -$${Math.abs(amt).toFixed(2)}`
