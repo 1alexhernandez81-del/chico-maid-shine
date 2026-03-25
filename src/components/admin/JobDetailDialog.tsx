@@ -844,7 +844,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
                       className="gap-1.5 text-xs"
                     >
                       <FileText className="w-3 h-3" />
-                      {sendingEmail === 'invoice' ? t("admin.job.sending") : "Send Invoice"}
+                      {sendingEmail === 'invoice' ? t("admin.job.sending") : t("admin.job.sendinvoice")}
                     </Button>
                     <Button
                       variant="outline"
