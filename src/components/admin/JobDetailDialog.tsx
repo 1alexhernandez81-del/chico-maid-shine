@@ -245,31 +245,34 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
     if (data?.signedUrl) window.open(data.signedUrl, "_blank");
   };
 
-  const handleSendEmail = async (type: 'quote' | 'receipt' | 'invoice' | 'cc-payment') => {
+  const handleSendEmail = async (type: 'quote' | 'receipt' | 'invoice' | 'cc-payment' | 'ach-payment') => {
     setSendingEmail(type);
     try {
-      if (type === 'cc-payment') {
+      if (type === 'cc-payment' || type === 'ach-payment') {
+        const paymentMethod = type === 'ach-payment' ? 'ach' : 'card';
         // Step 1: Create Stripe Checkout Session
         const { data: stripeData, error: stripeErr } = await supabase.functions.invoke('create-stripe-payment', {
-          body: { bookingId: booking.id },
+          body: { bookingId: booking.id, paymentMethod },
         });
         if (stripeErr || !stripeData?.checkoutUrl) throw stripeErr || new Error("Failed to create payment link");
 
-        // Step 2: Send the CC payment email with the checkout URL
+        // Step 2: Send the payment email with the checkout URL
         const { error } = await supabase.functions.invoke('send-job-email', {
           body: {
             bookingId: booking.id,
-            type: 'cc-payment',
+            type,
             checkoutUrl: stripeData.checkoutUrl,
             balanceDue: stripeData.balanceDue,
-            ccFee: stripeData.ccFee,
+            ccFee: stripeData.fee,
             totalWithFee: stripeData.totalWithFee,
+            paymentMethod,
           },
         });
         if (error) throw error;
+        const label = type === 'ach-payment' ? 'ACH Payment' : 'CC Payment';
         toast({
-          title: "💳 CC Payment email sent!",
-          description: `Credit card payment link sent to ${booking.email}`,
+          title: `💳 ${label} email sent!`,
+          description: `${label} link sent to ${booking.email}`,
         });
       } else {
         const { error } = await supabase.functions.invoke('send-job-email', {
