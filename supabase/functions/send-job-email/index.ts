@@ -212,12 +212,13 @@ Deno.serve(async (req) => {
         break;
       }
       case "cc-payment": {
-        // This type expects checkoutUrl, balanceDue, ccFee, totalWithFee in the request body
-        const { checkoutUrl: ccUrl, balanceDue: ccBalance, ccFee: ccFeeAmt, totalWithFee: ccTotal } = await req.clone().json().catch(() => ({})) || {};
+        const ccBalance = ccBalanceParam || balanceCalc.toFixed(2);
+        const ccFeeAmt = ccFeeParam || (balanceCalc * 0.03).toFixed(2);
+        const ccTotal = ccTotalParam || (balanceCalc * 1.03).toFixed(2);
         subject = `Credit Card Payment Option for Your Maid For Chico Invoice`;
-        bodyText = `Per your request, here is the credit card payment option for your invoice.\n\nPlease note that a 3% credit card processing fee applies to credit card payments.\n\n💰 Original balance: $${ccBalance || balanceCalc.toFixed(2)}\n💳 Credit card processing fee (3%): $${ccFeeAmt || (balanceCalc * 0.03).toFixed(2)}\n━━━━━━━━━━━━━━━━━━━━━━━━━\n💵 Total due by credit card: $${ccTotal || (balanceCalc * 1.03).toFixed(2)}\n\nIf you would prefer to avoid the credit card processing fee, you can still pay by Zelle to (530) 966-0752 or ACH bank transfer.\n\nThank you,\nMaid For Chico`;
-        if (ccUrl) {
-          ctaUrl = ccUrl;
+        bodyText = `Per your request, here is the credit card payment option for your invoice.\n\nPlease note that a 3% credit card processing fee applies to credit card payments.\n\n💰 Original balance: $${ccBalance}\n💳 Credit card processing fee (3%): $${ccFeeAmt}\n━━━━━━━━━━━━━━━━━━━━━━━━━\n💵 Total due by credit card: $${ccTotal}\n\nIf you would prefer to avoid the credit card processing fee, you can still pay by Zelle to (530) 966-0752 or ACH bank transfer.\n\nThank you,\nMaid For Chico`;
+        if (checkoutUrl) {
+          ctaUrl = checkoutUrl;
           ctaLabel = "💳 Pay by Credit Card";
         }
         break;
