@@ -39,10 +39,15 @@ export type Database = {
           line_items: Json | null
           name: string
           notes: string | null
+          paid_at: string | null
+          payment_method: string | null
+          payment_reference: string | null
+          payment_status: string
           phone: string
           photos: string[] | null
           preferred_date: string
           preferred_time: string | null
+          processing_fee: number | null
           reminded_at: string | null
           reminder_sent: boolean | null
           scheduled_date: string | null
@@ -51,6 +56,7 @@ export type Database = {
           sqft: string | null
           status: string
           street: string
+          total_paid: number
           total_price: number | null
           updated_at: string
           zip: string
@@ -79,10 +85,15 @@ export type Database = {
           line_items?: Json | null
           name: string
           notes?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          payment_status?: string
           phone: string
           photos?: string[] | null
           preferred_date: string
           preferred_time?: string | null
+          processing_fee?: number | null
           reminded_at?: string | null
           reminder_sent?: boolean | null
           scheduled_date?: string | null
@@ -91,6 +102,7 @@ export type Database = {
           sqft?: string | null
           status?: string
           street: string
+          total_paid?: number
           total_price?: number | null
           updated_at?: string
           zip: string
@@ -119,10 +131,15 @@ export type Database = {
           line_items?: Json | null
           name?: string
           notes?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          payment_status?: string
           phone?: string
           photos?: string[] | null
           preferred_date?: string
           preferred_time?: string | null
+          processing_fee?: number | null
           reminded_at?: string | null
           reminder_sent?: boolean | null
           scheduled_date?: string | null
@@ -131,6 +148,7 @@ export type Database = {
           sqft?: string | null
           status?: string
           street?: string
+          total_paid?: number
           total_price?: number | null
           updated_at?: string
           zip?: string
