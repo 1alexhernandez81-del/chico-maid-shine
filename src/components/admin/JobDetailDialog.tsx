@@ -245,17 +245,47 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
     if (data?.signedUrl) window.open(data.signedUrl, "_blank");
   };
 
-  const handleSendEmail = async (type: 'quote' | 'receipt') => {
+  const handleSendEmail = async (type: 'quote' | 'receipt' | 'invoice' | 'cc-payment') => {
     setSendingEmail(type);
     try {
-      const { error } = await supabase.functions.invoke('send-job-email', {
-        body: { bookingId: booking.id, type },
-      });
-      if (error) throw error;
-      toast({
-        title: type === 'quote' ? t("admin.job.quote.sent") : t("admin.job.receipt.sent"),
-        description: `${t("admin.job.email.sentto")} ${booking.email}`,
-      });
+      if (type === 'cc-payment') {
+        // Step 1: Create Stripe Checkout Session
+        const { data: stripeData, error: stripeErr } = await supabase.functions.invoke('create-stripe-payment', {
+          body: { bookingId: booking.id },
+        });
+        if (stripeErr || !stripeData?.checkoutUrl) throw stripeErr || new Error("Failed to create payment link");
+
+        // Step 2: Send the CC payment email with the checkout URL
+        const { error } = await supabase.functions.invoke('send-job-email', {
+          body: {
+            bookingId: booking.id,
+            type: 'cc-payment',
+            checkoutUrl: stripeData.checkoutUrl,
+            balanceDue: stripeData.balanceDue,
+            ccFee: stripeData.ccFee,
+            totalWithFee: stripeData.totalWithFee,
+          },
+        });
+        if (error) throw error;
+        toast({
+          title: "💳 CC Payment email sent!",
+          description: `Credit card payment link sent to ${booking.email}`,
+        });
+      } else {
+        const { error } = await supabase.functions.invoke('send-job-email', {
+          body: { bookingId: booking.id, type },
+        });
+        if (error) throw error;
+        const titles: Record<string, string> = {
+          quote: t("admin.job.quote.sent"),
+          invoice: "📧 Invoice sent!",
+          receipt: t("admin.job.receipt.sent"),
+        };
+        toast({
+          title: titles[type] || "Email sent!",
+          description: `${t("admin.job.email.sentto")} ${booking.email}`,
+        });
+      }
     } catch (err) {
       console.error("Send email error:", err);
       toast({ title: t("admin.error"), description: t("admin.job.email.error"), variant: "destructive" });
