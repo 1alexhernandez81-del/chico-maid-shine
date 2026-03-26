@@ -1055,12 +1055,12 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                           });
                           if (stripeErr || !stripeData?.checkoutUrl) throw stripeErr || new Error("Failed to create payment link");
                           const name = (booking.name ?? "").trim().split(/\s+/)[0] || "there";
-                          const bal = stripeData.balanceDue?.toFixed(2) || total.toFixed(2);
-                          const fee = stripeData.fee?.toFixed(2) || "0.00";
-                          const totalWithFee = stripeData.totalWithFee?.toFixed(2) || total.toFixed(2);
+                          const bal = Number(stripeData.balanceDue || 0).toFixed(2);
+                          const fee = Number(stripeData.fee || 0).toFixed(2);
+                          const totalPay = Number(stripeData.totalWithFee || 0).toFixed(2);
                           setPendingTemplateSubject("Credit Card Payment Link — Maid for Chico");
                           setPendingTemplateBody(
-                            `Hi ${name},\n\nAs requested, here is your secure credit card payment link:\n\n💳 Original Balance: $${bal}\n💳 Processing Fee (3%): $${fee}\n💳 Total to Pay: $${totalWithFee}\n\n👉 Pay Now: ${stripeData.checkoutUrl}\n\nThis link will expire in 24 hours. If you have any questions, feel free to reply to this email or call us at (530) 966-0752.\n\nThank you!\nBetty & the Maid for Chico Team`
+                            `Hi ${name},\n\nAs requested, here is your secure credit card payment link:\n\n💳 Original Balance: $${bal}\n💳 Processing Fee (3%): $${fee}\n💳 Total to Pay: $${totalPay}\n\n👉 Pay Now: ${stripeData.checkoutUrl}\n\nThis link will expire in 24 hours. If you have any questions, feel free to reply to this email or call us at (530) 966-0752.\n\nThank you!\nBetty & the Maid for Chico Team`
                           );
                           setDialogTab("messages");
                           toast({ title: "💳 CC Payment link ready!", description: "Review the email in the Messages tab before sending." });
