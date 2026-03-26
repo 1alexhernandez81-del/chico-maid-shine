@@ -51,6 +51,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
   const [editingDeposit, setEditingDeposit] = useState(false);
   const [customDeposit, setCustomDeposit] = useState<number | null>(null);
   const [photos, setPhotos] = useState<string[]>([]);
+  const [dialogTab, setDialogTab] = useState("details");
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
   const [showReviewConfirm, setShowReviewConfirm] = useState(false);
