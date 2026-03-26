@@ -35,6 +35,7 @@ interface JobDetailDialogProps {
   onClose: () => void;
   onUpdated: (updated: Booking) => void;
   userRole?: UserRole;
+  onClone?: (booking: Booking) => void;
 }
 
 const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: JobDetailDialogProps) => {
