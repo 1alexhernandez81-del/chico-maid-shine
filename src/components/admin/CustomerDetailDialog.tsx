@@ -23,7 +23,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  Mail, MessageSquare, Calendar, DollarSign, Plus, Repeat, Trash2, Clock, Pencil, Save, X, CalendarIcon,
+  Mail, MessageSquare, Calendar, DollarSign, Plus, Repeat, Trash2, Clock, Pencil, Save, X, CalendarIcon, Briefcase,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
