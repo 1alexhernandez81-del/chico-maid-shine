@@ -49,7 +49,13 @@ const JOB_STATUSES = ["approved", "scheduled", "in-progress", "completed"];
 
 const PAGE_SIZE = 15;
 
-const JobsBoard = ({ userRole = "admin" as UserRole }: { userRole?: UserRole }) => {
+const DEFAULT_NEW_JOB = {
+  name: "", email: "", phone: "", street: "", city: "Chico", zip: "",
+  service_type: "residential", frequency: "one-time", preferred_date: "",
+  bedrooms: "", bathrooms: "", sqft: "", notes: "", admin_notes: "",
+};
+
+const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: UserRole; prefillJob?: Partial<typeof DEFAULT_NEW_JOB> | null }) => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
