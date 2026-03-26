@@ -885,6 +885,10 @@ const translations: Record<string, Record<Lang, string>> = {
   "admin.job.deposit": { en: "Deposit collected", es: "Depósito cobrado" },
   "admin.job.balancedue": { en: "Balance Due", es: "Balance Pendiente" },
   "admin.job.sendscheduled": { en: "Send Scheduled Cleaning", es: "Enviar Limpieza Programada" },
+  "admin.job.customerinfo": { en: "Customer Info", es: "Info del Cliente" },
+  "admin.job.clone": { en: "Clone Job", es: "Clonar Trabajo" },
+  "admin.job.info.updated": { en: "Customer info updated on this job", es: "Info del cliente actualizada en este trabajo" },
+  "admin.cd.createjob": { en: "Create Job", es: "Crear Trabajo" },
 };
 
 const fallbackLanguageContext: LanguageContextType = {

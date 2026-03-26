@@ -49,7 +49,13 @@ const JOB_STATUSES = ["approved", "scheduled", "in-progress", "completed"];
 
 const PAGE_SIZE = 15;
 
-const JobsBoard = ({ userRole = "admin" as UserRole }: { userRole?: UserRole }) => {
+const DEFAULT_NEW_JOB = {
+  name: "", email: "", phone: "", street: "", city: "Chico", zip: "",
+  service_type: "residential", frequency: "one-time", preferred_date: "",
+  bedrooms: "", bathrooms: "", sqft: "", notes: "", admin_notes: "",
+};
+
+const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: UserRole; prefillJob?: Partial<typeof DEFAULT_NEW_JOB> | null }) => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -57,11 +63,7 @@ const JobsBoard = ({ userRole = "admin" as UserRole }: { userRole?: UserRole }) 
   const [selected, setSelected] = useState<Booking | null>(null);
   const [page, setPage] = useState(0);
   const [showAddJob, setShowAddJob] = useState(false);
-  const [newJob, setNewJob] = useState({
-    name: "", email: "", phone: "", street: "", city: "Chico", zip: "",
-    service_type: "residential", frequency: "one-time", preferred_date: "",
-    bedrooms: "", bathrooms: "", sqft: "", notes: "", admin_notes: "",
-  });
+  const [newJob, setNewJob] = useState({ ...DEFAULT_NEW_JOB });
   const [addingJob, setAddingJob] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
 
@@ -134,11 +136,39 @@ const JobsBoard = ({ userRole = "admin" as UserRole }: { userRole?: UserRole }) 
 
   useEffect(() => { fetchBookings(); }, []);
 
+  // Open Add Job dialog with prefilled data (from customer page or clone)
+  useEffect(() => {
+    if (prefillJob) {
+      setNewJob({ ...DEFAULT_NEW_JOB, ...prefillJob });
+      setShowAddJob(true);
+    }
+  }, [prefillJob]);
+
   useEffect(() => {
     supabase.from("cleaners").select("id, name").eq("active", true).order("name").then(({ data }) => {
       if (data) setCleanersList(data as CleanerInfo[]);
     });
   }, []);
+
+  const handleCloneJob = (booking: Booking) => {
+    setNewJob({
+      name: booking.name,
+      email: booking.email,
+      phone: booking.phone,
+      street: booking.street,
+      city: booking.city,
+      zip: booking.zip,
+      service_type: booking.service_type,
+      frequency: booking.frequency,
+      preferred_date: "",
+      bedrooms: booking.bedrooms || "",
+      bathrooms: booking.bathrooms || "",
+      sqft: booking.sqft || "",
+      notes: booking.notes || "",
+      admin_notes: booking.admin_notes || "",
+    });
+    setShowAddJob(true);
+  };
 
   const filtered = bookings.filter((b) => {
     const matchesStatus = statusFilter === "all" || b.status === statusFilter;
@@ -260,11 +290,7 @@ const JobsBoard = ({ userRole = "admin" as UserRole }: { userRole?: UserRole }) 
       toast({ title: t("admin.job.add.success"), description: t("admin.job.add.success.msg") });
       setBookings((prev) => [data as Booking, ...prev]);
       setShowAddJob(false);
-      setNewJob({
-        name: "", email: "", phone: "", street: "", city: "Chico", zip: "",
-        service_type: "residential", frequency: "one-time", preferred_date: "",
-        bedrooms: "", bathrooms: "", sqft: "", notes: "", admin_notes: "",
-      });
+      setNewJob({ ...DEFAULT_NEW_JOB });
     }
     setAddingJob(false);
   };
@@ -508,6 +534,7 @@ const JobsBoard = ({ userRole = "admin" as UserRole }: { userRole?: UserRole }) 
           setSelected(null);
         }}
         userRole={userRole}
+        onClone={handleCloneJob}
       />
 
       {/* Add Job Dialog */}

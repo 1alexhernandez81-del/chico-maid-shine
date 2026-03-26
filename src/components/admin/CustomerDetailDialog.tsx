@@ -23,7 +23,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  Mail, MessageSquare, Calendar, DollarSign, Plus, Repeat, Trash2, Clock, Pencil, Save, X, CalendarIcon,
+  Mail, MessageSquare, Calendar, DollarSign, Plus, Repeat, Trash2, Clock, Pencil, Save, X, CalendarIcon, Briefcase,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -71,10 +71,11 @@ interface Props {
   customer: Customer | null;
   onClose: () => void;
   onUpdated: () => void;
+  onCreateJob?: (customerData: { name: string; email: string; phone: string; street: string; city: string; zip: string }) => void;
 }
 
 
-const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
+const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Props) => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [communications, setCommunications] = useState<Communication[]>([]);
   const [schedules, setSchedules] = useState<RecurringSchedule[]>([]);
@@ -294,9 +295,16 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
                 </DialogDescription>
               </div>
               {!editing && (
-                <Button variant="outline" size="sm" onClick={() => setEditing(true)} className="gap-1.5 shrink-0">
-                  <Pencil className="w-3.5 h-3.5" /> {t("admin.cd.edit")}
-                </Button>
+                <div className="flex gap-1.5 shrink-0">
+                  {onCreateJob && (
+                    <Button variant="outline" size="sm" onClick={() => { onCreateJob({ name: customer.name, email: customer.email, phone: customer.phone, street: customer.street, city: customer.city, zip: customer.zip }); onClose(); }} className="gap-1.5">
+                      <Briefcase className="w-3.5 h-3.5" /> {t("admin.cd.createjob")}
+                    </Button>
+                  )}
+                  <Button variant="outline" size="sm" onClick={() => setEditing(true)} className="gap-1.5">
+                    <Pencil className="w-3.5 h-3.5" /> {t("admin.cd.edit")}
+                  </Button>
+                </div>
               )}
             </div>
           </DialogHeader>

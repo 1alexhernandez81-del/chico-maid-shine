@@ -16,10 +16,13 @@ import TimesheetsTab from "@/components/admin/TimesheetsTab";
 
 export type UserRole = "admin" | "moderator" | "user";
 
+type PrefillJob = { name: string; email: string; phone: string; street: string; city: string; zip: string } | null;
+
 const AdminDashboard = () => {
   const [authorized, setAuthorized] = useState(false);
   const [userRole, setUserRole] = useState<UserRole>("user");
   const [activeTab, setActiveTab] = useState("jobs");
+  const [prefillJob, setPrefillJob] = useState<PrefillJob>(null);
   const navigate = useNavigate();
   const { lang, toggleLang, t } = useLanguage();
 
@@ -135,12 +138,17 @@ const AdminDashboard = () => {
             </TabsContent>
           )}
           <TabsContent value="jobs">
-            <JobsBoard userRole={userRole} />
+            <JobsBoard userRole={userRole} prefillJob={prefillJob} />
           </TabsContent>
           {isAdmin && (
             <>
               <TabsContent value="customers">
-                <CustomerManagement />
+                <CustomerManagement onCreateJob={(data) => {
+                  setPrefillJob(data);
+                  setActiveTab("jobs");
+                  // Clear prefill after a tick so it can be re-triggered
+                  setTimeout(() => setPrefillJob(null), 500);
+                }} />
               </TabsContent>
               <TabsContent value="cleaners">
                 <CleanerManagement />

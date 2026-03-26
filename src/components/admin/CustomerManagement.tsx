@@ -43,7 +43,7 @@ type Customer = {
 
 const PAGE_SIZE = 15;
 
-const CustomerManagement = () => {
+const CustomerManagement = ({ onCreateJob }: { onCreateJob?: (data: { name: string; email: string; phone: string; street: string; city: string; zip: string }) => void }) => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -381,6 +381,7 @@ const CustomerManagement = () => {
         customer={selected}
         onClose={() => setSelected(null)}
         onUpdated={() => { setSelected(null); fetchCustomers(); }}
+        onCreateJob={onCreateJob}
       />
 
       {/* Add Customer Dialog */}
