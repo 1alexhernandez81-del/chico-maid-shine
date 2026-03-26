@@ -38,7 +38,7 @@ interface JobDetailDialogProps {
   onClone?: (booking: Booking) => void;
 }
 
-const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: JobDetailDialogProps) => {
+const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onClone }: JobDetailDialogProps) => {
   const [adminNotes, setAdminNotes] = useState("");
   const [newStatus, setNewStatus] = useState("");
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
@@ -63,6 +63,11 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin" }: Jo
   const { t } = useLanguage();
 
   const isAdmin = userRole === "admin";
+
+  // Editable customer info
+  const [editingInfo, setEditingInfo] = useState(false);
+  const [editInfo, setEditInfo] = useState({ name: "", email: "", phone: "", street: "", city: "", zip: "" });
+  const [savingInfo, setSavingInfo] = useState(false);
 
   // Pending template for quick-email buttons
   const [pendingTemplateSubject, setPendingTemplateSubject] = useState("");
