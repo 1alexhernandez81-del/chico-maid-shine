@@ -209,6 +209,38 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
   const depositAmount = customDeposit !== null ? customDeposit : defaultDeposit;
   const total = subtotal - depositAmount;
 
+  const saveDepositChange = async () => {
+    const depositToSave = Math.max(0, customDeposit ?? defaultDeposit);
+    const recalculatedTotal = Math.max(0, subtotal - depositToSave);
+
+    setSavingDeposit(true);
+    const { error } = await supabase
+      .from("bookings")
+      .update({
+        deposit_override: depositToSave,
+        total_price: recalculatedTotal,
+      } as any)
+      .eq("id", booking.id);
+
+    if (error) {
+      toast({ title: t("admin.error"), description: t("admin.bookings.error.update"), variant: "destructive" });
+    } else {
+      setCustomDeposit(depositToSave);
+      setEditingDeposit(false);
+      onUpdated({
+        ...booking,
+        admin_notes: adminNotes,
+        status: newStatus,
+        line_items: lineItems,
+        total_price: recalculatedTotal,
+        deposit_override: depositToSave,
+      });
+      toast({ title: t("admin.bookings.updated"), description: "Deposit saved." });
+    }
+
+    setSavingDeposit(false);
+  };
+
   const updateLineItem = (index: number, field: keyof LineItem, value: string | number) => {
     setLineItems((prev) =>
       prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
