@@ -747,12 +747,32 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                     <span className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.job.subtotal")}</span>
                     <span className="text-sm font-medium">${subtotal.toFixed(2)}</span>
                   </div>
-                  {depositAmount > 0 && (
-                    <div className="flex justify-end items-center gap-2">
-                      <span className="text-xs tracking-wider text-muted-foreground">{t("admin.job.deposit")} (25%)</span>
-                      <span className="text-sm text-green-400">-${depositAmount.toFixed(2)}</span>
-                    </div>
-                  )}
+                  <div className="flex justify-end items-center gap-2">
+                    <span className="text-xs tracking-wider text-muted-foreground">{t("admin.job.deposit")}</span>
+                    {editingDeposit ? (
+                      <div className="flex items-center gap-1">
+                        <span className="text-sm">-$</span>
+                        <Input
+                          type="number"
+                          value={depositAmount}
+                          onChange={(e) => setCustomDeposit(Math.max(0, parseFloat(e.target.value) || 0))}
+                          className="w-24 h-7 text-sm text-right"
+                          min={0}
+                          step={0.01}
+                          onBlur={() => setEditingDeposit(false)}
+                          autoFocus
+                        />
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => { setCustomDeposit(depositAmount); setEditingDeposit(true); }}
+                        className="text-sm text-green-400 hover:underline cursor-pointer"
+                        title="Click to edit deposit"
+                      >
+                        -${depositAmount.toFixed(2)}
+                      </button>
+                    )}
+                  </div>
                   <div className="flex justify-end items-center gap-2 pt-1 border-t border-border">
                     <span className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.job.balancedue")}</span>
                     <span className="text-lg font-semibold text-accent">${total.toFixed(2)}</span>
