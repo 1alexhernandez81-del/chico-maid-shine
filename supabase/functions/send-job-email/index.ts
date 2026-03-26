@@ -203,7 +203,7 @@ Deno.serve(async (req) => {
           pricingBlock += `Services:\n${itemsList}\n\n`;
           pricingBlock += `Subtotal: $${subtotalCalc.toFixed(2)}\n`;
           if (depositCalc > 0) {
-            pricingBlock += `Deposit received (25%): ($${depositCalc.toFixed(2)})\n`;
+            pricingBlock += `Deposit received: ($${depositCalc.toFixed(2)})\n`;
           }
           pricingBlock += `Remaining balance: $${balanceCalc.toFixed(2)}`;
         } else {
