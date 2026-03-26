@@ -513,7 +513,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
             </DialogTitle>
             <DialogDescription>{t("admin.job.details.desc")}</DialogDescription>
           </DialogHeader>
-          <Tabs defaultValue="details">
+          <Tabs value={dialogTab} onValueChange={setDialogTab}>
             <TabsList className="w-full">
               <TabsTrigger value="details" className="flex-1 gap-1.5">
                 {t("admin.job.details.tab")}
