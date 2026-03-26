@@ -35,7 +35,7 @@ const AddressAutocomplete = ({
   const sessionTokenRef = useRef(crypto.randomUUID());
 
   const fetchSuggestions = useCallback(async (query: string) => {
-    if (query.length < 4) {
+    if (query.trim().length < 3) {
       setSuggestions([]);
       return;
     }
