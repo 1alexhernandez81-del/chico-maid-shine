@@ -786,30 +786,47 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                   <div className="flex justify-end items-center gap-2">
                     <span className="text-xs tracking-wider text-muted-foreground">{t("admin.job.deposit")}</span>
                     {editingDeposit ? (
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1.5">
                         <span className="text-sm">-$</span>
                         <Input
                           type="number"
                           value={customDeposit ?? depositAmount}
                           onChange={(e) => setCustomDeposit(Math.max(0, parseFloat(e.target.value) || 0))}
-                          className="w-24 h-7 text-sm text-right"
+                          className="w-24 h-8 text-sm text-right"
                           min={0}
                           step={0.01}
                           autoFocus
                         />
                         <Button
                           size="sm"
-                          variant="ghost"
-                          className="h-7 px-2 text-green-400 hover:text-green-300"
-                          onClick={() => setEditingDeposit(false)}
+                          variant="outline"
+                          className="h-8 px-2 text-xs"
+                          onClick={saveDepositChange}
+                          disabled={savingDeposit}
                         >
-                          ✓
+                          {savingDeposit ? t("admin.bookings.saving") : t("admin.bookings.save")}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 px-2 text-xs"
+                          onClick={() => {
+                            const persistedDeposit = (booking as any).deposit_override;
+                            setCustomDeposit(persistedDeposit !== undefined && persistedDeposit !== null ? Number(persistedDeposit) : null);
+                            setEditingDeposit(false);
+                          }}
+                          disabled={savingDeposit}
+                        >
+                          Cancel
                         </Button>
                       </div>
                     ) : (
                       <button
-                        onClick={() => { setCustomDeposit(customDeposit !== null ? customDeposit : depositAmount); setEditingDeposit(true); }}
-                        className="text-sm text-green-400 hover:underline cursor-pointer"
+                        onClick={() => {
+                          setCustomDeposit(customDeposit !== null ? customDeposit : depositAmount);
+                          setEditingDeposit(true);
+                        }}
+                        className="text-sm text-accent hover:underline cursor-pointer"
                         title="Click to edit deposit"
                       >
                         -${depositAmount.toFixed(2)}
