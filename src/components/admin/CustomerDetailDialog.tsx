@@ -71,10 +71,11 @@ interface Props {
   customer: Customer | null;
   onClose: () => void;
   onUpdated: () => void;
+  onCreateJob?: (customerData: { name: string; email: string; phone: string; street: string; city: string; zip: string }) => void;
 }
 
 
-const CustomerDetailDialog = ({ customer, onClose, onUpdated }: Props) => {
+const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Props) => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [communications, setCommunications] = useState<Communication[]>([]);
   const [schedules, setSchedules] = useState<RecurringSchedule[]>([]);
