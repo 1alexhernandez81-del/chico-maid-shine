@@ -63,11 +63,7 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
   const [selected, setSelected] = useState<Booking | null>(null);
   const [page, setPage] = useState(0);
   const [showAddJob, setShowAddJob] = useState(false);
-  const [newJob, setNewJob] = useState({
-    name: "", email: "", phone: "", street: "", city: "Chico", zip: "",
-    service_type: "residential", frequency: "one-time", preferred_date: "",
-    bedrooms: "", bathrooms: "", sqft: "", notes: "", admin_notes: "",
-  });
+  const [newJob, setNewJob] = useState({ ...DEFAULT_NEW_JOB });
   const [addingJob, setAddingJob] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
 
