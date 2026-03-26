@@ -346,50 +346,70 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
     if (data?.signedUrl) window.open(data.signedUrl, "_blank");
   };
 
-  const handleSendEmail = async (type: 'quote' | 'receipt' | 'invoice' | 'cc-payment' | 'ach-payment') => {
+  const preparePaymentEmailDraft = async (paymentMethod: "card" | "ach") => {
+    const sendingType = paymentMethod === "ach" ? "ach-payment" : "cc-payment";
+    setSendingEmail(sendingType);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("create-stripe-payment", {
+        body: { bookingId: booking.id, paymentMethod },
+      });
+
+      const stripeData = typeof data === "string"
+        ? (() => { try { return JSON.parse(data); } catch { return null; } })()
+        : data;
+
+      if (error) {
+        const message = (error as any)?.message || "Failed to create payment link";
+        throw new Error(message);
+      }
+
+      if (!stripeData?.checkoutUrl) {
+        throw new Error(stripeData?.error || "Payment link was not returned");
+      }
+
+      const firstName = (booking.name ?? "").trim().split(/\s+/)[0] || "there";
+      const nonEmptyServiceItems = serviceItems.filter((item) => item.description.trim() !== "");
+      const itemizedLines = nonEmptyServiceItems.length > 0
+        ? nonEmptyServiceItems.map((item) => `• ${item.description}: $${Number(item.amount || 0).toFixed(2)}`).join("\n")
+        : "• Cleaning Service: $0.00";
+
+      const bal = Number(stripeData.balanceDue || 0).toFixed(2);
+      const fee = Number(stripeData.fee || 0).toFixed(2);
+      const totalPay = Number(stripeData.totalWithFee || 0).toFixed(2);
+      const methodLabel = paymentMethod === "ach" ? "ACH Payment" : "Credit Card Payment";
+
+      setPendingTemplateSubject(`${methodLabel} Link — Maid for Chico`);
+      setPendingTemplateBody(
+        `Hi ${firstName},\n\nAs requested, here is your secure ${paymentMethod === "ach" ? "ACH" : "credit card"} payment link:\n\nItemized Services:\n${itemizedLines}\n\nSubtotal: $${subtotal.toFixed(2)}\nDeposit Collected: -$${depositAmount.toFixed(2)}\nBalance Due: $${bal}\nProcessing Fee ${paymentMethod === "card" ? "(3%)" : "(0%)"}: $${fee}\nTotal to Pay: $${totalPay}\n\n👉 Pay Now: ${stripeData.checkoutUrl}\n\nThis link will expire in 24 hours. If you have any questions, feel free to reply to this email or call us at (530) 966-0752.\n\nThank you!\nBetty & the Maid for Chico Team`
+      );
+      setDialogTab("messages");
+      toast({ title: `💳 ${methodLabel} ready!`, description: "Review the email in the Messages tab before sending." });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to create payment link";
+      console.error("Payment draft error:", err);
+      toast({ title: t("admin.error"), description: message, variant: "destructive" });
+    }
+
+    setSendingEmail(null);
+  };
+
+  const handleSendEmail = async (type: "quote" | "receipt" | "invoice") => {
     setSendingEmail(type);
     try {
-      if (type === 'cc-payment' || type === 'ach-payment') {
-        const paymentMethod = type === 'ach-payment' ? 'ach' : 'card';
-        // Step 1: Create Stripe Checkout Session
-        const { data: stripeData, error: stripeErr } = await supabase.functions.invoke('create-stripe-payment', {
-          body: { bookingId: booking.id, paymentMethod },
-        });
-        if (stripeErr || !stripeData?.checkoutUrl) throw stripeErr || new Error("Failed to create payment link");
-
-        // Step 2: Send the payment email with the checkout URL
-        const { error } = await supabase.functions.invoke('send-job-email', {
-          body: {
-            bookingId: booking.id,
-            type,
-            checkoutUrl: stripeData.checkoutUrl,
-            balanceDue: stripeData.balanceDue,
-            ccFee: stripeData.fee,
-            totalWithFee: stripeData.totalWithFee,
-            paymentMethod,
-          },
-        });
-        if (error) throw error;
-        const label = type === 'ach-payment' ? 'ACH Payment' : 'CC Payment';
-        toast({
-          title: `💳 ${label} email sent!`,
-          description: `${label} link sent to ${booking.email}`,
-        });
-      } else {
-        const { error } = await supabase.functions.invoke('send-job-email', {
-          body: { bookingId: booking.id, type },
-        });
-        if (error) throw error;
-        const titles: Record<string, string> = {
-          quote: t("admin.job.quote.sent"),
-          invoice: "📧 Invoice sent!",
-          receipt: t("admin.job.receipt.sent"),
-        };
-        toast({
-          title: titles[type] || "Email sent!",
-          description: `${t("admin.job.email.sentto")} ${booking.email}`,
-        });
-      }
+      const { error } = await supabase.functions.invoke("send-job-email", {
+        body: { bookingId: booking.id, type },
+      });
+      if (error) throw error;
+      const titles: Record<string, string> = {
+        quote: t("admin.job.quote.sent"),
+        invoice: "📧 Invoice sent!",
+        receipt: t("admin.job.receipt.sent"),
+      };
+      toast({
+        title: titles[type] || "Email sent!",
+        description: `${t("admin.job.email.sentto")} ${booking.email}`,
+      });
     } catch (err) {
       console.error("Send email error:", err);
       toast({ title: t("admin.error"), description: t("admin.job.email.error"), variant: "destructive" });
