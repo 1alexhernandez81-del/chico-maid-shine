@@ -295,9 +295,16 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
                 </DialogDescription>
               </div>
               {!editing && (
-                <Button variant="outline" size="sm" onClick={() => setEditing(true)} className="gap-1.5 shrink-0">
-                  <Pencil className="w-3.5 h-3.5" /> {t("admin.cd.edit")}
-                </Button>
+                <div className="flex gap-1.5 shrink-0">
+                  {onCreateJob && (
+                    <Button variant="outline" size="sm" onClick={() => { onCreateJob({ name: customer.name, email: customer.email, phone: customer.phone, street: customer.street, city: customer.city, zip: customer.zip }); onClose(); }} className="gap-1.5">
+                      <Briefcase className="w-3.5 h-3.5" /> {t("admin.cd.createjob")}
+                    </Button>
+                  )}
+                  <Button variant="outline" size="sm" onClick={() => setEditing(true)} className="gap-1.5">
+                    <Pencil className="w-3.5 h-3.5" /> {t("admin.cd.edit")}
+                  </Button>
+                </div>
               )}
             </div>
           </DialogHeader>
