@@ -1081,56 +1081,20 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                       variant="outline"
                       size="sm"
                       disabled={sendingEmail !== null || booking.payment_status === 'paid'}
-                      onClick={() => handleSendEmail('ach-payment')}
+                      onClick={() => openPaymentConfirm("ach")}
                       className="gap-1.5 text-xs"
                     >
-                      🏦 {sendingEmail === 'ach-payment' ? t("admin.job.sending") : t("admin.job.achpayment")}
+                      🏦 {sendingEmail === "ach-payment" ? t("admin.job.sending") : t("admin.job.achpayment")}
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       disabled={sendingEmail !== null || booking.payment_status === 'paid'}
-                      onClick={async () => {
-                        setSendingEmail('cc-payment');
-                        try {
-                          const { data, error } = await supabase.functions.invoke('create-stripe-payment', {
-                            body: { bookingId: booking.id, paymentMethod: 'card' },
-                          });
-
-                          const stripeData = typeof data === "string"
-                            ? (() => { try { return JSON.parse(data); } catch { return null; } })()
-                            : data;
-
-                          if (error) {
-                            const message = (error as any)?.message || "Failed to create payment link";
-                            throw new Error(message);
-                          }
-
-                          if (!stripeData?.checkoutUrl) {
-                            throw new Error(stripeData?.error || "Payment link was not returned");
-                          }
-
-                          const name = (booking.name ?? "").trim().split(/\s+/)[0] || "there";
-                          const bal = Number(stripeData.balanceDue || 0).toFixed(2);
-                          const fee = Number(stripeData.fee || 0).toFixed(2);
-                          const totalPay = Number(stripeData.totalWithFee || 0).toFixed(2);
-                          setPendingTemplateSubject("Credit Card Payment Link — Maid for Chico");
-                          setPendingTemplateBody(
-                            `Hi ${name},\n\nAs requested, here is your secure credit card payment link:\n\n💳 Original Balance: $${bal}\n💳 Processing Fee (3%): $${fee}\n💳 Total to Pay: $${totalPay}\n\n👉 Pay Now: ${stripeData.checkoutUrl}\n\nThis link will expire in 24 hours. If you have any questions, feel free to reply to this email or call us at (530) 966-0752.\n\nThank you!\nBetty & the Maid for Chico Team`
-                          );
-                          setDialogTab("messages");
-                          toast({ title: "💳 CC Payment link ready!", description: "Review the email in the Messages tab before sending." });
-                        } catch (err) {
-                          const message = err instanceof Error ? err.message : "Failed to create payment link";
-                          console.error("CC payment link error:", err);
-                          toast({ title: t("admin.error"), description: message, variant: "destructive" });
-                        }
-                        setSendingEmail(null);
-                      }}
+                      onClick={() => openPaymentConfirm("card")}
                       className="gap-1.5 text-xs"
                     >
                       <CreditCard className="w-3 h-3" />
-                      {sendingEmail === 'cc-payment' ? t("admin.job.sending") : t("admin.job.ccpayment")}
+                      {sendingEmail === "cc-payment" ? t("admin.job.sending") : t("admin.job.ccpayment")}
                     </Button>
                   </div>
                 )}
