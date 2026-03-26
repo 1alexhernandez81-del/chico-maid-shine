@@ -35,6 +35,17 @@ const parseAddressComponents = (components: any[] = []) => {
   };
 };
 
+const parseOpenStreetMapAddress = (address: Record<string, string> = {}) => {
+  const street = [address.house_number, address.road || address.pedestrian || address.footway]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+  const city = address.city || address.town || address.village || address.hamlet || address.county || "";
+  const zip = address.postcode || "";
+
+  return { street, city, zip };
+};
+
 const fetchPlacesNew = async (apiKey: string, input: string, token: string): Promise<AddressSuggestion[]> => {
   const autocompleteResponse = await fetch("https://places.googleapis.com/v1/places:autocomplete", {
     method: "POST",
@@ -150,6 +161,40 @@ const geocodeFallback = async (apiKey: string, input: string): Promise<AddressSu
       zip,
     };
   });
+};
+
+const openStreetMapFallback = async (input: string): Promise<AddressSuggestion[]> => {
+  const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&countrycodes=us&q=${encodeURIComponent(input)}`;
+
+  const res = await fetch(nominatimUrl, {
+    headers: {
+      Accept: "application/json",
+      "User-Agent": "maid-for-chico-address-autocomplete/1.0",
+    },
+  });
+
+  if (!res.ok) {
+    console.error("OpenStreetMap fallback failed:", await res.text());
+    return [];
+  }
+
+  const data = await res.json();
+  if (!Array.isArray(data)) return [];
+
+  return data
+    .slice(0, 5)
+    .map((result: any) => {
+      const { street, city, zip } = parseOpenStreetMapAddress(result?.address || {});
+      const description = result?.display_name || street || input;
+
+      return {
+        description,
+        street: street || description,
+        city,
+        zip,
+      };
+    })
+    .filter((item): item is AddressSuggestion => Boolean(item.description));
 };
 
 serve(async (req) => {
