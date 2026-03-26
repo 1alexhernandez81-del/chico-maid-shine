@@ -48,6 +48,8 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
   const [uploading, setUploading] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [invoiceUrl, setInvoiceUrl] = useState<string | null>(null);
+  const [editingDeposit, setEditingDeposit] = useState(false);
+  const [customDeposit, setCustomDeposit] = useState<number | null>(null);
   const [photos, setPhotos] = useState<string[]>([]);
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
@@ -95,6 +97,8 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
       setPhotos(Array.isArray(booking.photos) ? booking.photos : []);
       setAssignedCleanerIds(Array.isArray(booking.assigned_cleaners) ? booking.assigned_cleaners : []);
       setEditingInfo(false);
+      setEditingDeposit(false);
+      setCustomDeposit(null);
       setEditInfo({ name: booking.name, email: booking.email, phone: booking.phone, street: booking.street, city: booking.city, zip: booking.zip });
       initialRef.current = {
         adminNotes: notes,
@@ -198,7 +202,8 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
 
   const serviceItems = lineItems.filter((item) => !item.description.toLowerCase().includes("deposit"));
   const subtotal = serviceItems.reduce((sum, item) => sum + (item.amount || 0), 0);
-  const depositAmount = booking.total_price && booking.total_price > 0 ? booking.total_price * 0.25 : 0;
+  const defaultDeposit = booking.total_price && booking.total_price > 0 ? booking.total_price * 0.25 : 0;
+  const depositAmount = customDeposit !== null ? customDeposit : defaultDeposit;
   const total = subtotal - depositAmount;
 
   const updateLineItem = (index: number, field: keyof LineItem, value: string | number) => {
@@ -742,12 +747,32 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                     <span className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.job.subtotal")}</span>
                     <span className="text-sm font-medium">${subtotal.toFixed(2)}</span>
                   </div>
-                  {depositAmount > 0 && (
-                    <div className="flex justify-end items-center gap-2">
-                      <span className="text-xs tracking-wider text-muted-foreground">{t("admin.job.deposit")} (25%)</span>
-                      <span className="text-sm text-green-400">-${depositAmount.toFixed(2)}</span>
-                    </div>
-                  )}
+                  <div className="flex justify-end items-center gap-2">
+                    <span className="text-xs tracking-wider text-muted-foreground">{t("admin.job.deposit")}</span>
+                    {editingDeposit ? (
+                      <div className="flex items-center gap-1">
+                        <span className="text-sm">-$</span>
+                        <Input
+                          type="number"
+                          value={depositAmount}
+                          onChange={(e) => setCustomDeposit(Math.max(0, parseFloat(e.target.value) || 0))}
+                          className="w-24 h-7 text-sm text-right"
+                          min={0}
+                          step={0.01}
+                          onBlur={() => setEditingDeposit(false)}
+                          autoFocus
+                        />
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => { setCustomDeposit(depositAmount); setEditingDeposit(true); }}
+                        className="text-sm text-green-400 hover:underline cursor-pointer"
+                        title="Click to edit deposit"
+                      >
+                        -${depositAmount.toFixed(2)}
+                      </button>
+                    )}
+                  </div>
                   <div className="flex justify-end items-center gap-2 pt-1 border-t border-border">
                     <span className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.job.balancedue")}</span>
                     <span className="text-lg font-semibold text-accent">${total.toFixed(2)}</span>
