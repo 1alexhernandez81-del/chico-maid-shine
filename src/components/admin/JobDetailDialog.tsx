@@ -1025,6 +1025,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                       <CreditCard className="w-3 h-3" />
                       {sendingEmail === 'cc-payment' ? t("admin.job.sending") : t("admin.job.ccpayment")}
                     </Button>
+                  </div>
                 )}
               </div>
 
