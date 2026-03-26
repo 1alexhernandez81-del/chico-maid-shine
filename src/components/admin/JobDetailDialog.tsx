@@ -59,6 +59,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
   const [showScheduleConfirm, setShowScheduleConfirm] = useState(false);
   const [showApprovalConfirm, setShowApprovalConfirm] = useState(false);
   const [showRescheduleConfirm, setShowRescheduleConfirm] = useState(false);
+  const [confirmPaymentMethod, setConfirmPaymentMethod] = useState<"card" | "ach" | null>(null);
   const [cleaners, setCleaners] = useState<Cleaner[]>([]);
   const [assignedCleanerIds, setAssignedCleanerIds] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -176,6 +177,31 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
     }
   };
 
+  const hasUnsavedPricingChanges = () => {
+    const lineItemsDirty = JSON.stringify(lineItems) !== initialRef.current.lineItems;
+    const persistedDeposit = booking.deposit_override !== null && booking.deposit_override !== undefined
+      ? Number(booking.deposit_override)
+      : null;
+    const currentDeposit = customDeposit !== null && customDeposit !== undefined
+      ? Number(customDeposit)
+      : null;
+
+    return lineItemsDirty || editingDeposit || currentDeposit !== persistedDeposit;
+  };
+
+  const openPaymentConfirm = (paymentMethod: "card" | "ach") => {
+    if (hasUnsavedPricingChanges()) {
+      toast({
+        title: "Save required",
+        description: "Please save job changes first so payment emails match your itemized breakdown.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setConfirmPaymentMethod(paymentMethod);
+  };
+
   const saveCustomerInfo = async () => {
     if (!booking) return;
     setSavingInfo(true);
@@ -204,10 +230,16 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
   if (!booking) return null;
 
   const serviceItems = lineItems.filter((item) => !item.description.toLowerCase().includes("deposit"));
+  const nonEmptyServiceItems = serviceItems.filter((item) => item.description.trim() !== "");
   const subtotal = serviceItems.reduce((sum, item) => sum + (item.amount || 0), 0);
   const defaultDeposit = booking.total_price && booking.total_price > 0 ? booking.total_price * 0.25 : 0;
   const depositAmount = customDeposit !== null ? customDeposit : defaultDeposit;
   const total = subtotal - depositAmount;
+  const previewBalance = Math.max(0, subtotal - depositAmount);
+  const previewFee = confirmPaymentMethod === "card"
+    ? Math.round(previewBalance * 0.03 * 100) / 100
+    : 0;
+  const previewTotal = previewBalance + previewFee;
 
   const saveDepositChange = async () => {
     const depositToSave = Math.max(0, customDeposit ?? defaultDeposit);
@@ -320,50 +352,69 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
     if (data?.signedUrl) window.open(data.signedUrl, "_blank");
   };
 
-  const handleSendEmail = async (type: 'quote' | 'receipt' | 'invoice' | 'cc-payment' | 'ach-payment') => {
+  const preparePaymentEmailDraft = async (paymentMethod: "card" | "ach") => {
+    const sendingType = paymentMethod === "ach" ? "ach-payment" : "cc-payment";
+    setSendingEmail(sendingType);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("create-stripe-payment", {
+        body: { bookingId: booking.id, paymentMethod },
+      });
+
+      const stripeData = typeof data === "string"
+        ? (() => { try { return JSON.parse(data); } catch { return null; } })()
+        : data;
+
+      if (error) {
+        const message = (error as any)?.message || "Failed to create payment link";
+        throw new Error(message);
+      }
+
+      if (!stripeData?.checkoutUrl) {
+        throw new Error(stripeData?.error || "Payment link was not returned");
+      }
+
+      const firstName = (booking.name ?? "").trim().split(/\s+/)[0] || "there";
+      const itemizedLines = nonEmptyServiceItems.length > 0
+        ? nonEmptyServiceItems.map((item) => `• ${item.description}: $${Number(item.amount || 0).toFixed(2)}`).join("\n")
+        : "• Cleaning Service: $0.00";
+
+      const bal = Number(stripeData.balanceDue || 0).toFixed(2);
+      const fee = Number(stripeData.fee || 0).toFixed(2);
+      const totalPay = Number(stripeData.totalWithFee || 0).toFixed(2);
+      const methodLabel = paymentMethod === "ach" ? "ACH Payment" : "Credit Card Payment";
+
+      setPendingTemplateSubject(`${methodLabel} Link — Maid for Chico`);
+      setPendingTemplateBody(
+        `Hi ${firstName},\n\nAs requested, here is your secure ${paymentMethod === "ach" ? "ACH" : "credit card"} payment link:\n\nItemized Services:\n${itemizedLines}\n\nSubtotal: $${subtotal.toFixed(2)}\nDeposit Collected: -$${depositAmount.toFixed(2)}\nBalance Due: $${bal}\nProcessing Fee ${paymentMethod === "card" ? "(3%)" : "(0%)"}: $${fee}\nTotal to Pay: $${totalPay}\n\n👉 Pay Now: ${stripeData.checkoutUrl}\n\nThis link will expire in 24 hours. If you have any questions, feel free to reply to this email or call us at (530) 966-0752.\n\nThank you!\nBetty & the Maid for Chico Team`
+      );
+      setDialogTab("messages");
+      toast({ title: `💳 ${methodLabel} ready!`, description: "Review the email in the Messages tab before sending." });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to create payment link";
+      console.error("Payment draft error:", err);
+      toast({ title: t("admin.error"), description: message, variant: "destructive" });
+    }
+
+    setSendingEmail(null);
+  };
+
+  const handleSendEmail = async (type: "quote" | "receipt" | "invoice") => {
     setSendingEmail(type);
     try {
-      if (type === 'cc-payment' || type === 'ach-payment') {
-        const paymentMethod = type === 'ach-payment' ? 'ach' : 'card';
-        // Step 1: Create Stripe Checkout Session
-        const { data: stripeData, error: stripeErr } = await supabase.functions.invoke('create-stripe-payment', {
-          body: { bookingId: booking.id, paymentMethod },
-        });
-        if (stripeErr || !stripeData?.checkoutUrl) throw stripeErr || new Error("Failed to create payment link");
-
-        // Step 2: Send the payment email with the checkout URL
-        const { error } = await supabase.functions.invoke('send-job-email', {
-          body: {
-            bookingId: booking.id,
-            type,
-            checkoutUrl: stripeData.checkoutUrl,
-            balanceDue: stripeData.balanceDue,
-            ccFee: stripeData.fee,
-            totalWithFee: stripeData.totalWithFee,
-            paymentMethod,
-          },
-        });
-        if (error) throw error;
-        const label = type === 'ach-payment' ? 'ACH Payment' : 'CC Payment';
-        toast({
-          title: `💳 ${label} email sent!`,
-          description: `${label} link sent to ${booking.email}`,
-        });
-      } else {
-        const { error } = await supabase.functions.invoke('send-job-email', {
-          body: { bookingId: booking.id, type },
-        });
-        if (error) throw error;
-        const titles: Record<string, string> = {
-          quote: t("admin.job.quote.sent"),
-          invoice: "📧 Invoice sent!",
-          receipt: t("admin.job.receipt.sent"),
-        };
-        toast({
-          title: titles[type] || "Email sent!",
-          description: `${t("admin.job.email.sentto")} ${booking.email}`,
-        });
-      }
+      const { error } = await supabase.functions.invoke("send-job-email", {
+        body: { bookingId: booking.id, type },
+      });
+      if (error) throw error;
+      const titles: Record<string, string> = {
+        quote: t("admin.job.quote.sent"),
+        invoice: "📧 Invoice sent!",
+        receipt: t("admin.job.receipt.sent"),
+      };
+      toast({
+        title: titles[type] || "Email sent!",
+        description: `${t("admin.job.email.sentto")} ${booking.email}`,
+      });
     } catch (err) {
       console.error("Send email error:", err);
       toast({ title: t("admin.error"), description: t("admin.job.email.error"), variant: "destructive" });
@@ -1035,56 +1086,20 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                       variant="outline"
                       size="sm"
                       disabled={sendingEmail !== null || booking.payment_status === 'paid'}
-                      onClick={() => handleSendEmail('ach-payment')}
+                      onClick={() => openPaymentConfirm("ach")}
                       className="gap-1.5 text-xs"
                     >
-                      🏦 {sendingEmail === 'ach-payment' ? t("admin.job.sending") : t("admin.job.achpayment")}
+                      🏦 {sendingEmail === "ach-payment" ? t("admin.job.sending") : t("admin.job.achpayment")}
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       disabled={sendingEmail !== null || booking.payment_status === 'paid'}
-                      onClick={async () => {
-                        setSendingEmail('cc-payment');
-                        try {
-                          const { data, error } = await supabase.functions.invoke('create-stripe-payment', {
-                            body: { bookingId: booking.id, paymentMethod: 'card' },
-                          });
-
-                          const stripeData = typeof data === "string"
-                            ? (() => { try { return JSON.parse(data); } catch { return null; } })()
-                            : data;
-
-                          if (error) {
-                            const message = (error as any)?.message || "Failed to create payment link";
-                            throw new Error(message);
-                          }
-
-                          if (!stripeData?.checkoutUrl) {
-                            throw new Error(stripeData?.error || "Payment link was not returned");
-                          }
-
-                          const name = (booking.name ?? "").trim().split(/\s+/)[0] || "there";
-                          const bal = Number(stripeData.balanceDue || 0).toFixed(2);
-                          const fee = Number(stripeData.fee || 0).toFixed(2);
-                          const totalPay = Number(stripeData.totalWithFee || 0).toFixed(2);
-                          setPendingTemplateSubject("Credit Card Payment Link — Maid for Chico");
-                          setPendingTemplateBody(
-                            `Hi ${name},\n\nAs requested, here is your secure credit card payment link:\n\n💳 Original Balance: $${bal}\n💳 Processing Fee (3%): $${fee}\n💳 Total to Pay: $${totalPay}\n\n👉 Pay Now: ${stripeData.checkoutUrl}\n\nThis link will expire in 24 hours. If you have any questions, feel free to reply to this email or call us at (530) 966-0752.\n\nThank you!\nBetty & the Maid for Chico Team`
-                          );
-                          setDialogTab("messages");
-                          toast({ title: "💳 CC Payment link ready!", description: "Review the email in the Messages tab before sending." });
-                        } catch (err) {
-                          const message = err instanceof Error ? err.message : "Failed to create payment link";
-                          console.error("CC payment link error:", err);
-                          toast({ title: t("admin.error"), description: message, variant: "destructive" });
-                        }
-                        setSendingEmail(null);
-                      }}
+                      onClick={() => openPaymentConfirm("card")}
                       className="gap-1.5 text-xs"
                     >
                       <CreditCard className="w-3 h-3" />
-                      {sendingEmail === 'cc-payment' ? t("admin.job.sending") : t("admin.job.ccpayment")}
+                      {sendingEmail === "cc-payment" ? t("admin.job.sending") : t("admin.job.ccpayment")}
                     </Button>
                   </div>
                 )}
@@ -1115,6 +1130,78 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
           </Tabs>
         </DialogContent>
       </Dialog>
+
+      {/* Payment email confirmation */}
+      <AlertDialog open={!!confirmPaymentMethod} onOpenChange={(open) => { if (!open) setConfirmPaymentMethod(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm payment email breakdown</AlertDialogTitle>
+            <AlertDialogDescription>
+              This exact itemized summary will be inserted into the payment email draft before you send.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-2 rounded-md border border-border bg-secondary/20 p-3 text-sm">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Itemized services</p>
+            {nonEmptyServiceItems.length > 0 ? (
+              <div className="space-y-1">
+                {nonEmptyServiceItems.map((item, index) => (
+                  <div key={`${item.description}-${index}`} className="flex items-start justify-between gap-3">
+                    <span className="text-foreground/90">{item.description}</span>
+                    <span className="font-medium">${Number(item.amount || 0).toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted-foreground">No line items added yet.</p>
+            )}
+
+            <div className="space-y-1 border-t border-border pt-2">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span>${subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Deposit collected</span>
+                <span>-${depositAmount.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Balance due</span>
+                <span>${previewBalance.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Processing fee {confirmPaymentMethod === "card" ? "(3%)" : "(0%)"}</span>
+                <span>${previewFee.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between border-t border-border pt-2 font-semibold">
+                <span>Total to pay</span>
+                <span>${previewTotal.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Back</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (!confirmPaymentMethod) return;
+                const selectedMethod = confirmPaymentMethod;
+                setConfirmPaymentMethod(null);
+                await preparePaymentEmailDraft(selectedMethod);
+              }}
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              {sendingEmail !== null ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Preparing...
+                </span>
+              ) : (
+                "Continue to Messages"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Unsaved changes warning */}
       <AlertDialog open={showUnsavedWarning} onOpenChange={setShowUnsavedWarning}>
