@@ -375,7 +375,6 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
       }
 
       const firstName = (booking.name ?? "").trim().split(/\s+/)[0] || "there";
-      const nonEmptyServiceItems = serviceItems.filter((item) => item.description.trim() !== "");
       const itemizedLines = nonEmptyServiceItems.length > 0
         ? nonEmptyServiceItems.map((item) => `• ${item.description}: $${Number(item.amount || 0).toFixed(2)}`).join("\n")
         : "• Cleaning Service: $0.00";
