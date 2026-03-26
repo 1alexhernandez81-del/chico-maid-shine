@@ -164,7 +164,7 @@ const geocodeFallback = async (apiKey: string, input: string): Promise<AddressSu
 };
 
 const openStreetMapFallback = async (input: string): Promise<AddressSuggestion[]> => {
-  const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&countrycodes=us&q=${encodeURIComponent(input)}`;
+  const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&countrycodes=us&viewbox=-122.15,40.05,-121.45,39.55&bounded=1&q=${encodeURIComponent(input)}`;
 
   const res = await fetch(nominatimUrl, {
     headers: {
