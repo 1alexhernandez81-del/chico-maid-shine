@@ -52,6 +52,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
   const [customDeposit, setCustomDeposit] = useState<number | null>(null);
   const [photos, setPhotos] = useState<string[]>([]);
   const [dialogTab, setDialogTab] = useState("details");
+  const [savingDeposit, setSavingDeposit] = useState(false);
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
   const [showReviewConfirm, setShowReviewConfirm] = useState(false);
@@ -207,6 +208,38 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
   const defaultDeposit = booking.total_price && booking.total_price > 0 ? booking.total_price * 0.25 : 0;
   const depositAmount = customDeposit !== null ? customDeposit : defaultDeposit;
   const total = subtotal - depositAmount;
+
+  const saveDepositChange = async () => {
+    const depositToSave = Math.max(0, customDeposit ?? defaultDeposit);
+    const recalculatedTotal = Math.max(0, subtotal - depositToSave);
+
+    setSavingDeposit(true);
+    const { error } = await supabase
+      .from("bookings")
+      .update({
+        deposit_override: depositToSave,
+        total_price: recalculatedTotal,
+      } as any)
+      .eq("id", booking.id);
+
+    if (error) {
+      toast({ title: t("admin.error"), description: t("admin.bookings.error.update"), variant: "destructive" });
+    } else {
+      setCustomDeposit(depositToSave);
+      setEditingDeposit(false);
+      onUpdated({
+        ...booking,
+        admin_notes: adminNotes,
+        status: newStatus,
+        line_items: lineItems,
+        total_price: recalculatedTotal,
+        deposit_override: depositToSave,
+      });
+      toast({ title: t("admin.bookings.updated"), description: "Deposit saved." });
+    }
+
+    setSavingDeposit(false);
+  };
 
   const updateLineItem = (index: number, field: keyof LineItem, value: string | number) => {
     setLineItems((prev) =>
@@ -753,30 +786,47 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                   <div className="flex justify-end items-center gap-2">
                     <span className="text-xs tracking-wider text-muted-foreground">{t("admin.job.deposit")}</span>
                     {editingDeposit ? (
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1.5">
                         <span className="text-sm">-$</span>
                         <Input
                           type="number"
                           value={customDeposit ?? depositAmount}
                           onChange={(e) => setCustomDeposit(Math.max(0, parseFloat(e.target.value) || 0))}
-                          className="w-24 h-7 text-sm text-right"
+                          className="w-24 h-8 text-sm text-right"
                           min={0}
                           step={0.01}
                           autoFocus
                         />
                         <Button
                           size="sm"
-                          variant="ghost"
-                          className="h-7 px-2 text-green-400 hover:text-green-300"
-                          onClick={() => setEditingDeposit(false)}
+                          variant="outline"
+                          className="h-8 px-2 text-xs"
+                          onClick={saveDepositChange}
+                          disabled={savingDeposit}
                         >
-                          ✓
+                          {savingDeposit ? t("admin.bookings.saving") : t("admin.bookings.save")}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 px-2 text-xs"
+                          onClick={() => {
+                            const persistedDeposit = (booking as any).deposit_override;
+                            setCustomDeposit(persistedDeposit !== undefined && persistedDeposit !== null ? Number(persistedDeposit) : null);
+                            setEditingDeposit(false);
+                          }}
+                          disabled={savingDeposit}
+                        >
+                          Cancel
                         </Button>
                       </div>
                     ) : (
                       <button
-                        onClick={() => { setCustomDeposit(customDeposit !== null ? customDeposit : depositAmount); setEditingDeposit(true); }}
-                        className="text-sm text-green-400 hover:underline cursor-pointer"
+                        onClick={() => {
+                          setCustomDeposit(customDeposit !== null ? customDeposit : depositAmount);
+                          setEditingDeposit(true);
+                        }}
+                        className="text-sm text-accent hover:underline cursor-pointer"
                         title="Click to edit deposit"
                       >
                         -${depositAmount.toFixed(2)}
