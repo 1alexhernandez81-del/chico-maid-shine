@@ -28,6 +28,7 @@ export type Database = {
           confirmed_at: string | null
           created_at: string
           customer_id: string | null
+          deposit_override: number | null
           email: string
           estimate_date: string | null
           estimate_time: string | null
@@ -74,6 +75,7 @@ export type Database = {
           confirmed_at?: string | null
           created_at?: string
           customer_id?: string | null
+          deposit_override?: number | null
           email: string
           estimate_date?: string | null
           estimate_time?: string | null
@@ -120,6 +122,7 @@ export type Database = {
           confirmed_at?: string | null
           created_at?: string
           customer_id?: string | null
+          deposit_override?: number | null
           email?: string
           estimate_date?: string | null
           estimate_time?: string | null
