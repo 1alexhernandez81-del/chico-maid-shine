@@ -48,6 +48,8 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
   const [uploading, setUploading] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [invoiceUrl, setInvoiceUrl] = useState<string | null>(null);
+  const [editingDeposit, setEditingDeposit] = useState(false);
+  const [customDeposit, setCustomDeposit] = useState<number | null>(null);
   const [photos, setPhotos] = useState<string[]>([]);
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
