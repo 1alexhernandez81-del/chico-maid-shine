@@ -98,7 +98,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
       setAssignedCleanerIds(Array.isArray(booking.assigned_cleaners) ? booking.assigned_cleaners : []);
       setEditingInfo(false);
       setEditingDeposit(false);
-      setCustomDeposit(null);
+      setCustomDeposit((booking as any).deposit_override !== undefined && (booking as any).deposit_override !== null ? Number((booking as any).deposit_override) : null);
       setEditInfo({ name: booking.name, email: booking.email, phone: booking.phone, street: booking.street, city: booking.city, zip: booking.zip });
       initialRef.current = {
         adminNotes: notes,
@@ -355,6 +355,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
       total_price: total,
       invoice_url: invoiceUrl,
       assigned_cleaners: assignedCleanerIds,
+      deposit_override: customDeposit,
     };
 
     if (newStatus === "scheduled") {
@@ -754,18 +755,25 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                         <span className="text-sm">-$</span>
                         <Input
                           type="number"
-                          value={depositAmount}
+                          value={customDeposit ?? depositAmount}
                           onChange={(e) => setCustomDeposit(Math.max(0, parseFloat(e.target.value) || 0))}
                           className="w-24 h-7 text-sm text-right"
                           min={0}
                           step={0.01}
-                          onBlur={() => setEditingDeposit(false)}
                           autoFocus
                         />
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 px-2 text-green-400 hover:text-green-300"
+                          onClick={() => setEditingDeposit(false)}
+                        >
+                          ✓
+                        </Button>
                       </div>
                     ) : (
                       <button
-                        onClick={() => { setCustomDeposit(depositAmount); setEditingDeposit(true); }}
+                        onClick={() => { setCustomDeposit(customDeposit !== null ? customDeposit : depositAmount); setEditingDeposit(true); }}
                         className="text-sm text-green-400 hover:underline cursor-pointer"
                         title="Click to edit deposit"
                       >

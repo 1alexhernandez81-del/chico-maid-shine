@@ -1,0 +1,1 @@
+ALTER TABLE public.bookings ADD COLUMN deposit_override numeric DEFAULT NULL;
