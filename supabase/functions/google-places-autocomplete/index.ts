@@ -35,12 +35,111 @@ const parseAddressComponents = (components: any[] = []) => {
   };
 };
 
+const fetchPlacesNew = async (apiKey: string, input: string, token: string): Promise<AddressSuggestion[]> => {
+  const autocompleteResponse = await fetch("https://places.googleapis.com/v1/places:autocomplete", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Goog-Api-Key": apiKey,
+      "X-Goog-FieldMask": "suggestions.placePrediction.placeId,suggestions.placePrediction.text",
+    },
+    body: JSON.stringify({
+      input,
+      includedRegionCodes: ["us"],
+      sessionToken: token,
+      locationBias: {
+        circle: {
+          center: { latitude: 39.7285, longitude: -121.8375 },
+          radius: 80000,
+        },
+      },
+    }),
+  });
+
+  const autocompleteData = await autocompleteResponse.json();
+
+  if (!autocompleteResponse.ok || !Array.isArray(autocompleteData?.suggestions)) {
+    console.error("Places API (New) failed:", autocompleteData);
+    return [];
+  }
+
+  const placePredictions = autocompleteData.suggestions
+    .filter((s: any) => s?.placePrediction?.placeId)
+    .slice(0, 5);
+
+  return (
+    await Promise.all(
+      placePredictions.map(async (s: any) => {
+        const placeId = s.placePrediction.placeId;
+        const detailsRes = await fetch(`https://places.googleapis.com/v1/places/${placeId}`, {
+          headers: {
+            "X-Goog-Api-Key": apiKey,
+            "X-Goog-FieldMask": "addressComponents,formattedAddress",
+          },
+        });
+
+        if (!detailsRes.ok) return null;
+
+        const details = await detailsRes.json();
+        const { street, city, zip } = parseAddressComponents(details?.addressComponents || []);
+
+        return {
+          description: s.placePrediction.text?.text || details?.formattedAddress || street,
+          street,
+          city,
+          zip,
+        };
+      }),
+    )
+  ).filter((item): item is AddressSuggestion => Boolean(item && item.description));
+};
+
+const fetchPlacesLegacy = async (apiKey: string, input: string, token: string): Promise<AddressSuggestion[]> => {
+  const legacyAutocompleteUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&types=address&components=country:us&location=39.7285,-121.8375&radius=80000&sessiontoken=${encodeURIComponent(token)}&key=${encodeURIComponent(apiKey)}`;
+  const autocompleteRes = await fetch(legacyAutocompleteUrl);
+  const autocompleteData = await autocompleteRes.json();
+
+  if (autocompleteData?.status !== "OK" && autocompleteData?.status !== "ZERO_RESULTS") {
+    console.error("Places API (Legacy) failed:", autocompleteData);
+    return [];
+  }
+
+  const predictions = (autocompleteData?.predictions || []).slice(0, 5);
+
+  return (
+    await Promise.all(
+      predictions.map(async (prediction: any) => {
+        const placeId = prediction?.place_id;
+        if (!placeId) return null;
+
+        const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${encodeURIComponent(placeId)}&fields=address_component,formatted_address&sessiontoken=${encodeURIComponent(token)}&key=${encodeURIComponent(apiKey)}`;
+        const detailsRes = await fetch(detailsUrl);
+        const detailsData = await detailsRes.json();
+
+        if (detailsData?.status !== "OK") return null;
+
+        const { street, city, zip } = parseAddressComponents(detailsData?.result?.address_components || []);
+
+        return {
+          description: prediction?.description || detailsData?.result?.formatted_address || street,
+          street,
+          city,
+          zip,
+        };
+      }),
+    )
+  ).filter((item): item is AddressSuggestion => Boolean(item && item.description));
+};
+
 const geocodeFallback = async (apiKey: string, input: string): Promise<AddressSuggestion[]> => {
   const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(input)}&components=country:US&key=${encodeURIComponent(apiKey)}`;
   const geocodeRes = await fetch(geocodeUrl);
   const geocodeData = await geocodeRes.json();
 
-  if (!geocodeRes.ok || geocodeData?.status !== "OK") return [];
+  if (geocodeData?.status !== "OK") {
+    console.error("Geocoding fallback failed:", geocodeData);
+    return [];
+  }
 
   return (geocodeData.results || []).slice(0, 5).map((result: any) => {
     const { street, city, zip } = parseAddressComponents(result.address_components || []);
@@ -78,62 +177,10 @@ serve(async (req) => {
       ? sessionToken
       : crypto.randomUUID();
 
-    const autocompleteResponse = await fetch("https://places.googleapis.com/v1/places:autocomplete", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Goog-Api-Key": apiKey,
-        "X-Goog-FieldMask": "suggestions.placePrediction.placeId,suggestions.placePrediction.text",
-      },
-      body: JSON.stringify({
-        input,
-        includedRegionCodes: ["us"],
-        sessionToken: token,
-        locationBias: {
-          circle: {
-            center: { latitude: 39.7285, longitude: -121.8375 },
-            radius: 80000,
-          },
-        },
-      }),
-    });
+    let suggestions = await fetchPlacesNew(apiKey, input, token);
 
-    const autocompleteData = await autocompleteResponse.json();
-
-    let suggestions: AddressSuggestion[] = [];
-
-    if (autocompleteResponse.ok && Array.isArray(autocompleteData?.suggestions)) {
-      const placePredictions = autocompleteData.suggestions
-        .filter((s: any) => s?.placePrediction?.placeId)
-        .slice(0, 5);
-
-      suggestions = (
-        await Promise.all(
-          placePredictions.map(async (s: any) => {
-            const placeId = s.placePrediction.placeId;
-            const detailsRes = await fetch(`https://places.googleapis.com/v1/places/${placeId}`, {
-              headers: {
-                "X-Goog-Api-Key": apiKey,
-                "X-Goog-FieldMask": "addressComponents,formattedAddress",
-              },
-            });
-
-            if (!detailsRes.ok) return null;
-
-            const details = await detailsRes.json();
-            const { street, city, zip } = parseAddressComponents(details?.addressComponents || []);
-
-            return {
-              description: s.placePrediction.text?.text || details?.formattedAddress || street,
-              street,
-              city,
-              zip,
-            };
-          }),
-        )
-      ).filter((item): item is AddressSuggestion => Boolean(item && item.description));
-    } else {
-      console.error("Places autocomplete failed:", autocompleteData);
+    if (suggestions.length === 0) {
+      suggestions = await fetchPlacesLegacy(apiKey, input, token);
     }
 
     if (suggestions.length === 0) {
