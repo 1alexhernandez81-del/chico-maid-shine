@@ -138,7 +138,7 @@ const AdminDashboard = () => {
             </TabsContent>
           )}
           <TabsContent value="jobs">
-            <JobsBoard userRole={userRole} />
+            <JobsBoard userRole={userRole} prefillJob={prefillJob} />
           </TabsContent>
           {isAdmin && (
             <>
