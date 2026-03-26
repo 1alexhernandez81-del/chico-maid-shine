@@ -143,7 +143,12 @@ const AdminDashboard = () => {
           {isAdmin && (
             <>
               <TabsContent value="customers">
-                <CustomerManagement />
+                <CustomerManagement onCreateJob={(data) => {
+                  setPrefillJob(data);
+                  setActiveTab("jobs");
+                  // Clear prefill after a tick so it can be re-triggered
+                  setTimeout(() => setPrefillJob(null), 500);
+                }} />
               </TabsContent>
               <TabsContent value="cleaners">
                 <CleanerManagement />

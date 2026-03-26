@@ -381,6 +381,7 @@ const CustomerManagement = ({ onCreateJob }: { onCreateJob?: (data: { name: stri
         customer={selected}
         onClose={() => setSelected(null)}
         onUpdated={() => { setSelected(null); fetchCustomers(); }}
+        onCreateJob={onCreateJob}
       />
 
       {/* Add Customer Dialog */}
