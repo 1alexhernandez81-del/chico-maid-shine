@@ -175,14 +175,14 @@ const Schedule = () => {
               <fieldset className="space-y-4">
                 <legend className="font-body text-xs uppercase tracking-[0.2em] text-accent font-medium border-b border-accent/30 pb-2 mb-4 w-full">{t("schedule.contact")}</legend>
                 <FormField control={form.control} name="name" render={({ field }) => (
-                  <FormItem><FormLabel className="font-body font-normal text-sm">{t("schedule.name")}</FormLabel><FormControl><Input placeholder="Jane Doe" {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel className="font-body font-normal text-sm">{t("schedule.name")}</FormLabel><FormControl><Input placeholder="" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <div className="grid sm:grid-cols-2 gap-4">
                   <FormField control={form.control} name="email" render={({ field }) => (
-                    <FormItem><FormLabel className="font-body font-normal text-sm">{t("schedule.email")}</FormLabel><FormControl><Input type="email" placeholder="jane@example.com" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel className="font-body font-normal text-sm">{t("schedule.email")}</FormLabel><FormControl><Input type="email" placeholder="" {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name="phone" render={({ field }) => (
-                    <FormItem><FormLabel className="font-body font-normal text-sm">{t("schedule.phone")}</FormLabel><FormControl><Input type="tel" placeholder="(530) 555-0123" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel className="font-body font-normal text-sm">{t("schedule.phone")}</FormLabel><FormControl><Input type="tel" placeholder="" {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                 </div>
               </fieldset>
@@ -200,7 +200,7 @@ const Schedule = () => {
                         if (addr.city) form.setValue("city", addr.city);
                         if (addr.zip) form.setValue("zip", addr.zip);
                       }}
-                      placeholder="123 Main St"
+                      placeholder=""
                     />
                   </FormControl><FormMessage /></FormItem>
                 )} />

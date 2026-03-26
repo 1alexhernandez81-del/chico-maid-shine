@@ -548,16 +548,16 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.bookings.name")}</Label>
-                <Input value={newJob.name} onChange={(e) => setNewJob({ ...newJob, name: e.target.value })} placeholder="Jane Doe" />
+                <Input value={newJob.name} onChange={(e) => setNewJob({ ...newJob, name: e.target.value })} placeholder="" />
               </div>
               <div>
                 <Label className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.bookings.phone")}</Label>
-                <Input value={newJob.phone} onChange={(e) => setNewJob({ ...newJob, phone: e.target.value })} placeholder="(530) 555-0123" />
+                <Input value={newJob.phone} onChange={(e) => setNewJob({ ...newJob, phone: e.target.value })} placeholder="" />
               </div>
             </div>
             <div>
               <Label className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.bookings.email")}</Label>
-              <Input value={newJob.email} onChange={(e) => setNewJob({ ...newJob, email: e.target.value })} placeholder="jane@example.com" />
+              <Input value={newJob.email} onChange={(e) => setNewJob({ ...newJob, email: e.target.value })} placeholder="" />
             </div>
             <div>
               <Label className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.bookings.address")}</Label>
@@ -565,7 +565,7 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
                 value={newJob.street}
                 onChange={(val) => setNewJob({ ...newJob, street: val })}
                 onSelect={(addr) => setNewJob({ ...newJob, street: addr.street, city: addr.city || newJob.city, zip: addr.zip || newJob.zip })}
-                placeholder="123 Main St"
+                placeholder=""
                 className="mb-2"
               />
               <div className="grid grid-cols-2 gap-2">

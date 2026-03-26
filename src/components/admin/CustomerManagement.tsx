@@ -394,16 +394,16 @@ const CustomerManagement = ({ onCreateJob }: { onCreateJob?: (data: { name: stri
           <div className="space-y-4">
             <div>
               <Label className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.customers.name")}</Label>
-              <Input value={newCustomer.name} onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })} placeholder="Jane Doe" />
+              <Input value={newCustomer.name} onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })} placeholder="" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.customers.email")}</Label>
-                <Input value={newCustomer.email} onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })} placeholder="jane@example.com" />
+                <Input value={newCustomer.email} onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })} placeholder="" />
               </div>
               <div>
                 <Label className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.customers.phone")}</Label>
-                <Input value={newCustomer.phone} onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })} placeholder="(530) 555-0123" />
+                <Input value={newCustomer.phone} onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })} placeholder="" />
               </div>
             </div>
             <div>
@@ -412,7 +412,7 @@ const CustomerManagement = ({ onCreateJob }: { onCreateJob?: (data: { name: stri
                 value={newCustomer.street}
                 onChange={(val) => setNewCustomer({ ...newCustomer, street: val })}
                 onSelect={(addr) => setNewCustomer({ ...newCustomer, street: addr.street, city: addr.city || newCustomer.city, zip: addr.zip || newCustomer.zip })}
-                placeholder="123 Main St"
+                placeholder=""
                 className="mb-2"
               />
               <div className="grid grid-cols-2 gap-2">
