@@ -97,6 +97,8 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
       setPhotos(Array.isArray(booking.photos) ? booking.photos : []);
       setAssignedCleanerIds(Array.isArray(booking.assigned_cleaners) ? booking.assigned_cleaners : []);
       setEditingInfo(false);
+      setEditingDeposit(false);
+      setCustomDeposit(null);
       setEditInfo({ name: booking.name, email: booking.email, phone: booking.phone, street: booking.street, city: booking.city, zip: booking.zip });
       initialRef.current = {
         adminNotes: notes,
