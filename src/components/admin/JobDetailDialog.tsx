@@ -169,6 +169,31 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
     }
   };
 
+  const saveCustomerInfo = async () => {
+    if (!booking) return;
+    setSavingInfo(true);
+    const { error } = await supabase
+      .from("bookings")
+      .update({
+        name: editInfo.name,
+        email: editInfo.email,
+        phone: editInfo.phone,
+        street: editInfo.street,
+        city: editInfo.city,
+        zip: editInfo.zip,
+      })
+      .eq("id", booking.id);
+
+    if (error) {
+      toast({ title: t("admin.error"), description: t("admin.bookings.error.update"), variant: "destructive" });
+    } else {
+      toast({ title: t("admin.bookings.updated"), description: t("admin.job.info.updated") });
+      setEditingInfo(false);
+      onUpdated({ ...booking, ...editInfo, status: newStatus, admin_notes: adminNotes, line_items: lineItems, total_price: total });
+    }
+    setSavingInfo(false);
+  };
+
   if (!booking) return null;
 
   const serviceItems = lineItems.filter((item) => !item.description.toLowerCase().includes("deposit"));
