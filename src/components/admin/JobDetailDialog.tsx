@@ -230,10 +230,16 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
   if (!booking) return null;
 
   const serviceItems = lineItems.filter((item) => !item.description.toLowerCase().includes("deposit"));
+  const nonEmptyServiceItems = serviceItems.filter((item) => item.description.trim() !== "");
   const subtotal = serviceItems.reduce((sum, item) => sum + (item.amount || 0), 0);
   const defaultDeposit = booking.total_price && booking.total_price > 0 ? booking.total_price * 0.25 : 0;
   const depositAmount = customDeposit !== null ? customDeposit : defaultDeposit;
   const total = subtotal - depositAmount;
+  const previewBalance = Math.max(0, subtotal - depositAmount);
+  const previewFee = confirmPaymentMethod === "card"
+    ? Math.round(previewBalance * 0.03 * 100) / 100
+    : 0;
+  const previewTotal = previewBalance + previewFee;
 
   const saveDepositChange = async () => {
     const depositToSave = Math.max(0, customDeposit ?? defaultDeposit);
