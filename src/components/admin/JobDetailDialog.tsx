@@ -997,13 +997,34 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                       variant="outline"
                       size="sm"
                       disabled={sendingEmail !== null || booking.payment_status === 'paid'}
-                      onClick={() => handleSendEmail('cc-payment')}
+                      onClick={async () => {
+                        setSendingEmail('cc-payment');
+                        try {
+                          const { data: stripeData, error: stripeErr } = await supabase.functions.invoke('create-stripe-payment', {
+                            body: { bookingId: booking.id, paymentMethod: 'card' },
+                          });
+                          if (stripeErr || !stripeData?.checkoutUrl) throw stripeErr || new Error("Failed to create payment link");
+                          const name = (booking.name ?? "").trim().split(/\s+/)[0] || "there";
+                          const bal = stripeData.balanceDue?.toFixed(2) || total.toFixed(2);
+                          const fee = stripeData.fee?.toFixed(2) || "0.00";
+                          const totalWithFee = stripeData.totalWithFee?.toFixed(2) || total.toFixed(2);
+                          setPendingTemplateSubject("Credit Card Payment Link — Maid for Chico");
+                          setPendingTemplateBody(
+                            `Hi ${name},\n\nAs requested, here is your secure credit card payment link:\n\n💳 Original Balance: $${bal}\n💳 Processing Fee (3%): $${fee}\n💳 Total to Pay: $${totalWithFee}\n\n👉 Pay Now: ${stripeData.checkoutUrl}\n\nThis link will expire in 24 hours. If you have any questions, feel free to reply to this email or call us at (530) 966-0752.\n\nThank you!\nBetty & the Maid for Chico Team`
+                          );
+                          setDialogTab("messages");
+                          toast({ title: "💳 CC Payment link ready!", description: "Review the email in the Messages tab before sending." });
+                        } catch (err) {
+                          console.error("CC payment link error:", err);
+                          toast({ title: t("admin.error"), description: "Failed to create payment link", variant: "destructive" });
+                        }
+                        setSendingEmail(null);
+                      }}
                       className="gap-1.5 text-xs"
                     >
                       <CreditCard className="w-3 h-3" />
                       {sendingEmail === 'cc-payment' ? t("admin.job.sending") : t("admin.job.ccpayment")}
                     </Button>
-                  </div>
                 )}
               </div>
 
