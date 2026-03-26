@@ -1131,6 +1131,78 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
         </DialogContent>
       </Dialog>
 
+      {/* Payment email confirmation */}
+      <AlertDialog open={!!confirmPaymentMethod} onOpenChange={(open) => { if (!open) setConfirmPaymentMethod(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm payment email breakdown</AlertDialogTitle>
+            <AlertDialogDescription>
+              This exact itemized summary will be inserted into the payment email draft before you send.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-2 rounded-md border border-border bg-secondary/20 p-3 text-sm">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Itemized services</p>
+            {nonEmptyServiceItems.length > 0 ? (
+              <div className="space-y-1">
+                {nonEmptyServiceItems.map((item, index) => (
+                  <div key={`${item.description}-${index}`} className="flex items-start justify-between gap-3">
+                    <span className="text-foreground/90">{item.description}</span>
+                    <span className="font-medium">${Number(item.amount || 0).toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted-foreground">No line items added yet.</p>
+            )}
+
+            <div className="space-y-1 border-t border-border pt-2">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span>${subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Deposit collected</span>
+                <span>-${depositAmount.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Balance due</span>
+                <span>${previewBalance.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Processing fee {confirmPaymentMethod === "card" ? "(3%)" : "(0%)"}</span>
+                <span>${previewFee.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between border-t border-border pt-2 font-semibold">
+                <span>Total to pay</span>
+                <span>${previewTotal.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Back</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (!confirmPaymentMethod) return;
+                const selectedMethod = confirmPaymentMethod;
+                setConfirmPaymentMethod(null);
+                await preparePaymentEmailDraft(selectedMethod);
+              }}
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              {sendingEmail !== null ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Preparing...
+                </span>
+              ) : (
+                "Continue to Messages"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Unsaved changes warning */}
       <AlertDialog open={showUnsavedWarning} onOpenChange={setShowUnsavedWarning}>
         <AlertDialogContent>
