@@ -40,6 +40,7 @@ export type Booking = {
   total_paid?: number;
   paid_at?: string | null;
   payment_reference?: string | null;
+  deposit_override?: number | null;
 };
 
 export type LineItem = { description: string; amount: number };

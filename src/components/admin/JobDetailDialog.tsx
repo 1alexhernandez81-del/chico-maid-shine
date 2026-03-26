@@ -755,18 +755,25 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                         <span className="text-sm">-$</span>
                         <Input
                           type="number"
-                          value={depositAmount}
+                          value={customDeposit ?? depositAmount}
                           onChange={(e) => setCustomDeposit(Math.max(0, parseFloat(e.target.value) || 0))}
                           className="w-24 h-7 text-sm text-right"
                           min={0}
                           step={0.01}
-                          onBlur={() => setEditingDeposit(false)}
                           autoFocus
                         />
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 px-2 text-green-400 hover:text-green-300"
+                          onClick={() => setEditingDeposit(false)}
+                        >
+                          ✓
+                        </Button>
                       </div>
                     ) : (
                       <button
-                        onClick={() => { setCustomDeposit(depositAmount); setEditingDeposit(true); }}
+                        onClick={() => { setCustomDeposit(customDeposit !== null ? customDeposit : depositAmount); setEditingDeposit(true); }}
                         className="text-sm text-green-400 hover:underline cursor-pointer"
                         title="Click to edit deposit"
                       >
