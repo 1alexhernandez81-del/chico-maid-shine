@@ -136,11 +136,39 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
 
   useEffect(() => { fetchBookings(); }, []);
 
+  // Open Add Job dialog with prefilled data (from customer page or clone)
+  useEffect(() => {
+    if (prefillJob) {
+      setNewJob({ ...DEFAULT_NEW_JOB, ...prefillJob });
+      setShowAddJob(true);
+    }
+  }, [prefillJob]);
+
   useEffect(() => {
     supabase.from("cleaners").select("id, name").eq("active", true).order("name").then(({ data }) => {
       if (data) setCleanersList(data as CleanerInfo[]);
     });
   }, []);
+
+  const handleCloneJob = (booking: Booking) => {
+    setNewJob({
+      name: booking.name,
+      email: booking.email,
+      phone: booking.phone,
+      street: booking.street,
+      city: booking.city,
+      zip: booking.zip,
+      service_type: booking.service_type,
+      frequency: booking.frequency,
+      preferred_date: "",
+      bedrooms: booking.bedrooms || "",
+      bathrooms: booking.bathrooms || "",
+      sqft: booking.sqft || "",
+      notes: booking.notes || "",
+      admin_notes: booking.admin_notes || "",
+    });
+    setShowAddJob(true);
+  };
 
   const filtered = bookings.filter((b) => {
     const matchesStatus = statusFilter === "all" || b.status === statusFilter;
