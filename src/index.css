@@ -60,4 +60,10 @@
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Playfair Display', serif;
   }
+
+  /* Fix native date/time input icons for dark theme */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
 }
