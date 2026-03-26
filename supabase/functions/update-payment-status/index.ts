@@ -30,11 +30,13 @@ Deno.serve(async (req) => {
     const currentTotalPaid = Number(booking.total_paid) || 0;
     const newTotalPaid = currentTotalPaid + paidAmount;
 
-    // Calculate effective balance
+    // Calculate effective balance using deposit_override if set
     const rawItems: Array<{ description: string; amount: number }> = Array.isArray(booking.line_items) ? booking.line_items : [];
     const serviceItems = rawItems.filter((i) => !(i.description || "").toLowerCase().includes("deposit"));
     const subtotal = serviceItems.reduce((sum, i) => sum + Number(i.amount || 0), 0);
-    const depositAmt = booking.total_price && Number(booking.total_price) > 0 ? Number(booking.total_price) * 0.25 : 0;
+    const depositAmt = (booking.deposit_override !== null && booking.deposit_override !== undefined)
+      ? Number(booking.deposit_override)
+      : (booking.total_price && Number(booking.total_price) > 0 ? Number(booking.total_price) * 0.25 : 0);
     const balanceDue = subtotal - depositAmt;
     const effectiveBalance = balanceDue + feeAmount;
     const remaining = Math.max(0, effectiveBalance - newTotalPaid);
