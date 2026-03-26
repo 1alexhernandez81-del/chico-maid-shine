@@ -355,6 +355,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
       total_price: total,
       invoice_url: invoiceUrl,
       assigned_cleaners: assignedCleanerIds,
+      deposit_override: customDeposit,
     };
 
     if (newStatus === "scheduled") {
