@@ -177,6 +177,31 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
     }
   };
 
+  const hasUnsavedPricingChanges = () => {
+    const lineItemsDirty = JSON.stringify(lineItems) !== initialRef.current.lineItems;
+    const persistedDeposit = booking.deposit_override !== null && booking.deposit_override !== undefined
+      ? Number(booking.deposit_override)
+      : null;
+    const currentDeposit = customDeposit !== null && customDeposit !== undefined
+      ? Number(customDeposit)
+      : null;
+
+    return lineItemsDirty || editingDeposit || currentDeposit !== persistedDeposit;
+  };
+
+  const openPaymentConfirm = (paymentMethod: "card" | "ach") => {
+    if (hasUnsavedPricingChanges()) {
+      toast({
+        title: "Save required",
+        description: "Please save job changes first so payment emails match your itemized breakdown.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setConfirmPaymentMethod(paymentMethod);
+  };
+
   const saveCustomerInfo = async () => {
     if (!booking) return;
     setSavingInfo(true);
