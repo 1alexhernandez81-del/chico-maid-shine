@@ -200,7 +200,7 @@ const Schedule = () => {
                         if (addr.city) form.setValue("city", addr.city);
                         if (addr.zip) form.setValue("zip", addr.zip);
                       }}
-                      placeholder="123 Main St"
+                      placeholder=""
                     />
                   </FormControl><FormMessage /></FormItem>
                 )} />
