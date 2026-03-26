@@ -412,7 +412,7 @@ const CustomerManagement = ({ onCreateJob }: { onCreateJob?: (data: { name: stri
                 value={newCustomer.street}
                 onChange={(val) => setNewCustomer({ ...newCustomer, street: val })}
                 onSelect={(addr) => setNewCustomer({ ...newCustomer, street: addr.street, city: addr.city || newCustomer.city, zip: addr.zip || newCustomer.zip })}
-                placeholder="123 Main St"
+                placeholder=""
                 className="mb-2"
               />
               <div className="grid grid-cols-2 gap-2">

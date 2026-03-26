@@ -565,7 +565,7 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
                 value={newJob.street}
                 onChange={(val) => setNewJob({ ...newJob, street: val })}
                 onSelect={(addr) => setNewJob({ ...newJob, street: addr.street, city: addr.city || newJob.city, zip: addr.zip || newJob.zip })}
-                placeholder="123 Main St"
+                placeholder=""
                 className="mb-2"
               />
               <div className="grid grid-cols-2 gap-2">

@@ -23,7 +23,7 @@ const AddressAutocomplete = ({
   value,
   onChange,
   onSelect,
-  placeholder = "123 Main St",
+  placeholder = "",
   className,
 }: AddressAutocompleteProps) => {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
