@@ -382,6 +382,8 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
     const isRescheduled = booking.status === "scheduled" && newStatus === "scheduled" &&
       (scheduledDate !== booking.scheduled_date || scheduledTime !== booking.scheduled_time);
 
+    const persistedDeposit = customDeposit ?? (booking.deposit_override ?? null);
+
     const updatePayload: Record<string, any> = {
       status: newStatus,
       admin_notes: adminNotes,
@@ -389,7 +391,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
       total_price: total,
       invoice_url: invoiceUrl,
       assigned_cleaners: assignedCleanerIds,
-      deposit_override: customDeposit,
+      deposit_override: persistedDeposit,
     };
 
     if (newStatus === "scheduled") {
@@ -397,13 +399,19 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
       updatePayload.scheduled_time = scheduledTime;
     }
 
-    const { error } = await supabase
+    const { data: updatedBooking, error } = await supabase
       .from("bookings")
       .update(updatePayload as any)
-      .eq("id", booking.id);
+      .eq("id", booking.id)
+      .select("*")
+      .single();
 
     if (error) {
-      toast({ title: t("admin.error"), description: t("admin.bookings.error.update"), variant: "destructive" });
+      toast({
+        title: t("admin.error"),
+        description: error.message || t("admin.bookings.error.update"),
+        variant: "destructive",
+      });
     } else {
       initialRef.current = {
         adminNotes,
@@ -471,17 +479,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
         });
       }
 
-
-      onUpdated({
-        ...booking,
-        status: newStatus,
-        admin_notes: adminNotes,
-        line_items: cleanItems,
-        total_price: total,
-        invoice_url: invoiceUrl,
-        scheduled_date: newStatus === "scheduled" ? scheduledDate : booking.scheduled_date,
-        scheduled_time: newStatus === "scheduled" ? scheduledTime : booking.scheduled_time,
-      });
+      onUpdated(updatedBooking as Booking);
     }
     setSaving(false);
   };
