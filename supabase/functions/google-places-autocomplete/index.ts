@@ -204,12 +204,6 @@ serve(async (req) => {
 
   try {
     const apiKey = Deno.env.get("GOOGLE_PLACES_API_KEY");
-    if (!apiKey) {
-      return new Response(JSON.stringify({ error: "GOOGLE_PLACES_API_KEY is not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
     const { input, sessionToken } = await req.json();
     if (!input || input.length < 3) {
@@ -222,14 +216,24 @@ serve(async (req) => {
       ? sessionToken
       : crypto.randomUUID();
 
-    let suggestions = await fetchPlacesNew(apiKey, input, token);
+    let suggestions: AddressSuggestion[] = [];
 
-    if (suggestions.length === 0) {
-      suggestions = await fetchPlacesLegacy(apiKey, input, token);
+    if (apiKey) {
+      suggestions = await fetchPlacesNew(apiKey, input, token);
+
+      if (suggestions.length === 0) {
+        suggestions = await fetchPlacesLegacy(apiKey, input, token);
+      }
+
+      if (suggestions.length === 0) {
+        suggestions = await geocodeFallback(apiKey, input);
+      }
+    } else {
+      console.warn("GOOGLE_PLACES_API_KEY is not configured, using OpenStreetMap fallback only");
     }
 
     if (suggestions.length === 0) {
-      suggestions = await geocodeFallback(apiKey, input);
+      suggestions = await openStreetMapFallback(input);
     }
 
     return new Response(JSON.stringify({ suggestions }), {
