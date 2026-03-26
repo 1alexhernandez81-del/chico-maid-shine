@@ -538,6 +538,7 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
           setSelected(null);
         }}
         userRole={userRole}
+        onClone={handleCloneJob}
       />
 
       {/* Add Job Dialog */}
