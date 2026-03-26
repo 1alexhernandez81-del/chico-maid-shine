@@ -209,7 +209,7 @@ const Schedule = () => {
                     <FormItem><FormLabel className="font-body font-normal text-sm">{t("schedule.city")}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name="zip" render={({ field }) => (
-                    <FormItem><FormLabel className="font-body font-normal text-sm">{t("schedule.zip")}</FormLabel><FormControl><Input <FormItem><FormLabel className="font-body font-normal text-sm">{t("schedule.zip")}</FormLabel><FormControl><Input placeholder="Zip" {...field} /></FormControl><FormMessage /></FormItem> {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel className="font-body font-normal text-sm">{t("schedule.zip")}</FormLabel><FormControl><Input placeholder="Zip" {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                 </div>
               </fieldset>

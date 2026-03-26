@@ -570,7 +570,7 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
               />
               <div className="grid grid-cols-2 gap-2">
                 <Input value={newJob.city} onChange={(e) => setNewJob({ ...newJob, city: e.target.value })} placeholder="Chico" />
-                <Input value={newJob.zip} onChange={(e) => setNewJob({ ...newJob, zip: e.target.value })} <Input value={newJob.zip} onChange={(e) => setNewJob({ ...newJob, zip: e.target.value })} placeholder="Zip" /> />
+                <Input value={newJob.zip} onChange={(e) => setNewJob({ ...newJob, zip: e.target.value })} placeholder="Zip" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">

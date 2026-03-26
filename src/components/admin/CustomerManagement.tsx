@@ -417,7 +417,7 @@ const CustomerManagement = ({ onCreateJob }: { onCreateJob?: (data: { name: stri
               />
               <div className="grid grid-cols-2 gap-2">
                 <Input value={newCustomer.city} onChange={(e) => setNewCustomer({ ...newCustomer, city: e.target.value })} placeholder="Chico" />
-                <Input value={newCustomer.zip} onChange={(e) => setNewCustomer({ ...newCustomer, zip: e.target.value })} <Input value={newCustomer.zip} onChange={(e) => setNewCustomer({ ...newCustomer, zip: e.target.value })} placeholder="Zip" /> />
+                <Input value={newCustomer.zip} onChange={(e) => setNewCustomer({ ...newCustomer, zip: e.target.value })} placeholder="Zip" />
               </div>
             </div>
             <div>
