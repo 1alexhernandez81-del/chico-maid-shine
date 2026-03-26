@@ -1047,10 +1047,23 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                       onClick={async () => {
                         setSendingEmail('cc-payment');
                         try {
-                          const { data: stripeData, error: stripeErr } = await supabase.functions.invoke('create-stripe-payment', {
+                          const { data, error } = await supabase.functions.invoke('create-stripe-payment', {
                             body: { bookingId: booking.id, paymentMethod: 'card' },
                           });
-                          if (stripeErr || !stripeData?.checkoutUrl) throw stripeErr || new Error("Failed to create payment link");
+
+                          const stripeData = typeof data === "string"
+                            ? (() => { try { return JSON.parse(data); } catch { return null; } })()
+                            : data;
+
+                          if (error) {
+                            const message = (error as any)?.message || "Failed to create payment link";
+                            throw new Error(message);
+                          }
+
+                          if (!stripeData?.checkoutUrl) {
+                            throw new Error(stripeData?.error || "Payment link was not returned");
+                          }
+
                           const name = (booking.name ?? "").trim().split(/\s+/)[0] || "there";
                           const bal = Number(stripeData.balanceDue || 0).toFixed(2);
                           const fee = Number(stripeData.fee || 0).toFixed(2);
@@ -1062,8 +1075,9 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                           setDialogTab("messages");
                           toast({ title: "💳 CC Payment link ready!", description: "Review the email in the Messages tab before sending." });
                         } catch (err) {
+                          const message = err instanceof Error ? err.message : "Failed to create payment link";
                           console.error("CC payment link error:", err);
-                          toast({ title: t("admin.error"), description: "Failed to create payment link", variant: "destructive" });
+                          toast({ title: t("admin.error"), description: message, variant: "destructive" });
                         }
                         setSendingEmail(null);
                       }}
