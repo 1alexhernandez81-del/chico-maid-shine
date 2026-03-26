@@ -518,58 +518,117 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
             </TabsList>
 
             <TabsContent value="details" className="space-y-5 mt-4">
-            {/* Customer Info */}
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("admin.bookings.name")}</p>
-                <p className="font-medium">{booking.name}</p>
+            {/* Customer Info — Editable */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium">{t("admin.job.customerinfo")}</span>
+                <div className="flex gap-1.5">
+                  {isAdmin && onClone && !editingInfo && (
+                    <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => { onClone(booking); handleClose(); }}>
+                      <Copy className="w-3 h-3" /> {t("admin.job.clone")}
+                    </Button>
+                  )}
+                  {isAdmin && !editingInfo && (
+                    <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setEditingInfo(true)}>
+                      <Pencil className="w-3 h-3" /> {t("admin.cd.edit")}
+                    </Button>
+                  )}
+                </div>
               </div>
-              <div>
-                <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("admin.bookings.phone")}</p>
-                <p>{booking.phone}</p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("admin.bookings.email")}</p>
-                <p>{booking.email}</p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("admin.bookings.address")}</p>
-                <p>{booking.street}, {booking.city}, CA {booking.zip}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("admin.bookings.service")}</p>
-                <p className="capitalize">{(booking.service_type || "—").replace(/-/g, " ")}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("admin.bookings.frequency")}</p>
-                <p className="capitalize">{(booking.frequency || "—").replace(/-/g, " ")}</p>
-              </div>
-              {booking.sqft && (
-                <div>
-                  <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("admin.bookings.sqft")}</p>
-                  <p>{booking.sqft}</p>
+
+              {editingInfo ? (
+                <div className="space-y-3 border border-border rounded-lg p-3 bg-secondary/30">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">{t("admin.bookings.name")}</Label>
+                      <Input value={editInfo.name} onChange={(e) => setEditInfo({ ...editInfo, name: e.target.value })} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">{t("admin.bookings.phone")}</Label>
+                      <Input value={editInfo.phone} onChange={(e) => setEditInfo({ ...editInfo, phone: e.target.value })} />
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">{t("admin.bookings.email")}</Label>
+                    <Input value={editInfo.email} onChange={(e) => setEditInfo({ ...editInfo, email: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">{t("admin.bookings.address")}</Label>
+                    <AddressAutocomplete
+                      value={editInfo.street}
+                      onChange={(val) => setEditInfo({ ...editInfo, street: val })}
+                      onSelect={(addr) => setEditInfo({ ...editInfo, street: addr.street, city: addr.city || editInfo.city, zip: addr.zip || editInfo.zip })}
+                      placeholder={t("admin.cd.street")}
+                      className="mb-2"
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input value={editInfo.city} onChange={(e) => setEditInfo({ ...editInfo, city: e.target.value })} placeholder={t("admin.cd.city")} />
+                      <Input value={editInfo.zip} onChange={(e) => setEditInfo({ ...editInfo, zip: e.target.value })} placeholder={t("admin.cd.zip")} />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={saveCustomerInfo} disabled={savingInfo} className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 gap-1.5 text-xs">
+                      {savingInfo ? t("admin.cd.saving") : t("admin.cd.save")}
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => { setEditingInfo(false); setEditInfo({ name: booking.name, email: booking.email, phone: booking.phone, street: booking.street, city: booking.city, zip: booking.zip }); }}>
+                      {t("admin.cd.cancel")}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("admin.bookings.name")}</p>
+                    <p className="font-medium">{booking.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("admin.bookings.phone")}</p>
+                    <p>{booking.phone}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("admin.bookings.email")}</p>
+                    <p>{booking.email}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("admin.bookings.address")}</p>
+                    <p>{booking.street}, {booking.city}, CA {booking.zip}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("admin.bookings.service")}</p>
+                    <p className="capitalize">{(booking.service_type || "—").replace(/-/g, " ")}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("admin.bookings.frequency")}</p>
+                    <p className="capitalize">{(booking.frequency || "—").replace(/-/g, " ")}</p>
+                  </div>
+                  {booking.sqft && (
+                    <div>
+                      <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("admin.bookings.sqft")}</p>
+                      <p>{booking.sqft}</p>
+                    </div>
+                  )}
+                  {booking.bedrooms && (
+                    <div>
+                      <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("admin.bookings.bedrooms")}</p>
+                      <p>{booking.bedrooms}</p>
+                    </div>
+                  )}
+                  {booking.bathrooms && (
+                    <div>
+                      <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("admin.bookings.bathrooms")}</p>
+                      <p>{booking.bathrooms}</p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("admin.bookings.prefdate")}</p>
+                    <p>{booking.preferred_date}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("admin.bookings.preftime")}</p>
+                    <p className="capitalize">{booking.preferred_time || t("admin.bookings.nopref")}</p>
+                  </div>
                 </div>
               )}
-              {booking.bedrooms && (
-                <div>
-                  <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("admin.bookings.bedrooms")}</p>
-                  <p>{booking.bedrooms}</p>
-                </div>
-              )}
-              {booking.bathrooms && (
-                <div>
-                  <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("admin.bookings.bathrooms")}</p>
-                  <p>{booking.bathrooms}</p>
-                </div>
-              )}
-              <div>
-                <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("admin.bookings.prefdate")}</p>
-                <p>{booking.preferred_date}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">{t("admin.bookings.preftime")}</p>
-                <p className="capitalize">{booking.preferred_time || t("admin.bookings.nopref")}</p>
-              </div>
             </div>
 
             {booking.notes && (
