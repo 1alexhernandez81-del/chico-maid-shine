@@ -154,12 +154,14 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Helper: compute line item pricing
+    // Helper: compute line item pricing using deposit_override if set
     const rawItems: Array<{ description: string; amount: number }> = Array.isArray(booking.line_items) ? booking.line_items : [];
     const svcItems = rawItems.filter((i: any) => !(i.description || "").toLowerCase().includes("deposit"));
     const itemsList = svcItems.map((i: any) => `• ${i.description}: $${Number(i.amount).toFixed(2)}`).join("\n");
     const subtotalCalc = svcItems.reduce((sum: number, i: any) => sum + Number(i.amount || 0), 0);
-    const depositCalc = booking.total_price && Number(booking.total_price) > 0 ? Number(booking.total_price) * 0.25 : 0;
+    const depositCalc = (booking.deposit_override !== null && booking.deposit_override !== undefined)
+      ? Number(booking.deposit_override)
+      : (booking.total_price && Number(booking.total_price) > 0 ? Number(booking.total_price) * 0.25 : 0);
     const balanceCalc = subtotalCalc - depositCalc;
 
     switch (type) {

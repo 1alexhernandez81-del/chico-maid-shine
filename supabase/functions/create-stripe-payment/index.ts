@@ -31,11 +31,13 @@ Deno.serve(async (req) => {
 
     if (fetchErr || !booking) throw new Error("Booking not found");
 
-    // Calculate balance
+    // Calculate balance using deposit_override if set, otherwise 25% of total_price
     const rawItems: Array<{ description: string; amount: number }> = Array.isArray(booking.line_items) ? booking.line_items : [];
     const serviceItems = rawItems.filter((i) => !(i.description || "").toLowerCase().includes("deposit"));
     const subtotal = serviceItems.reduce((sum, i) => sum + Number(i.amount || 0), 0);
-    const depositAmt = booking.total_price && Number(booking.total_price) > 0 ? Number(booking.total_price) * 0.25 : 0;
+    const depositAmt = (booking.deposit_override !== null && booking.deposit_override !== undefined)
+      ? Number(booking.deposit_override)
+      : (booking.total_price && Number(booking.total_price) > 0 ? Number(booking.total_price) * 0.25 : 0);
     const balanceDue = subtotal - depositAmt;
 
     if (balanceDue <= 0) throw new Error("No balance due");
