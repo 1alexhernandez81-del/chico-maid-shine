@@ -98,7 +98,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
       setAssignedCleanerIds(Array.isArray(booking.assigned_cleaners) ? booking.assigned_cleaners : []);
       setEditingInfo(false);
       setEditingDeposit(false);
-      setCustomDeposit(null);
+      setCustomDeposit((booking as any).deposit_override !== undefined && (booking as any).deposit_override !== null ? Number((booking as any).deposit_override) : null);
       setEditInfo({ name: booking.name, email: booking.email, phone: booking.phone, street: booking.street, city: booking.city, zip: booking.zip });
       initialRef.current = {
         adminNotes: notes,
