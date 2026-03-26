@@ -214,27 +214,26 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
     const recalculatedTotal = Math.max(0, subtotal - depositToSave);
 
     setSavingDeposit(true);
-    const { error } = await supabase
+    const { data: updatedBooking, error } = await supabase
       .from("bookings")
       .update({
         deposit_override: depositToSave,
         total_price: recalculatedTotal,
       } as any)
-      .eq("id", booking.id);
+      .eq("id", booking.id)
+      .select("*")
+      .single();
 
     if (error) {
-      toast({ title: t("admin.error"), description: t("admin.bookings.error.update"), variant: "destructive" });
-    } else {
-      setCustomDeposit(depositToSave);
-      setEditingDeposit(false);
-      onUpdated({
-        ...booking,
-        admin_notes: adminNotes,
-        status: newStatus,
-        line_items: lineItems,
-        total_price: recalculatedTotal,
-        deposit_override: depositToSave,
+      toast({
+        title: t("admin.error"),
+        description: error.message || t("admin.bookings.error.update"),
+        variant: "destructive",
       });
+    } else {
+      setCustomDeposit(Number(updatedBooking.deposit_override ?? 0));
+      setEditingDeposit(false);
+      onUpdated(updatedBooking as Booking);
       toast({ title: t("admin.bookings.updated"), description: "Deposit saved." });
     }
 
@@ -383,6 +382,8 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
     const isRescheduled = booking.status === "scheduled" && newStatus === "scheduled" &&
       (scheduledDate !== booking.scheduled_date || scheduledTime !== booking.scheduled_time);
 
+    const persistedDeposit = customDeposit ?? (booking.deposit_override ?? null);
+
     const updatePayload: Record<string, any> = {
       status: newStatus,
       admin_notes: adminNotes,
@@ -390,7 +391,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
       total_price: total,
       invoice_url: invoiceUrl,
       assigned_cleaners: assignedCleanerIds,
-      deposit_override: customDeposit,
+      deposit_override: persistedDeposit,
     };
 
     if (newStatus === "scheduled") {
@@ -398,13 +399,19 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
       updatePayload.scheduled_time = scheduledTime;
     }
 
-    const { error } = await supabase
+    const { data: updatedBooking, error } = await supabase
       .from("bookings")
       .update(updatePayload as any)
-      .eq("id", booking.id);
+      .eq("id", booking.id)
+      .select("*")
+      .single();
 
     if (error) {
-      toast({ title: t("admin.error"), description: t("admin.bookings.error.update"), variant: "destructive" });
+      toast({
+        title: t("admin.error"),
+        description: error.message || t("admin.bookings.error.update"),
+        variant: "destructive",
+      });
     } else {
       initialRef.current = {
         adminNotes,
@@ -472,17 +479,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
         });
       }
 
-
-      onUpdated({
-        ...booking,
-        status: newStatus,
-        admin_notes: adminNotes,
-        line_items: cleanItems,
-        total_price: total,
-        invoice_url: invoiceUrl,
-        scheduled_date: newStatus === "scheduled" ? scheduledDate : booking.scheduled_date,
-        scheduled_time: newStatus === "scheduled" ? scheduledTime : booking.scheduled_time,
-      });
+      onUpdated(updatedBooking as Booking);
     }
     setSaving(false);
   };
