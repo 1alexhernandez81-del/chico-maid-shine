@@ -290,11 +290,7 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
       toast({ title: t("admin.job.add.success"), description: t("admin.job.add.success.msg") });
       setBookings((prev) => [data as Booking, ...prev]);
       setShowAddJob(false);
-      setNewJob({
-        name: "", email: "", phone: "", street: "", city: "Chico", zip: "",
-        service_type: "residential", frequency: "one-time", preferred_date: "",
-        bedrooms: "", bathrooms: "", sqft: "", notes: "", admin_notes: "",
-      });
+      setNewJob({ ...DEFAULT_NEW_JOB });
     }
     setAddingJob(false);
   };
