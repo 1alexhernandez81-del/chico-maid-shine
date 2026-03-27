@@ -77,6 +77,12 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
   const [cleanerFilter, setCleanerFilter] = useState("all");
   const [cleanersList, setCleanersList] = useState<CleanerInfo[]>([]);
 
+  // Deleted jobs
+  const [showDeletedJobs, setShowDeletedJobs] = useState(false);
+  const [deletedJobs, setDeletedJobs] = useState<Booking[]>([]);
+  const [loadingDeleted, setLoadingDeleted] = useState(false);
+  const [restoringId, setRestoringId] = useState<string | null>(null);
+
   const { toast } = useToast();
   const { t } = useLanguage();
 
