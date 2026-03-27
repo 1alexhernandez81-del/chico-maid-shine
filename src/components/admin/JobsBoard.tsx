@@ -217,7 +217,7 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
     const ids = Array.from(selectedIds);
     const { error } = await supabase
       .from("bookings")
-      .delete()
+      .update({ deleted_at: new Date().toISOString() } as any)
       .in("id", ids);
 
     if (error) {
@@ -229,6 +229,34 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
     }
     setBulkActioning(false);
     setShowDeleteConfirm(false);
+  };
+
+  const fetchDeletedJobs = async () => {
+    setLoadingDeleted(true);
+    const { data } = await supabase
+      .from("bookings")
+      .select("*")
+      .not("deleted_at", "is", null)
+      .order("deleted_at", { ascending: false });
+    setDeletedJobs((data as Booking[]) || []);
+    setLoadingDeleted(false);
+  };
+
+  const restoreJob = async (id: string) => {
+    setRestoringId(id);
+    const { error } = await supabase
+      .from("bookings")
+      .update({ deleted_at: null } as any)
+      .eq("id", id);
+
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "✅ Job restored!", description: "The job has been moved back." });
+      setDeletedJobs((prev) => prev.filter((b) => b.id !== id));
+      fetchBookings();
+    }
+    setRestoringId(null);
   };
 
   const openAssignCustomer = async () => {
