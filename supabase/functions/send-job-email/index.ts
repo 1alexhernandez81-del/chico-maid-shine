@@ -329,6 +329,10 @@ Deno.serve(async (req) => {
       html: htmlBody,
     };
 
+    if (ccRecipients.length > 0) {
+      emailPayload.cc = ccRecipients;
+    }
+
     if (attachments && attachments.length > 0) {
       emailPayload.attachments = attachments;
     }
