@@ -413,6 +413,11 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
           <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} /> {t("admin.bookings.refresh")}
         </Button>
         {isAdmin && (
+          <Button variant="ghost" size="sm" onClick={() => { setShowDeletedJobs(true); fetchDeletedJobs(); }} className="gap-1.5 text-muted-foreground text-xs">
+            <Archive className="w-3.5 h-3.5" /> Deleted
+          </Button>
+        )}
+        {isAdmin && (
           <Button onClick={() => setShowAddJob(true)} className="bg-accent text-accent-foreground hover:bg-accent/90 gap-2">
             <Plus className="w-4 h-4" /> {t("admin.job.add")}
           </Button>
