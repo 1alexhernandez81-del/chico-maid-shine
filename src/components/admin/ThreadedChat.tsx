@@ -11,7 +11,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import {
   Collapsible, CollapsibleContent, CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Send, MessageSquare, Loader2, FileText, ChevronDown, ChevronRight, Plus, Languages, Mail, StickyNote } from "lucide-react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
+import { Send, MessageSquare, Loader2, FileText, ChevronDown, ChevronRight, Plus, Languages, Mail, StickyNote, Eye } from "lucide-react";
 
 const QUOTE_CTA_TEMPLATE_IDS = new Set(["send-quote", "general-followup"]);
 const APPROVE_QUOTE_CTA_LABEL = "✅ Approve Quote & Book Cleaning";
@@ -85,6 +88,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
   // Translation
   const [translations, setTranslations] = useState<Record<string, string>>({});
   const [translating, setTranslating] = useState<Record<string, boolean>>({});
+  const [previewMessage, setPreviewMessage] = useState<Communication | null>(null);
 
   const fetchCommunications = async () => {
     setLoading(true);
@@ -512,7 +516,8 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
                         return (
                           <div
                             key={msg.id}
-                            className={`max-w-[85%] p-2.5 rounded-lg text-xs ${
+                            onClick={() => msg.type !== "note" && setPreviewMessage(msg)}
+                            className={`max-w-[85%] p-2.5 rounded-lg text-xs ${msg.type !== "note" ? "cursor-pointer hover:ring-1 hover:ring-accent/40" : ""} ${
                               isNote
                                 ? "bg-muted/50 border border-dashed border-border mx-auto max-w-full"
                                 : isOutbound
@@ -608,6 +613,48 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
           </div>
         )}
       </ScrollArea>
+      {/* Full Email Preview Dialog */}
+      <Dialog open={!!previewMessage} onOpenChange={(open) => !open && setPreviewMessage(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-base flex items-center gap-2">
+              <Mail className="w-4 h-4" />
+              {previewMessage?.direction === "inbound" ? `From: ${firstName}` : `To: ${customerName}`}
+            </DialogTitle>
+          </DialogHeader>
+          {previewMessage && (
+            <div className="space-y-4">
+              {/* Email header */}
+              <div className="bg-secondary/50 rounded-lg p-4 space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">From:</span>
+                  <span className="font-medium">{previewMessage.direction === "inbound" ? customerEmail : "info@maidforchico.com"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">To:</span>
+                  <span className="font-medium">{previewMessage.direction === "inbound" ? "info@maidforchico.com" : customerEmail}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Date:</span>
+                  <span>{new Date(previewMessage.created_at).toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Subject:</span>
+                  <span className="font-semibold">{previewMessage.subject || "No Subject"}</span>
+                </div>
+              </div>
+              {/* Email body */}
+              <div className="border border-border rounded-lg p-6 bg-background min-h-[200px]">
+                <p className="whitespace-pre-wrap text-sm leading-relaxed">{previewMessage.body}</p>
+              </div>
+              {/* Footer */}
+              <div className="text-center text-xs text-muted-foreground border-t border-border pt-3">
+                {previewMessage.direction === "inbound" ? "📥 Received" : "📧 Sent"} · {new Date(previewMessage.created_at).toLocaleString("en-US")}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
