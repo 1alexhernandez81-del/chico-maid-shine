@@ -116,6 +116,23 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
     }
   }, [booking]);
 
+  const generateItemizedPdf = () => {
+    const invoiceNum = booking.invoice_number ? `INV-${String(booking.invoice_number).padStart(4, "0")}` : "";
+    const dateStr = new Date().toLocaleDateString("en-US");
+    const items = nonEmptyServiceItems.length > 0 ? nonEmptyServiceItems : serviceItems;
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice ${invoiceNum}</title>
+<style>body{font-family:Arial,Helvetica,sans-serif;margin:0;padding:40px;color:#222}.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;border-bottom:3px solid #2563eb;padding-bottom:20px}.company{font-size:22px;font-weight:bold;color:#2563eb}.invoice-title{font-size:28px;font-weight:bold;color:#333;text-align:right}.meta{text-align:right;font-size:13px;color:#666;margin-top:4px}.section{margin:20px 0}.label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:4px}.value{font-size:14px}table{width:100%;border-collapse:collapse;margin:20px 0}th{background:#f1f5f9;text-align:left;padding:10px 12px;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:#555;border-bottom:2px solid #e2e8f0}td{padding:10px 12px;border-bottom:1px solid #e2e8f0;font-size:14px}td.amount,th.amount{text-align:right;font-family:monospace}.totals{margin-left:auto;width:280px}.totals tr td{border:none;padding:6px 12px}.totals .total-row td{border-top:2px solid #333;font-size:18px;font-weight:bold}.footer{margin-top:40px;text-align:center;font-size:12px;color:#999;border-top:1px solid #eee;padding-top:15px}@media print{body{padding:20px}}</style></head><body>
+<div class="header"><div><div class="company">Chico Maid Shine</div><div style="font-size:13px;color:#666;margin-top:4px">Professional Cleaning Services</div></div><div><div class="invoice-title">INVOICE</div><div class="meta">${invoiceNum ? invoiceNum + "<br>" : ""}Date: ${dateStr}</div></div></div>
+<div class="section" style="display:flex;gap:40px"><div><div class="label">Bill To</div><div class="value"><strong>${booking.name}</strong></div><div class="value">${booking.street}</div><div class="value">${booking.city}, CA ${booking.zip}</div><div class="value">${booking.email}</div><div class="value">${booking.phone}</div></div><div><div class="label">Service</div><div class="value" style="text-transform:capitalize">${(booking.service_type || "").replace(/-/g, " ")}</div><div class="label" style="margin-top:8px">Frequency</div><div class="value" style="text-transform:capitalize">${(booking.frequency || "").replace(/-/g, " ")}</div></div></div>
+<table><thead><tr><th>Description</th><th class="amount">Amount</th></tr></thead><tbody>${items.map(item => `<tr><td>${item.description || "Service"}</td><td class="amount">$${(item.amount || 0).toFixed(2)}</td></tr>`).join("")}</tbody></table>
+<table class="totals"><tr><td>Subtotal</td><td class="amount">$${subtotal.toFixed(2)}</td></tr>${depositAmount > 0 ? `<tr><td>Deposit</td><td class="amount">-$${depositAmount.toFixed(2)}</td></tr>` : ""}<tr class="total-row"><td>Balance Due</td><td class="amount">$${Math.max(0, total).toFixed(2)}</td></tr></table>
+<div class="footer">Thank you for choosing Chico Maid Shine!</div></body></html>`;
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const pw = window.open(url, "_blank");
+    if (pw) { pw.onload = () => { pw.print(); }; }
+  };
+
 
   const getJobEmailTemplates = () => {
     if (!booking) return [];
