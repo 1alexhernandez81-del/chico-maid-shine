@@ -94,6 +94,7 @@ const InquiriesPipeline = () => {
       .from("bookings")
       .select("*")
       .in("status", INQUIRY_STATUSES)
+      .is("deleted_at", null)
       .order("created_at", { ascending: false });
 
     if (error) {
