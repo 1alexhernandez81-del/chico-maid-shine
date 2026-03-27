@@ -140,6 +140,7 @@ Deno.serve(async (req) => {
     let ctaLabel = "";
     let confirmationToken: string | null = booking.confirmation_token;
     let recipients: string[] = [booking.email];
+    let ccRecipients: string[] = [];
     let attachments: Array<{ filename: string; content: string; contentType: string }> | undefined;
 
     if (type === "quote" && !confirmationToken) {
