@@ -52,6 +52,12 @@ Deno.serve(async (req) => {
       html: htmlBody,
     };
 
+    if (cc && Array.isArray(cc) && cc.length > 0) {
+      emailPayload.cc = cc;
+    } else if (typeof cc === "string" && cc.trim()) {
+      emailPayload.cc = [cc];
+    }
+
     if (inReplyTo) {
       emailPayload.headers = {
         "In-Reply-To": inReplyTo,
