@@ -775,6 +775,47 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Deleted Jobs Dialog */}
+      <Dialog open={showDeletedJobs} onOpenChange={setShowDeletedJobs}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Archive className="w-4 h-4" /> Deleted Jobs
+            </DialogTitle>
+            <DialogDescription>
+              Restore accidentally deleted jobs. These are kept for recovery.
+            </DialogDescription>
+          </DialogHeader>
+          {loadingDeleted ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">Loading...</p>
+          ) : deletedJobs.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">No deleted jobs found.</p>
+          ) : (
+            <div className="space-y-2">
+              {deletedJobs.map((job) => (
+                <div key={job.id} className="flex items-center justify-between gap-3 p-3 rounded-md border border-border bg-secondary/20">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium truncate">{job.name}</p>
+                    <p className="text-xs text-muted-foreground">{job.service_type} · {job.street}, {job.city}</p>
+                    <p className="text-xs text-muted-foreground">Status: {job.status} · {job.preferred_date}</p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={restoringId === job.id}
+                    onClick={() => restoreJob(job.id)}
+                    className="gap-1.5 shrink-0"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    {restoringId === job.id ? "Restoring..." : "Restore"}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
