@@ -88,6 +88,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
   // Translation
   const [translations, setTranslations] = useState<Record<string, string>>({});
   const [translating, setTranslating] = useState<Record<string, boolean>>({});
+  const [previewMessage, setPreviewMessage] = useState<Communication | null>(null);
 
   const fetchCommunications = async () => {
     setLoading(true);
