@@ -129,6 +129,7 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
       .from("bookings")
       .select("*")
       .in("status", JOB_STATUSES)
+      .is("deleted_at", null)
       .order("created_at", { ascending: false });
 
     if (error) {
