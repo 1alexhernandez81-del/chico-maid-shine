@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { customerEmail, customerName, subject, body, ctaUrl, ctaLabel, inReplyTo, references } = await req.json();
+    const { customerEmail, customerName, subject, body, ctaUrl, ctaLabel, inReplyTo, references, cc } = await req.json();
 
     if (!customerEmail || !subject || !body) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
