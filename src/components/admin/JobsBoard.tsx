@@ -24,7 +24,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Search, RefreshCw, ChevronLeft, ChevronRight, Eye, Plus, CalendarIcon, Trash2, UserCheck, List, CalendarDays, CalendarRange, Calendar as CalendarMonthIcon } from "lucide-react";
+import { Search, RefreshCw, ChevronLeft, ChevronRight, Eye, Plus, CalendarIcon, Trash2, UserCheck, List, CalendarDays, CalendarRange, Calendar as CalendarMonthIcon, RotateCcw, Archive } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import JobDetailDialog from "./JobDetailDialog";
 import JobsCalendarView from "./JobsCalendarView";
