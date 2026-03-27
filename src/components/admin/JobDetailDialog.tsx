@@ -401,19 +401,20 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
   };
 
   const handleSendEmail = async (type: "quote" | "receipt" | "invoice") => {
+    // For invoice and receipt, show preview dialog first
+    if (type === "invoice" || type === "receipt") {
+      setConfirmEmailPreview(type);
+      return;
+    }
+    // Quote sends directly (legacy behavior)
     setSendingEmail(type);
     try {
       const { error } = await supabase.functions.invoke("send-job-email", {
         body: { bookingId: booking.id, type },
       });
       if (error) throw error;
-      const titles: Record<string, string> = {
-        quote: t("admin.job.quote.sent"),
-        invoice: "📧 Invoice sent!",
-        receipt: t("admin.job.receipt.sent"),
-      };
       toast({
-        title: titles[type] || "Email sent!",
+        title: t("admin.job.quote.sent"),
         description: `${t("admin.job.email.sentto")} ${booking.email}`,
       });
     } catch (err) {
@@ -421,6 +422,47 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
       toast({ title: t("admin.error"), description: t("admin.job.email.error"), variant: "destructive" });
     }
     setSendingEmail(null);
+  };
+
+  const prepareEmailDraft = (type: "invoice" | "receipt") => {
+    const firstName = (booking.name ?? "").trim().split(/\s+/)[0] || "there";
+    const serviceLabel = formatLabel(booking.service_type);
+    const itemizedLines = nonEmptyServiceItems.length > 0
+      ? nonEmptyServiceItems.map((item) => `• ${item.description}: $${Number(item.amount || 0).toFixed(2)}`).join("\n")
+      : "• Cleaning Service: $0.00";
+
+    const schedDate = booking.scheduled_date || booking.preferred_date;
+
+    if (type === "invoice") {
+      let pricingBlock = `Services:\n${itemizedLines}\n\nSubtotal: $${subtotal.toFixed(2)}`;
+      if (depositAmount > 0) {
+        pricingBlock += `\nDeposit applied: ($${depositAmount.toFixed(2)})`;
+      }
+      pricingBlock += `\nBalance due: $${previewBalance.toFixed(2)}`;
+
+      setPendingTemplateSubject("Cleaning Invoice — Maid for Chico");
+      setPendingTemplateBody(
+        `Hi ${firstName},\n\nThank you for choosing Maid for Chico! Here is your invoice:\n\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n📅 Date: ${schedDate}\n\n${pricingBlock}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━\n💳 Payment Options\n━━━━━━━━━━━━━━━━━━━━━━━━━\n\n✅ Zelle (preferred — no fees)\nSend to: (530) 966-0752\n\n🏦 ACH Bank Transfer\nAvailable — we can send a secure ACH payment link.\n\n💳 Credit Card\nAvailable upon request — a processing fee applies.\n\nThank you for your business!\nBetty & the Maid for Chico Team`
+      );
+    } else {
+      let pricingBlock = `Services:\n${itemizedLines}\n\nSubtotal: $${subtotal.toFixed(2)}`;
+      if (depositAmount > 0) {
+        pricingBlock += `\nDeposit received: ($${depositAmount.toFixed(2)})`;
+      }
+      pricingBlock += `\nRemaining balance: $${previewBalance.toFixed(2)}`;
+
+      setPendingTemplateSubject(`Cleaning Receipt — ${schedDate}`);
+      setPendingTemplateBody(
+        `Hi ${firstName},\n\nThank you for choosing Maid for Chico! Here's your receipt:\n\n📅 Date: ${schedDate}\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n\n${pricingBlock}\n\nThank you for your business!\nBetty & the Maid for Chico Team`
+      );
+    }
+
+    setConfirmEmailPreview(null);
+    setDialogTab("messages");
+    toast({
+      title: type === "invoice" ? "📧 Invoice draft ready!" : "📧 Receipt draft ready!",
+      description: "Review the email in the Messages tab before sending.",
+    });
   };
 
   const executeSave = async (opts: { sendReviewEmail?: boolean; sendApprovalEmail?: boolean; sendScheduledEmail?: boolean; sendRescheduleEmail?: boolean } = {}) => {
