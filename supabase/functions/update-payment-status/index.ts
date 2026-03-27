@@ -48,16 +48,23 @@ Deno.serve(async (req) => {
     const newRef = `STRIPE ${methodLabel} $${paidAmount.toFixed(2)}`;
     const combinedRef = existingRef ? `${existingRef}\n${newRef}` : newRef;
 
+    const updateData: Record<string, unknown> = {
+      payment_status: newStatus,
+      payment_method: paymentMethod === "ach" ? "ach" : "credit_card",
+      processing_fee: (Number(booking.processing_fee) || 0) + feeAmount,
+      total_paid: newTotalPaid,
+      paid_at: new Date().toISOString(),
+      payment_reference: combinedRef,
+    };
+
+    // When fully paid, also mark the job status as completed
+    if (newStatus === "paid") {
+      updateData.status = "completed";
+    }
+
     const { error: updateErr } = await supabase
       .from("bookings")
-      .update({
-        payment_status: newStatus,
-        payment_method: paymentMethod === "ach" ? "ach" : "credit_card",
-        processing_fee: (Number(booking.processing_fee) || 0) + feeAmount,
-        total_paid: newTotalPaid,
-        paid_at: new Date().toISOString(),
-        payment_reference: combinedRef,
-      })
+      .update(updateData)
       .eq("id", bookingId);
 
     if (updateErr) throw updateErr;
