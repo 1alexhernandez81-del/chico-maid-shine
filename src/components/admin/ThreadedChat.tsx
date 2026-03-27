@@ -516,7 +516,8 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
                         return (
                           <div
                             key={msg.id}
-                            className={`max-w-[85%] p-2.5 rounded-lg text-xs ${
+                            onClick={() => msg.type !== "note" && setPreviewMessage(msg)}
+                            className={`max-w-[85%] p-2.5 rounded-lg text-xs ${msg.type !== "note" ? "cursor-pointer hover:ring-1 hover:ring-accent/40" : ""} ${
                               isNote
                                 ? "bg-muted/50 border border-dashed border-border mx-auto max-w-full"
                                 : isOutbound
