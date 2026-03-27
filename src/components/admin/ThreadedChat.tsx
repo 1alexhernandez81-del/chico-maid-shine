@@ -338,11 +338,14 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
     if (!newBody.trim() || !newSubject.trim()) return;
     setSending(true);
     try {
-      const emailPayload: Record<string, string> = {
+      const subjectLower = newSubject.toLowerCase();
+      const shouldCcAdmin = subjectLower.includes("invoice") || subjectLower.includes("receipt") || subjectLower.includes("payment") || subjectLower.includes("credit card");
+      const emailPayload: Record<string, any> = {
         customerEmail,
         customerName,
         subject: newSubject,
         body: newBody,
+        ...(shouldCcAdmin ? { cc: ["info@maidforchico.com"] } : {}),
       };
 
       attachQuoteCta(emailPayload, newSubject, newBody, activeTemplateId);

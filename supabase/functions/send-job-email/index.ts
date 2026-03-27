@@ -140,6 +140,7 @@ Deno.serve(async (req) => {
     let ctaLabel = "";
     let confirmationToken: string | null = booking.confirmation_token;
     let recipients: string[] = [booking.email];
+    let ccRecipients: string[] = [];
     let attachments: Array<{ filename: string; content: string; contentType: string }> | undefined;
 
     if (type === "quote" && !confirmationToken) {
@@ -304,6 +305,11 @@ Deno.serve(async (req) => {
         throw new Error(`Unknown email type: ${type}`);
     }
 
+    // CC admin on invoice, receipt, and payment emails
+    if (["invoice", "receipt", "cc-payment", "ach-payment"].includes(type)) {
+      ccRecipients = ["info@maidforchico.com"];
+    }
+
     let htmlBody = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">`;
     htmlBody += `<div style="padding: 24px 24px 16px; text-align: center; border-bottom: 2px solid #e04a2f;">`;
     htmlBody += `<h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: 0.5px; font-family: 'Playfair Display', Georgia, serif;"><span style="color: #e04a2f;">Maid</span> <span style="color: #1a1a1a;">For Chico</span></h1>`;
@@ -322,6 +328,10 @@ Deno.serve(async (req) => {
       subject,
       html: htmlBody,
     };
+
+    if (ccRecipients.length > 0) {
+      emailPayload.cc = ccRecipients;
+    }
 
     if (attachments && attachments.length > 0) {
       emailPayload.attachments = attachments;
