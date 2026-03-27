@@ -11,7 +11,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import {
   Collapsible, CollapsibleContent, CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Send, MessageSquare, Loader2, FileText, ChevronDown, ChevronRight, Plus, Languages, Mail, StickyNote } from "lucide-react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
+import { Send, MessageSquare, Loader2, FileText, ChevronDown, ChevronRight, Plus, Languages, Mail, StickyNote, Eye } from "lucide-react";
 
 const QUOTE_CTA_TEMPLATE_IDS = new Set(["send-quote", "general-followup"]);
 const APPROVE_QUOTE_CTA_LABEL = "✅ Approve Quote & Book Cleaning";
