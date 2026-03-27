@@ -59,6 +59,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
   const [showScheduleConfirm, setShowScheduleConfirm] = useState(false);
   const [showApprovalConfirm, setShowApprovalConfirm] = useState(false);
   const [showRescheduleConfirm, setShowRescheduleConfirm] = useState(false);
+  const [confirmEmailPreview, setConfirmEmailPreview] = useState<"invoice" | "receipt" | null>(null);
   const [confirmPaymentMethod, setConfirmPaymentMethod] = useState<"card" | "ach" | null>(null);
   const [cleaners, setCleaners] = useState<Cleaner[]>([]);
   const [assignedCleanerIds, setAssignedCleanerIds] = useState<string[]>([]);
@@ -400,19 +401,20 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
   };
 
   const handleSendEmail = async (type: "quote" | "receipt" | "invoice") => {
+    // For invoice and receipt, show preview dialog first
+    if (type === "invoice" || type === "receipt") {
+      setConfirmEmailPreview(type);
+      return;
+    }
+    // Quote sends directly (legacy behavior)
     setSendingEmail(type);
     try {
       const { error } = await supabase.functions.invoke("send-job-email", {
         body: { bookingId: booking.id, type },
       });
       if (error) throw error;
-      const titles: Record<string, string> = {
-        quote: t("admin.job.quote.sent"),
-        invoice: "📧 Invoice sent!",
-        receipt: t("admin.job.receipt.sent"),
-      };
       toast({
-        title: titles[type] || "Email sent!",
+        title: t("admin.job.quote.sent"),
         description: `${t("admin.job.email.sentto")} ${booking.email}`,
       });
     } catch (err) {
@@ -420,6 +422,47 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
       toast({ title: t("admin.error"), description: t("admin.job.email.error"), variant: "destructive" });
     }
     setSendingEmail(null);
+  };
+
+  const prepareEmailDraft = (type: "invoice" | "receipt") => {
+    const firstName = (booking.name ?? "").trim().split(/\s+/)[0] || "there";
+    const serviceLabel = formatLabel(booking.service_type);
+    const itemizedLines = nonEmptyServiceItems.length > 0
+      ? nonEmptyServiceItems.map((item) => `• ${item.description}: $${Number(item.amount || 0).toFixed(2)}`).join("\n")
+      : "• Cleaning Service: $0.00";
+
+    const schedDate = booking.scheduled_date || booking.preferred_date;
+
+    if (type === "invoice") {
+      let pricingBlock = `Services:\n${itemizedLines}\n\nSubtotal: $${subtotal.toFixed(2)}`;
+      if (depositAmount > 0) {
+        pricingBlock += `\nDeposit applied: ($${depositAmount.toFixed(2)})`;
+      }
+      pricingBlock += `\nBalance due: $${previewBalance.toFixed(2)}`;
+
+      setPendingTemplateSubject("Cleaning Invoice — Maid for Chico");
+      setPendingTemplateBody(
+        `Hi ${firstName},\n\nThank you for choosing Maid for Chico! Here is your invoice:\n\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n📅 Date: ${schedDate}\n\n${pricingBlock}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━\n💳 Payment Options\n━━━━━━━━━━━━━━━━━━━━━━━━━\n\n✅ Zelle (preferred — no fees)\nSend to: (530) 966-0752\n\n🏦 ACH Bank Transfer\nAvailable — we can send a secure ACH payment link.\n\n💳 Credit Card\nAvailable upon request — a processing fee applies.\n\nThank you for your business!\nBetty & the Maid for Chico Team`
+      );
+    } else {
+      let pricingBlock = `Services:\n${itemizedLines}\n\nSubtotal: $${subtotal.toFixed(2)}`;
+      if (depositAmount > 0) {
+        pricingBlock += `\nDeposit received: ($${depositAmount.toFixed(2)})`;
+      }
+      pricingBlock += `\nRemaining balance: $${previewBalance.toFixed(2)}`;
+
+      setPendingTemplateSubject(`Cleaning Receipt — ${schedDate}`);
+      setPendingTemplateBody(
+        `Hi ${firstName},\n\nThank you for choosing Maid for Chico! Here's your receipt:\n\n📅 Date: ${schedDate}\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n\n${pricingBlock}\n\nThank you for your business!\nBetty & the Maid for Chico Team`
+      );
+    }
+
+    setConfirmEmailPreview(null);
+    setDialogTab("messages");
+    toast({
+      title: type === "invoice" ? "📧 Invoice draft ready!" : "📧 Receipt draft ready!",
+      description: "Review the email in the Messages tab before sending.",
+    });
   };
 
   const executeSave = async (opts: { sendReviewEmail?: boolean; sendApprovalEmail?: boolean; sendScheduledEmail?: boolean; sendRescheduleEmail?: boolean } = {}) => {
@@ -1203,7 +1246,68 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Unsaved changes warning */}
+      {/* Invoice / Receipt preview confirmation */}
+      <AlertDialog open={!!confirmEmailPreview} onOpenChange={(open) => !open && setConfirmEmailPreview(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmEmailPreview === "invoice" ? "📧 Invoice Preview" : "📧 Receipt Preview"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Review the itemized breakdown below. This will be inserted into an editable email draft in the Messages tab.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-2 rounded-md border border-border bg-secondary/20 p-3 text-sm">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Itemized services</p>
+            {nonEmptyServiceItems.length > 0 ? (
+              <div className="space-y-1">
+                {nonEmptyServiceItems.map((item, index) => (
+                  <div key={`preview-${item.description}-${index}`} className="flex items-start justify-between gap-3">
+                    <span className="text-foreground/90">{item.description}</span>
+                    <span className="font-medium">${Number(item.amount || 0).toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted-foreground">No line items added yet.</p>
+            )}
+
+            <div className="space-y-1 border-t border-border pt-2">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span>${subtotal.toFixed(2)}</span>
+              </div>
+              {depositAmount > 0 && (
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">
+                    {confirmEmailPreview === "invoice" ? "Deposit applied" : "Deposit received"}
+                  </span>
+                  <span>-${depositAmount.toFixed(2)}</span>
+                </div>
+              )}
+              <div className="flex items-center justify-between border-t border-border pt-2 font-semibold">
+                <span>{confirmEmailPreview === "invoice" ? "Balance due" : "Remaining balance"}</span>
+                <span>${previewBalance.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Back</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmEmailPreview) prepareEmailDraft(confirmEmailPreview);
+              }}
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              Continue to Messages
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+
       <AlertDialog open={showUnsavedWarning} onOpenChange={setShowUnsavedWarning}>
         <AlertDialogContent>
           <AlertDialogHeader>
