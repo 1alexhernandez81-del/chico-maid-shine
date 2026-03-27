@@ -928,6 +928,11 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                     <span className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.job.balancedue")}</span>
                     <span className="text-lg font-semibold text-accent">${total.toFixed(2)}</span>
                   </div>
+                  <div className="flex justify-end pt-2">
+                    <Button variant="outline" size="sm" onClick={generateItemizedPdf} className="gap-1.5 text-xs">
+                      <FileText className="w-3.5 h-3.5" /> Download PDF
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}
