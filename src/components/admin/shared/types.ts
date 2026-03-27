@@ -41,6 +41,7 @@ export type Booking = {
   paid_at?: string | null;
   payment_reference?: string | null;
   deposit_override?: number | null;
+  deleted_at?: string | null;
 };
 
 export type LineItem = { description: string; amount: number };

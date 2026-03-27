@@ -24,7 +24,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Search, RefreshCw, ChevronLeft, ChevronRight, Eye, Plus, CalendarIcon, Trash2, UserCheck, List, CalendarDays, CalendarRange, Calendar as CalendarMonthIcon } from "lucide-react";
+import { Search, RefreshCw, ChevronLeft, ChevronRight, Eye, Plus, CalendarIcon, Trash2, UserCheck, List, CalendarDays, CalendarRange, Calendar as CalendarMonthIcon, RotateCcw, Archive } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import JobDetailDialog from "./JobDetailDialog";
 import JobsCalendarView from "./JobsCalendarView";
@@ -77,6 +77,12 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
   const [cleanerFilter, setCleanerFilter] = useState("all");
   const [cleanersList, setCleanersList] = useState<CleanerInfo[]>([]);
 
+  // Deleted jobs
+  const [showDeletedJobs, setShowDeletedJobs] = useState(false);
+  const [deletedJobs, setDeletedJobs] = useState<Booking[]>([]);
+  const [loadingDeleted, setLoadingDeleted] = useState(false);
+  const [restoringId, setRestoringId] = useState<string | null>(null);
+
   const { toast } = useToast();
   const { t } = useLanguage();
 
@@ -123,6 +129,7 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
       .from("bookings")
       .select("*")
       .in("status", JOB_STATUSES)
+      .is("deleted_at", null)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -210,7 +217,7 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
     const ids = Array.from(selectedIds);
     const { error } = await supabase
       .from("bookings")
-      .delete()
+      .update({ deleted_at: new Date().toISOString() } as any)
       .in("id", ids);
 
     if (error) {
@@ -222,6 +229,34 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
     }
     setBulkActioning(false);
     setShowDeleteConfirm(false);
+  };
+
+  const fetchDeletedJobs = async () => {
+    setLoadingDeleted(true);
+    const { data } = await supabase
+      .from("bookings")
+      .select("*")
+      .not("deleted_at", "is", null)
+      .order("deleted_at", { ascending: false });
+    setDeletedJobs((data as Booking[]) || []);
+    setLoadingDeleted(false);
+  };
+
+  const restoreJob = async (id: string) => {
+    setRestoringId(id);
+    const { error } = await supabase
+      .from("bookings")
+      .update({ deleted_at: null } as any)
+      .eq("id", id);
+
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "✅ Job restored!", description: "The job has been moved back." });
+      setDeletedJobs((prev) => prev.filter((b) => b.id !== id));
+      fetchBookings();
+    }
+    setRestoringId(null);
   };
 
   const openAssignCustomer = async () => {
@@ -377,6 +412,11 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
         <Button variant="outline" onClick={fetchBookings} disabled={loading}>
           <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} /> {t("admin.bookings.refresh")}
         </Button>
+        {isAdmin && (
+          <Button variant="ghost" size="sm" onClick={() => { setShowDeletedJobs(true); fetchDeletedJobs(); }} className="gap-1.5 text-muted-foreground text-xs">
+            <Archive className="w-3.5 h-3.5" /> Deleted
+          </Button>
+        )}
         {isAdmin && (
           <Button onClick={() => setShowAddJob(true)} className="bg-accent text-accent-foreground hover:bg-accent/90 gap-2">
             <Plus className="w-4 h-4" /> {t("admin.job.add")}
@@ -735,6 +775,47 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Deleted Jobs Dialog */}
+      <Dialog open={showDeletedJobs} onOpenChange={setShowDeletedJobs}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Archive className="w-4 h-4" /> Deleted Jobs
+            </DialogTitle>
+            <DialogDescription>
+              Restore accidentally deleted jobs. These are kept for recovery.
+            </DialogDescription>
+          </DialogHeader>
+          {loadingDeleted ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">Loading...</p>
+          ) : deletedJobs.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">No deleted jobs found.</p>
+          ) : (
+            <div className="space-y-2">
+              {deletedJobs.map((job) => (
+                <div key={job.id} className="flex items-center justify-between gap-3 p-3 rounded-md border border-border bg-secondary/20">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium truncate">{job.name}</p>
+                    <p className="text-xs text-muted-foreground">{job.service_type} · {job.street}, {job.city}</p>
+                    <p className="text-xs text-muted-foreground">Status: {job.status} · {job.preferred_date}</p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={restoringId === job.id}
+                    onClick={() => restoreJob(job.id)}
+                    className="gap-1.5 shrink-0"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    {restoringId === job.id ? "Restoring..." : "Restore"}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

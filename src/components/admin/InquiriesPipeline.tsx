@@ -94,6 +94,7 @@ const InquiriesPipeline = () => {
       .from("bookings")
       .select("*")
       .in("status", INQUIRY_STATUSES)
+      .is("deleted_at", null)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -277,7 +278,7 @@ const InquiriesPipeline = () => {
   const handleBulkDelete = async () => {
     setBulkActioning(true);
     const ids = Array.from(selectedIds);
-    const { error } = await supabase.from("bookings").delete().in("id", ids);
+    const { error } = await supabase.from("bookings").update({ deleted_at: new Date().toISOString() } as any).in("id", ids);
     if (error) {
       toast({ title: t("admin.error"), description: error.message, variant: "destructive" });
     } else {
