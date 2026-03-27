@@ -613,6 +613,48 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
           </div>
         )}
       </ScrollArea>
+      {/* Full Email Preview Dialog */}
+      <Dialog open={!!previewMessage} onOpenChange={(open) => !open && setPreviewMessage(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-base flex items-center gap-2">
+              <Mail className="w-4 h-4" />
+              {previewMessage?.direction === "inbound" ? `From: ${firstName}` : `To: ${customerName}`}
+            </DialogTitle>
+          </DialogHeader>
+          {previewMessage && (
+            <div className="space-y-4">
+              {/* Email header */}
+              <div className="bg-secondary/50 rounded-lg p-4 space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">From:</span>
+                  <span className="font-medium">{previewMessage.direction === "inbound" ? customerEmail : "info@maidforchico.com"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">To:</span>
+                  <span className="font-medium">{previewMessage.direction === "inbound" ? "info@maidforchico.com" : customerEmail}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Date:</span>
+                  <span>{new Date(previewMessage.created_at).toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Subject:</span>
+                  <span className="font-semibold">{previewMessage.subject || "No Subject"}</span>
+                </div>
+              </div>
+              {/* Email body */}
+              <div className="border border-border rounded-lg p-6 bg-background min-h-[200px]">
+                <p className="whitespace-pre-wrap text-sm leading-relaxed">{previewMessage.body}</p>
+              </div>
+              {/* Footer */}
+              <div className="text-center text-xs text-muted-foreground border-t border-border pt-3">
+                {previewMessage.direction === "inbound" ? "📥 Received" : "📧 Sent"} · {new Date(previewMessage.created_at).toLocaleString("en-US")}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
