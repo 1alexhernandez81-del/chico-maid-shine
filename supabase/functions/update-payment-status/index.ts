@@ -69,6 +69,51 @@ Deno.serve(async (req) => {
 
     if (updateErr) throw updateErr;
 
+    // Send admin notification email about payment received
+    try {
+      const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+      if (RESEND_API_KEY) {
+        const adminEmail = "info@maidforchico.com";
+        const firstName = booking.name ? booking.name.trim().split(/\s+/)[0] : "Customer";
+        const statusLabel = newStatus === "paid" ? "FULLY PAID" : "PARTIAL PAYMENT";
+
+        let htmlBody = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">`;
+        htmlBody += `<div style="padding: 24px 24px 16px; text-align: center; border-bottom: 2px solid #e04a2f;">`;
+        htmlBody += `<h1 style="margin: 0; font-size: 28px; font-weight: 800;"><span style="color: #e04a2f;">Maid</span> <span style="color: #1a1a1a;">For Chico</span></h1>`;
+        htmlBody += `</div>`;
+        htmlBody += `<div style="padding: 24px 20px;">`;
+        htmlBody += `<div style="background: #ecfdf5; border: 1px solid #059669; border-radius: 8px; padding: 16px; margin-bottom: 16px; text-align: center;">`;
+        htmlBody += `<p style="font-size: 20px; font-weight: bold; color: #059669; margin: 0;">💰 ${statusLabel}</p>`;
+        htmlBody += `</div>`;
+        htmlBody += `<p style="font-size: 15px; color: #333;"><strong>${firstName}</strong> just completed a payment:</p>`;
+        htmlBody += `<table style="width: 100%; border-collapse: collapse; margin: 16px 0;">`;
+        htmlBody += `<tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #666;">Customer</td><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600;">${booking.name}</td></tr>`;
+        htmlBody += `<tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #666;">Amount Paid</td><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #059669;">$${paidAmount.toFixed(2)}</td></tr>`;
+        htmlBody += `<tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #666;">Method</td><td style="padding: 8px; border-bottom: 1px solid #eee;">${methodLabel}</td></tr>`;
+        if (feeAmount > 0) {
+          htmlBody += `<tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #666;">Processing Fee</td><td style="padding: 8px; border-bottom: 1px solid #eee;">$${feeAmount.toFixed(2)}</td></tr>`;
+        }
+        htmlBody += `<tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #666;">Total Collected</td><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600;">$${newTotalPaid.toFixed(2)}</td></tr>`;
+        htmlBody += `<tr><td style="padding: 8px; color: #666;">Remaining</td><td style="padding: 8px; font-weight: 600; color: ${remaining > 0 ? '#dc2626' : '#059669'};">$${remaining.toFixed(2)}</td></tr>`;
+        htmlBody += `</table>`;
+        htmlBody += `<p style="font-size: 13px; color: #888;">Address: ${booking.street}, ${booking.city}, CA ${booking.zip}</p>`;
+        htmlBody += `</div></div>`;
+
+        await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from: "Maid for Chico <info@maidforchico.com>",
+            to: [adminEmail],
+            subject: `💰 Payment Received: ${firstName} — $${paidAmount.toFixed(2)} (${statusLabel})`,
+            html: htmlBody,
+          }),
+        });
+      }
+    } catch (emailErr) {
+      console.error("Admin payment notification email error (non-blocking):", emailErr);
+    }
+
     return new Response(JSON.stringify({ success: true, newStatus }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
