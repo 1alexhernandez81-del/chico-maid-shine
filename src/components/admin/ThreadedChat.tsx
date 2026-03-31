@@ -358,6 +358,9 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       if (pendingCtaUrl && pendingCtaLabel) {
         emailPayload.ctaUrl = pendingCtaUrl;
         emailPayload.ctaLabel = pendingCtaLabel;
+      } else {
+        // Fallback: quote CTA
+        attachQuoteCta(emailPayload, newSubject, newBody, activeTemplateId);
       }
 
       const { data, error } = await supabase.functions.invoke("send-customer-email", {
