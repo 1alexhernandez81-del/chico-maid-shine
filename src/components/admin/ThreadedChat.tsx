@@ -59,11 +59,13 @@ interface ThreadedChatProps {
   templates: EmailTemplate[];
   initialSubject?: string;
   initialBody?: string;
+  initialCtaUrl?: string;
+  initialCtaLabel?: string;
   onEmailSent?: () => void;
   onInitialConsumed?: () => void;
 }
 
-const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, customerEmail, templates, initialSubject, initialBody, onEmailSent, onInitialConsumed }: ThreadedChatProps) => {
+const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, customerEmail, templates, initialSubject, initialBody, initialCtaUrl, initialCtaLabel, onEmailSent, onInitialConsumed }: ThreadedChatProps) => {
   const { toast } = useToast();
   const { t } = useLanguage();
 
@@ -84,6 +86,8 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
   const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
   const [approveQuoteUrl, setApproveQuoteUrl] = useState<string | null>(null);
+  const [pendingCtaUrl, setPendingCtaUrl] = useState<string>("");
+  const [pendingCtaLabel, setPendingCtaLabel] = useState<string>("");
 
   // Translation
   const [translations, setTranslations] = useState<Record<string, string>>({});
@@ -209,11 +213,13 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       setShowNewThread(true);
       setNewSubject(initialSubject);
       setNewBody(initialBody);
+      if (initialCtaUrl) setPendingCtaUrl(initialCtaUrl);
+      if (initialCtaLabel) setPendingCtaLabel(initialCtaLabel);
       const matchedTemplateId = templates.find((tmpl) => tmpl.subject === initialSubject && tmpl.body === initialBody)?.id ?? null;
       setActiveTemplateId(matchedTemplateId);
       onInitialConsumed?.();
     }
-  }, [initialSubject, initialBody, templates, onInitialConsumed]);
+  }, [initialSubject, initialBody, initialCtaUrl, initialCtaLabel, templates, onInitialConsumed]);
 
   // Group into threads
   const threads: Thread[] = useMemo(() => {
@@ -348,7 +354,14 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
         ...(shouldCcAdmin ? { cc: ["info@maidforchico.com"] } : {}),
       };
 
-      attachQuoteCta(emailPayload, newSubject, newBody, activeTemplateId);
+      // Attach CTA button if pending (e.g. payment links)
+      if (pendingCtaUrl && pendingCtaLabel) {
+        emailPayload.ctaUrl = pendingCtaUrl;
+        emailPayload.ctaLabel = pendingCtaLabel;
+      } else {
+        // Fallback: quote CTA
+        attachQuoteCta(emailPayload, newSubject, newBody, activeTemplateId);
+      }
 
       const { data, error } = await supabase.functions.invoke("send-customer-email", {
         body: emailPayload,
@@ -373,6 +386,8 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       setNewSubject("");
       setNewBody("");
       setActiveTemplateId(null);
+      setPendingCtaUrl("");
+      setPendingCtaLabel("");
       setShowNewThread(false);
       fetchCommunications();
       onEmailSent?.();

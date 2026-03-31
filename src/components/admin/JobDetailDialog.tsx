@@ -78,6 +78,8 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
   // Pending template for quick-email buttons
   const [pendingTemplateSubject, setPendingTemplateSubject] = useState("");
   const [pendingTemplateBody, setPendingTemplateBody] = useState("");
+  const [pendingCtaUrl, setPendingCtaUrl] = useState("");
+  const [pendingCtaLabel, setPendingCtaLabel] = useState("");
 
   // Track initial values to detect dirty state
   const initialRef = useRef({ adminNotes: "", status: "", lineItems: "" });
@@ -113,6 +115,8 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
       // Reset messaging state
       setPendingTemplateSubject("");
       setPendingTemplateBody("");
+      setPendingCtaUrl("");
+      setPendingCtaLabel("");
     }
   }, [booking]);
 
@@ -151,6 +155,13 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
         color: "text-slate-400",
         subject: "Following Up — Maid for Chico",
         body: `We wanted to follow up on your recent service. We'd love to help get your home cleaned again!\n\nIs there anything we can answer or help with? We're happy to work around your schedule.\n\nFeel free to reply to this email or call us at (530) 966-0752.\n\nLooking forward to hearing from you!\nBetty & the Maid for Chico Team`,
+      },
+      {
+        id: "payment-reminder",
+        name: "💸 Payment Reminder",
+        color: "text-orange-500",
+        subject: "Friendly Payment Reminder — Maid for Chico",
+        body: `We hope you enjoyed your recent cleaning! This is a friendly reminder that your payment is still outstanding.\n\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n📅 Date: ${booking.scheduled_date || booking.preferred_date}\n\nPlease send your payment at your earliest convenience. Here are your payment options:\n\n✅ Zelle (preferred — no fees): (530) 966-0752\n🏦 ACH Bank Transfer: Reply and we'll send a secure link\n💳 Credit Card: Available upon request (3% fee applies)\n\nIf you've already sent payment, please disregard this message. If you have any questions, feel free to reply or call us at (530) 966-0752.\n\nThank you!\nBetty & the Maid for Chico Team`,
       },
     ];
   };
@@ -404,8 +415,10 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
 
       setPendingTemplateSubject(`${methodLabel} Link — Maid for Chico`);
       setPendingTemplateBody(
-        `Hi ${firstName},\n\nAs requested, here is your secure ${paymentMethod === "ach" ? "ACH" : "credit card"} payment link:\n\nItemized Services:\n${itemizedLines}\n\nSubtotal: $${subtotal.toFixed(2)}\nDeposit Collected: -$${depositAmount.toFixed(2)}\nBalance Due: $${bal}\nProcessing Fee ${paymentMethod === "card" ? "(3%)" : "(0%)"}: $${fee}\nTotal to Pay: $${totalPay}\n\n👉 Pay Now: ${stripeData.checkoutUrl}\n\nThis link will expire in 24 hours. If you have any questions, feel free to reply to this email or call us at (530) 966-0752.\n\nThank you!\nBetty & the Maid for Chico Team`
+        `As requested, here is your secure ${paymentMethod === "ach" ? "ACH" : "credit card"} payment link:\n\nItemized Services:\n${itemizedLines}\n\nSubtotal: $${subtotal.toFixed(2)}\nDeposit Collected: -$${depositAmount.toFixed(2)}\nBalance Due: $${bal}\nProcessing Fee ${paymentMethod === "card" ? "(3%)" : "(0%)"}: $${fee}\nTotal to Pay: $${totalPay}\n\nThis link will expire in 24 hours. If you have any questions, feel free to reply to this email or call us at (530) 966-0752.\n\nThank you!\nBetty & the Maid for Chico Team`
       );
+      setPendingCtaUrl(stripeData.checkoutUrl);
+      setPendingCtaLabel(paymentMethod === "ach" ? "🏦 Pay by ACH" : "💳 Pay Here");
       setDialogTab("messages");
       toast({ title: `💳 ${methodLabel} ready!`, description: "Review the email in the Messages tab before sending." });
     } catch (err) {
@@ -459,7 +472,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
 
       setPendingTemplateSubject("Cleaning Invoice — Maid for Chico");
       setPendingTemplateBody(
-        `Hi ${firstName},\n\nThank you for choosing Maid for Chico! Here is your invoice:\n\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n📅 Date: ${schedDate}\n\n${pricingBlock}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━\n💳 Payment Options\n━━━━━━━━━━━━━━━━━━━━━━━━━\n\n✅ Zelle (preferred — no fees)\nSend to: (530) 966-0752\n\n🏦 ACH Bank Transfer\nAvailable — we can send a secure ACH payment link.\n\n💳 Credit Card\nAvailable upon request — a processing fee applies.\n\nThank you for your business!\nBetty & the Maid for Chico Team`
+        `Thank you for choosing Maid for Chico! Here is your invoice:\n\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n📅 Date: ${schedDate}\n\n${pricingBlock}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━\n💳 Payment Options\n━━━━━━━━━━━━━━━━━━━━━━━━━\n\n✅ Zelle (preferred — no fees)\nSend to: (530) 966-0752\n\n🏦 ACH Bank Transfer\nAvailable — we can send a secure ACH payment link.\n\n💳 Credit Card\nAvailable upon request — a processing fee applies.\n\nThank you for your business!\nBetty & the Maid for Chico Team`
       );
     } else {
       let pricingBlock = `Services:\n${itemizedLines}\n\nSubtotal: $${subtotal.toFixed(2)}`;
@@ -470,7 +483,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
 
       setPendingTemplateSubject(`Cleaning Receipt — ${schedDate}`);
       setPendingTemplateBody(
-        `Hi ${firstName},\n\nThank you for choosing Maid for Chico! Here's your receipt:\n\n📅 Date: ${schedDate}\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n\n${pricingBlock}\n\nThank you for your business!\nBetty & the Maid for Chico Team`
+        `Thank you for choosing Maid for Chico! Here's your receipt:\n\n📅 Date: ${schedDate}\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n\n${pricingBlock}\n\nThank you for your business!\nBetty & the Maid for Chico Team`
       );
     }
 
@@ -1188,7 +1201,9 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                   templates={getJobEmailTemplates()}
                   initialSubject={pendingTemplateSubject}
                   initialBody={pendingTemplateBody}
-                  onInitialConsumed={() => { setPendingTemplateSubject(""); setPendingTemplateBody(""); }}
+                  initialCtaUrl={pendingCtaUrl}
+                  initialCtaLabel={pendingCtaLabel}
+                  onInitialConsumed={() => { setPendingTemplateSubject(""); setPendingTemplateBody(""); setPendingCtaUrl(""); setPendingCtaLabel(""); }}
                 />
               </TabsContent>
             )}
