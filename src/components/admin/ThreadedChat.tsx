@@ -518,7 +518,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
           {/* Time Slot Picker for estimate reschedule */}
           {showTimeSlotPicker && (
             <div className="border border-orange-500/30 rounded-lg p-3 space-y-2 bg-orange-500/5">
-              <p className="text-xs font-medium text-orange-400">📅 Offer available times (optional — buttons will appear in the email)</p>
+              <p className="text-xs font-medium text-orange-400">📅 {t("admin.template.offer_times")}</p>
               {timeSlots.map((slot, idx) => (
                 <div key={idx} className="flex gap-2 items-center">
                   <Input
@@ -540,7 +540,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
                     }}
                     className="text-xs border border-input rounded-md px-2 py-1.5 bg-background"
                   >
-                    <option value="">Time</option>
+                    <option value="">{t("admin.template.time_label")}</option>
                     {Array.from({ length: 19 }, (_, i) => {
                       const hour = Math.floor(i / 2) + 8;
                       const min = i % 2 === 0 ? "00" : "30";
@@ -567,12 +567,12 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
                   className="text-xs gap-1 w-full border-dashed border-orange-500/30 text-orange-400 hover:bg-orange-500/10"
                   onClick={() => setTimeSlots([...timeSlots, { date: "", time: "" }])}
                 >
-                  <Plus className="w-3 h-3" /> Add Time Slot
+                  <Plus className="w-3 h-3" /> {t("admin.template.add_time_slot")}
                 </Button>
               )}
               {timeSlots.length > 0 && timeSlots.some(s => s.date && s.time) && (
                 <p className="text-[10px] text-muted-foreground">
-                  ✅ Customer will receive clickable buttons — when they pick a time, it auto-confirms the estimate and sends calendar invites.
+                  ✅ {t("admin.template.time_slot_info")}
                 </p>
               )}
             </div>
