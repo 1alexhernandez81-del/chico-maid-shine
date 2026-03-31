@@ -514,6 +514,70 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
             rows={3}
             className="text-sm"
           />
+
+          {/* Time Slot Picker for estimate reschedule */}
+          {showTimeSlotPicker && (
+            <div className="border border-orange-500/30 rounded-lg p-3 space-y-2 bg-orange-500/5">
+              <p className="text-xs font-medium text-orange-400">📅 Offer available times (optional — buttons will appear in the email)</p>
+              {timeSlots.map((slot, idx) => (
+                <div key={idx} className="flex gap-2 items-center">
+                  <Input
+                    type="date"
+                    value={slot.date}
+                    onChange={(e) => {
+                      const updated = [...timeSlots];
+                      updated[idx] = { ...updated[idx], date: e.target.value };
+                      setTimeSlots(updated);
+                    }}
+                    className="text-xs flex-1"
+                  />
+                  <select
+                    value={slot.time}
+                    onChange={(e) => {
+                      const updated = [...timeSlots];
+                      updated[idx] = { ...updated[idx], time: e.target.value };
+                      setTimeSlots(updated);
+                    }}
+                    className="text-xs border border-input rounded-md px-2 py-1.5 bg-background"
+                  >
+                    <option value="">Time</option>
+                    {Array.from({ length: 19 }, (_, i) => {
+                      const hour = Math.floor(i / 2) + 8;
+                      const min = i % 2 === 0 ? "00" : "30";
+                      const val = `${String(hour).padStart(2, "0")}:${min}`;
+                      const ampm = hour >= 12 ? "PM" : "AM";
+                      const h12 = hour % 12 || 12;
+                      return <option key={val} value={val}>{h12}:{min} {ampm}</option>;
+                    })}
+                  </select>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 text-destructive"
+                    onClick={() => setTimeSlots(timeSlots.filter((_, j) => j !== idx))}
+                  >
+                    ✕
+                  </Button>
+                </div>
+              ))}
+              {timeSlots.length < 3 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs gap-1 w-full border-dashed border-orange-500/30 text-orange-400 hover:bg-orange-500/10"
+                  onClick={() => setTimeSlots([...timeSlots, { date: "", time: "" }])}
+                >
+                  <Plus className="w-3 h-3" /> Add Time Slot
+                </Button>
+              )}
+              {timeSlots.length > 0 && timeSlots.some(s => s.date && s.time) && (
+                <p className="text-[10px] text-muted-foreground">
+                  ✅ Customer will receive clickable buttons — when they pick a time, it auto-confirms the estimate and sends calendar invites.
+                </p>
+              )}
+            </div>
+          )}
+
           <Button
             onClick={sendNewThread}
             disabled={sending || !newSubject.trim() || !newBody.trim()}
