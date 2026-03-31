@@ -26,6 +26,7 @@ const AdminDashboard = () => {
   const [prefillJob, setPrefillJob] = useState<PrefillJob>(null);
   const navigate = useNavigate();
   const { lang, toggleLang, t } = useLanguage();
+  const { toast } = useToast();
 
   const isAdmin = userRole === "admin";
 
