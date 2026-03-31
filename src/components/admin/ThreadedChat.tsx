@@ -422,6 +422,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       setActiveTemplateId(null);
       setPendingCtaUrl("");
       setPendingCtaLabel("");
+      setTimeSlots([]);
       setShowNewThread(false);
       fetchCommunications();
       onEmailSent?.();
