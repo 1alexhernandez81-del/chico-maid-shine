@@ -528,7 +528,7 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
                                 ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
                                 : "bg-red-500/20 text-red-400 border-red-500/30"
                             }`}>
-                              {b.payment_status === "paid" ? "💰 Paid" : b.payment_status === "partial" ? "⚠ Partial" : "Unpaid"}
+                              {b.payment_status === "paid" ? `💰 ${t("admin.payment.paid")}` : b.payment_status === "partial" ? `⚠ ${t("admin.payment.partially_paid")}` : t("admin.payment.unpaid")}
                             </Badge>
                           )}
                         </div>
