@@ -354,7 +354,11 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
         ...(shouldCcAdmin ? { cc: ["info@maidforchico.com"] } : {}),
       };
 
-      attachQuoteCta(emailPayload, newSubject, newBody, activeTemplateId);
+      // Attach CTA button if pending (e.g. payment links)
+      if (pendingCtaUrl && pendingCtaLabel) {
+        emailPayload.ctaUrl = pendingCtaUrl;
+        emailPayload.ctaLabel = pendingCtaLabel;
+      }
 
       const { data, error } = await supabase.functions.invoke("send-customer-email", {
         body: emailPayload,
