@@ -75,6 +75,7 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
   const [assignCustomerId, setAssignCustomerId] = useState("");
   const [bulkActioning, setBulkActioning] = useState(false);
   const [cleanerFilter, setCleanerFilter] = useState("all");
+  const [paymentFilter, setPaymentFilter] = useState("all");
   const [cleanersList, setCleanersList] = useState<CleanerInfo[]>([]);
 
   // Deleted jobs
@@ -185,7 +186,8 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
       b.phone.includes(search);
     const matchesCleaner = cleanerFilter === "all" ||
       (Array.isArray(b.assigned_cleaners) && b.assigned_cleaners.includes(cleanerFilter));
-    return matchesStatus && matchesSearch && matchesCleaner;
+    const matchesPayment = paymentFilter === "all" || b.payment_status === paymentFilter;
+    return matchesStatus && matchesSearch && matchesCleaner && matchesPayment;
   });
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
@@ -382,6 +384,21 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
               {cleanersList.map((c) => (
                 <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+        )}
+
+        {/* Payment status filter (admin only) */}
+        {isAdmin && (
+          <Select value={paymentFilter} onValueChange={(v) => { setPaymentFilter(v); setPage(0); }}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="All Payments" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Payments</SelectItem>
+              <SelectItem value="unpaid">💸 Unpaid</SelectItem>
+              <SelectItem value="partial">⚠ Partial</SelectItem>
+              <SelectItem value="paid">💰 Paid</SelectItem>
             </SelectContent>
           </Select>
         )}
