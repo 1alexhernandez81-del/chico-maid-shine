@@ -388,6 +388,21 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
           </Select>
         )}
 
+        {/* Payment status filter (admin only) */}
+        {isAdmin && (
+          <Select value={paymentFilter} onValueChange={(v) => { setPaymentFilter(v); setPage(0); }}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="All Payments" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Payments</SelectItem>
+              <SelectItem value="unpaid">💸 Unpaid</SelectItem>
+              <SelectItem value="partial">⚠ Partial</SelectItem>
+              <SelectItem value="paid">💰 Paid</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+
         {/* View mode toggle */}
         <div className="flex border border-border rounded-lg overflow-hidden">
           {([
