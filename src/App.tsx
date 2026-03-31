@@ -40,6 +40,7 @@ const App = () => (
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/confirm-appointment" element={<ConfirmAppointment />} />
               <Route path="/approve-quote" element={<ApproveQuote />} />
+              <Route path="/pick-time" element={<PickTime />} />
               <Route path="/sitemap.xml" element={<Sitemap />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
