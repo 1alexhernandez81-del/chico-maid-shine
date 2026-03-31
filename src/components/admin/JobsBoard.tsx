@@ -499,9 +499,22 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
                       <TableCell className="hidden md:table-cell text-sm capitalize" onClick={() => openDetail(b)}>{b.service_type.replace("-", " ")}</TableCell>
                       <TableCell className="hidden md:table-cell text-sm capitalize" onClick={() => openDetail(b)}>{b.frequency.replace("-", " ")}</TableCell>
                       <TableCell onClick={() => openDetail(b)}>
-                        <Badge variant="outline" className={`text-xs ${STATUS_COLORS[b.status] || ""}`}>
-                          {statusLabel(b.status)}
-                        </Badge>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <Badge variant="outline" className={`text-xs ${STATUS_COLORS[b.status] || ""}`}>
+                            {statusLabel(b.status)}
+                          </Badge>
+                          {isAdmin && (
+                            <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${
+                              b.payment_status === "paid"
+                                ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                                : b.payment_status === "partial"
+                                ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                                : "bg-red-500/20 text-red-400 border-red-500/30"
+                            }`}>
+                              {b.payment_status === "paid" ? "💰 Paid" : b.payment_status === "partial" ? "⚠ Partial" : "Unpaid"}
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-1">
