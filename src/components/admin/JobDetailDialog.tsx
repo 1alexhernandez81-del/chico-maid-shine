@@ -115,6 +115,8 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
       // Reset messaging state
       setPendingTemplateSubject("");
       setPendingTemplateBody("");
+      setPendingCtaUrl("");
+      setPendingCtaLabel("");
     }
   }, [booking]);
 
