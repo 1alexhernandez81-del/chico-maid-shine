@@ -59,6 +59,8 @@ interface ThreadedChatProps {
   templates: EmailTemplate[];
   initialSubject?: string;
   initialBody?: string;
+  initialCtaUrl?: string;
+  initialCtaLabel?: string;
   onEmailSent?: () => void;
   onInitialConsumed?: () => void;
 }
