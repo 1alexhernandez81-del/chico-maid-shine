@@ -518,7 +518,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
           {/* Time Slot Picker for estimate reschedule */}
           {showTimeSlotPicker && (
             <div className="border border-orange-500/30 rounded-lg p-3 space-y-2 bg-orange-500/5">
-              <p className="text-xs font-medium text-orange-400">📅 Offer available times (optional — buttons will appear in the email)</p>
+              <p className="text-xs font-medium text-orange-400">📅 {t("admin.template.offer_times")}</p>
               {timeSlots.map((slot, idx) => (
                 <div key={idx} className="flex gap-2 items-center">
                   <Input
