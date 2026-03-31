@@ -75,6 +75,7 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
   const [assignCustomerId, setAssignCustomerId] = useState("");
   const [bulkActioning, setBulkActioning] = useState(false);
   const [cleanerFilter, setCleanerFilter] = useState("all");
+  const [paymentFilter, setPaymentFilter] = useState("all");
   const [cleanersList, setCleanersList] = useState<CleanerInfo[]>([]);
 
   // Deleted jobs
