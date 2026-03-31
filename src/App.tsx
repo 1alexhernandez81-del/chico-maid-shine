@@ -12,6 +12,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import ConfirmAppointment from "./pages/ConfirmAppointment";
 import ApproveQuote from "./pages/ApproveQuote";
+import PickTime from "./pages/PickTime";
 import NotFound from "./pages/NotFound";
 import Refer from "./pages/Refer";
 import LandingAds from "./pages/LandingAds";
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/confirm-appointment" element={<ConfirmAppointment />} />
               <Route path="/approve-quote" element={<ApproveQuote />} />
+              <Route path="/pick-time" element={<PickTime />} />
               <Route path="/sitemap.xml" element={<Sitemap />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -89,6 +89,10 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
   const [pendingCtaUrl, setPendingCtaUrl] = useState<string>("");
   const [pendingCtaLabel, setPendingCtaLabel] = useState<string>("");
 
+  // Time slot picker for estimate-reschedule template
+  const [timeSlots, setTimeSlots] = useState<Array<{ date: string; time: string }>>([]);
+  const showTimeSlotPicker = activeTemplateId === "estimate-reschedule";
+
   // Translation
   const [translations, setTranslations] = useState<Record<string, string>>({});
   const [translating, setTranslating] = useState<Record<string, boolean>>({});
@@ -346,6 +350,34 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
     try {
       const subjectLower = newSubject.toLowerCase();
       const shouldCcAdmin = subjectLower.includes("invoice") || subjectLower.includes("receipt") || subjectLower.includes("payment") || subjectLower.includes("credit card");
+      
+      // If time slots are set, fetch the booking's confirmation token and build pick-time URLs
+      let timeSlotButtons: Array<{ url: string; label: string }> = [];
+      if (timeSlots.length > 0 && bookingId) {
+        const { data: bookingData } = await supabase
+          .from("bookings")
+          .select("confirmation_token")
+          .eq("id", bookingId)
+          .single();
+        
+        if (bookingData?.confirmation_token) {
+          timeSlotButtons = timeSlots.filter(s => s.date && s.time).map((slot) => {
+            const [y, m, d] = slot.date.split("-").map(Number);
+            const dateObj = new Date(y, m - 1, d);
+            const dateLabel = dateObj.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+            const [h, min] = slot.time.split(":");
+            const hour = parseInt(h);
+            const ampm = hour >= 12 ? "PM" : "AM";
+            const h12 = hour % 12 || 12;
+            const timeLabel = `${h12}:${min} ${ampm}`;
+            return {
+              url: `https://maidforchico.com/pick-time?token=${bookingData.confirmation_token}&date=${slot.date}&time=${slot.time}`,
+              label: `📅 ${dateLabel} at ${timeLabel}`,
+            };
+          });
+        }
+      }
+
       const emailPayload: Record<string, any> = {
         customerEmail,
         customerName,
@@ -354,8 +386,10 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
         ...(shouldCcAdmin ? { cc: ["info@maidforchico.com"] } : {}),
       };
 
-      // Attach CTA button if pending (e.g. payment links)
-      if (pendingCtaUrl && pendingCtaLabel) {
+      // Attach time slot buttons or CTA button
+      if (timeSlotButtons.length > 0) {
+        emailPayload.ctaButtons = timeSlotButtons;
+      } else if (pendingCtaUrl && pendingCtaLabel) {
         emailPayload.ctaUrl = pendingCtaUrl;
         emailPayload.ctaLabel = pendingCtaLabel;
       } else {
@@ -388,6 +422,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       setActiveTemplateId(null);
       setPendingCtaUrl("");
       setPendingCtaLabel("");
+      setTimeSlots([]);
       setShowNewThread(false);
       fetchCommunications();
       onEmailSent?.();
@@ -404,6 +439,9 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
     setActiveTemplateId(tmpl.id);
     setTemplatePickerOpen(false);
     setShowNewThread(true);
+    setTimeSlots([]); // Reset time slots when switching templates
+    setPendingCtaUrl("");
+    setPendingCtaLabel("");
   };
 
   const firstName = customerName.trim().split(/\s+/)[0] || "there";
@@ -476,6 +514,70 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
             rows={3}
             className="text-sm"
           />
+
+          {/* Time Slot Picker for estimate reschedule */}
+          {showTimeSlotPicker && (
+            <div className="border border-orange-500/30 rounded-lg p-3 space-y-2 bg-orange-500/5">
+              <p className="text-xs font-medium text-orange-400">📅 Offer available times (optional — buttons will appear in the email)</p>
+              {timeSlots.map((slot, idx) => (
+                <div key={idx} className="flex gap-2 items-center">
+                  <Input
+                    type="date"
+                    value={slot.date}
+                    onChange={(e) => {
+                      const updated = [...timeSlots];
+                      updated[idx] = { ...updated[idx], date: e.target.value };
+                      setTimeSlots(updated);
+                    }}
+                    className="text-xs flex-1"
+                  />
+                  <select
+                    value={slot.time}
+                    onChange={(e) => {
+                      const updated = [...timeSlots];
+                      updated[idx] = { ...updated[idx], time: e.target.value };
+                      setTimeSlots(updated);
+                    }}
+                    className="text-xs border border-input rounded-md px-2 py-1.5 bg-background"
+                  >
+                    <option value="">Time</option>
+                    {Array.from({ length: 19 }, (_, i) => {
+                      const hour = Math.floor(i / 2) + 8;
+                      const min = i % 2 === 0 ? "00" : "30";
+                      const val = `${String(hour).padStart(2, "0")}:${min}`;
+                      const ampm = hour >= 12 ? "PM" : "AM";
+                      const h12 = hour % 12 || 12;
+                      return <option key={val} value={val}>{h12}:{min} {ampm}</option>;
+                    })}
+                  </select>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 text-destructive"
+                    onClick={() => setTimeSlots(timeSlots.filter((_, j) => j !== idx))}
+                  >
+                    ✕
+                  </Button>
+                </div>
+              ))}
+              {timeSlots.length < 3 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs gap-1 w-full border-dashed border-orange-500/30 text-orange-400 hover:bg-orange-500/10"
+                  onClick={() => setTimeSlots([...timeSlots, { date: "", time: "" }])}
+                >
+                  <Plus className="w-3 h-3" /> Add Time Slot
+                </Button>
+              )}
+              {timeSlots.length > 0 && timeSlots.some(s => s.date && s.time) && (
+                <p className="text-[10px] text-muted-foreground">
+                  ✅ Customer will receive clickable buttons — when they pick a time, it auto-confirms the estimate and sends calendar invites.
+                </p>
+              )}
+            </div>
+          )}
+
           <Button
             onClick={sendNewThread}
             disabled={sending || !newSubject.trim() || !newBody.trim()}

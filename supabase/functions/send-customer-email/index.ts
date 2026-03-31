@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { customerEmail, customerName, subject, body, ctaUrl, ctaLabel, inReplyTo, references, cc } = await req.json();
+    const { customerEmail, customerName, subject, body, ctaUrl, ctaLabel, ctaButtons, inReplyTo, references, cc } = await req.json();
 
     if (!customerEmail || !subject || !body) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
@@ -41,6 +41,19 @@ Deno.serve(async (req) => {
     
     if (ctaUrl && ctaLabel) {
       htmlBody += `<div style="margin: 24px 0;"><a href="${ctaUrl}" style="display: inline-block; background-color: #059669; color: #fff; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 15px;">${ctaLabel}</a></div>`;
+    }
+
+    // Multiple CTA buttons (e.g., time slot picker)
+    if (Array.isArray(ctaButtons) && ctaButtons.length > 0) {
+      htmlBody += `<div style="margin: 24px 0;">`;
+      htmlBody += `<p style="font-size: 14px; color: #555; margin-bottom: 12px; font-weight: 600;">Click a time that works for you:</p>`;
+      for (const btn of ctaButtons) {
+        if (btn.url && btn.label) {
+          htmlBody += `<div style="margin-bottom: 10px;"><a href="${btn.url}" style="display: inline-block; background-color: #059669; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px; min-width: 200px; text-align: center;">${btn.label}</a></div>`;
+        }
+      }
+      htmlBody += `<p style="font-size: 12px; color: #888; margin-top: 8px;">None of these work? Just reply to this email with times that do!</p>`;
+      htmlBody += `</div>`;
     }
     
     htmlBody += `</div></div>`;
