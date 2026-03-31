@@ -386,6 +386,8 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       setNewSubject("");
       setNewBody("");
       setActiveTemplateId(null);
+      setPendingCtaUrl("");
+      setPendingCtaLabel("");
       setShowNewThread(false);
       fetchCommunications();
       onEmailSent?.();
