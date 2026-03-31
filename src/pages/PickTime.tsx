@@ -34,7 +34,6 @@ const PickTime = () => {
       setStatus("error");
       return;
     }
-    // Load booking to show details
     loadBooking();
   }, [token, date, time]);
 
@@ -51,7 +50,6 @@ const PickTime = () => {
       setStatus("already");
       return;
     }
-    // Check if estimate is already scheduled at this exact time
     if (b.status === "estimate-scheduled" && b.scheduled_date === date) {
       setBooking(b);
       setStatus("already");
@@ -89,7 +87,6 @@ const PickTime = () => {
       return;
     }
 
-    // Trigger calendar sync + admin notification
     try {
       await supabase.functions.invoke("sync-google-calendar", {
         body: { bookingId: result.booking_id },
@@ -98,7 +95,6 @@ const PickTime = () => {
       console.error("Calendar sync error (non-blocking):", err);
     }
 
-    // Send admin notification email
     try {
       await supabase.functions.invoke("send-job-email", {
         body: { bookingId: result.booking_id, type: "scheduled" },
@@ -114,7 +110,7 @@ const PickTime = () => {
     const [year, month, day] = date.split("-").map(Number);
     const [h, m] = time.split(":").map(Number);
     const startDate = new Date(year, month - 1, day, h, m);
-    const endDate = new Date(startDate.getTime() + 30 * 60 * 1000); // 30 min estimate
+    const endDate = new Date(startDate.getTime() + 30 * 60 * 1000);
     const pad = (n: number) => n.toString().padStart(2, "0");
     const formatGcal = (d: Date) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
     const address = booking ? `${booking.street}, ${booking.city}, CA ${booking.zip}` : "";
@@ -135,12 +131,9 @@ const PickTime = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a1a1a] to-[#0d0d0d] flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-card rounded-2xl border border-border p-8 text-center space-y-6">
-        {/* Logo */}
+        {/* Logo — matches ApproveQuote */}
         <div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">
-            <span style={{ color: "#e04a2f" }}>Maid</span>{" "}
-            <span>For Chico</span>
-          </h1>
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">Maid For Chico</h1>
           <p className="text-xs uppercase tracking-[3px] text-accent mt-1">Select Your Estimate Time</p>
         </div>
 
@@ -164,16 +157,16 @@ const PickTime = () => {
         )}
 
         {status === "ready" && date && time && (
-          <div className="space-y-6">
-            <CalendarCheck className="w-14 h-14 text-accent mx-auto" />
+          <div className="space-y-5">
+            <CalendarCheck className="w-14 h-14 text-emerald-400 mx-auto" />
             <div>
               <h2 className="text-xl font-semibold text-foreground">Confirm This Time?</h2>
-              <p className="text-muted-foreground text-sm mt-2">
+              <p className="text-muted-foreground text-sm mt-1">
                 Hi {booking?.name}, you selected the following time for your in-home estimate:
               </p>
             </div>
 
-            <div className="bg-secondary/50 rounded-xl p-5 text-left space-y-3 text-sm">
+            <div className="bg-secondary/50 rounded-xl p-4 text-left space-y-2.5 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">📅 Date</span>
                 <span className="font-medium text-foreground">{formatDate(date)}</span>
@@ -192,7 +185,7 @@ const PickTime = () => {
 
             <Button
               onClick={handleConfirm}
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold rounded-xl"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold rounded-xl"
             >
               ✅ Yes, This Time Works!
             </Button>
@@ -212,7 +205,7 @@ const PickTime = () => {
         )}
 
         {status === "confirmed" && (
-          <div className="space-y-6">
+          <div className="space-y-5">
             <CheckCircle2 className="w-14 h-14 text-green-500 mx-auto" />
             <div>
               <h2 className="text-xl font-semibold text-foreground">You're All Set! 🎉</h2>
@@ -221,7 +214,7 @@ const PickTime = () => {
               </p>
             </div>
 
-            <div className="bg-secondary/50 rounded-xl p-5 text-left space-y-3 text-sm">
+            <div className="bg-secondary/50 rounded-xl p-4 text-left space-y-2.5 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">📅 Date</span>
                 <span className="font-medium text-foreground">{date && formatDate(date)}</span>
@@ -246,7 +239,7 @@ const PickTime = () => {
                   href={googleCalUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 font-medium text-sm transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl py-3 font-medium text-sm transition-colors"
                 >
                   <Calendar className="w-4 h-4" /> Google Calendar
                 </a>
@@ -263,14 +256,16 @@ const PickTime = () => {
               </div>
             </div>
 
-            <p className="text-muted-foreground text-xs">
-              A calendar invite has been sent to your email. See you soon!
-            </p>
+            <div className="border-t border-border pt-4">
+              <p className="text-muted-foreground text-sm">
+                A calendar invite has been sent to your email. See you soon!
+              </p>
+            </div>
           </div>
         )}
 
         {status === "already" && (
-          <div className="space-y-6">
+          <div className="space-y-5">
             <CheckCircle2 className="w-14 h-14 text-green-500 mx-auto" />
             <div>
               <h2 className="text-xl font-semibold text-foreground">Already Confirmed</h2>
