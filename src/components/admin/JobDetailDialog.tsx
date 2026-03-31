@@ -78,6 +78,8 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
   // Pending template for quick-email buttons
   const [pendingTemplateSubject, setPendingTemplateSubject] = useState("");
   const [pendingTemplateBody, setPendingTemplateBody] = useState("");
+  const [pendingCtaUrl, setPendingCtaUrl] = useState("");
+  const [pendingCtaLabel, setPendingCtaLabel] = useState("");
 
   // Track initial values to detect dirty state
   const initialRef = useRef({ adminNotes: "", status: "", lineItems: "" });
