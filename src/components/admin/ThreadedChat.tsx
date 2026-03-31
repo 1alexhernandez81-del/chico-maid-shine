@@ -567,7 +567,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
                   className="text-xs gap-1 w-full border-dashed border-orange-500/30 text-orange-400 hover:bg-orange-500/10"
                   onClick={() => setTimeSlots([...timeSlots, { date: "", time: "" }])}
                 >
-                  <Plus className="w-3 h-3" /> Add Time Slot
+                  <Plus className="w-3 h-3" /> {t("admin.template.add_time_slot")}
                 </Button>
               )}
               {timeSlots.length > 0 && timeSlots.some(s => s.date && s.time) && (
