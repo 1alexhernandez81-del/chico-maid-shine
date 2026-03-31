@@ -461,7 +461,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
 
       setPendingTemplateSubject("Cleaning Invoice — Maid for Chico");
       setPendingTemplateBody(
-        `Hi ${firstName},\n\nThank you for choosing Maid for Chico! Here is your invoice:\n\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n📅 Date: ${schedDate}\n\n${pricingBlock}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━\n💳 Payment Options\n━━━━━━━━━━━━━━━━━━━━━━━━━\n\n✅ Zelle (preferred — no fees)\nSend to: (530) 966-0752\n\n🏦 ACH Bank Transfer\nAvailable — we can send a secure ACH payment link.\n\n💳 Credit Card\nAvailable upon request — a processing fee applies.\n\nThank you for your business!\nBetty & the Maid for Chico Team`
+        `Thank you for choosing Maid for Chico! Here is your invoice:\n\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n📅 Date: ${schedDate}\n\n${pricingBlock}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━\n💳 Payment Options\n━━━━━━━━━━━━━━━━━━━━━━━━━\n\n✅ Zelle (preferred — no fees)\nSend to: (530) 966-0752\n\n🏦 ACH Bank Transfer\nAvailable — we can send a secure ACH payment link.\n\n💳 Credit Card\nAvailable upon request — a processing fee applies.\n\nThank you for your business!\nBetty & the Maid for Chico Team`
       );
     } else {
       let pricingBlock = `Services:\n${itemizedLines}\n\nSubtotal: $${subtotal.toFixed(2)}`;
