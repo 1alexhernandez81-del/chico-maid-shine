@@ -350,6 +350,34 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
     try {
       const subjectLower = newSubject.toLowerCase();
       const shouldCcAdmin = subjectLower.includes("invoice") || subjectLower.includes("receipt") || subjectLower.includes("payment") || subjectLower.includes("credit card");
+      
+      // If time slots are set, fetch the booking's confirmation token and build pick-time URLs
+      let timeSlotButtons: Array<{ url: string; label: string }> = [];
+      if (timeSlots.length > 0 && bookingId) {
+        const { data: bookingData } = await supabase
+          .from("bookings")
+          .select("confirmation_token")
+          .eq("id", bookingId)
+          .single();
+        
+        if (bookingData?.confirmation_token) {
+          timeSlotButtons = timeSlots.filter(s => s.date && s.time).map((slot) => {
+            const [y, m, d] = slot.date.split("-").map(Number);
+            const dateObj = new Date(y, m - 1, d);
+            const dateLabel = dateObj.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+            const [h, min] = slot.time.split(":");
+            const hour = parseInt(h);
+            const ampm = hour >= 12 ? "PM" : "AM";
+            const h12 = hour % 12 || 12;
+            const timeLabel = `${h12}:${min} ${ampm}`;
+            return {
+              url: `https://maidforchico.com/pick-time?token=${bookingData.confirmation_token}&date=${slot.date}&time=${slot.time}`,
+              label: `📅 ${dateLabel} at ${timeLabel}`,
+            };
+          });
+        }
+      }
+
       const emailPayload: Record<string, any> = {
         customerEmail,
         customerName,
@@ -358,8 +386,10 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
         ...(shouldCcAdmin ? { cc: ["info@maidforchico.com"] } : {}),
       };
 
-      // Attach CTA button if pending (e.g. payment links)
-      if (pendingCtaUrl && pendingCtaLabel) {
+      // Attach time slot buttons or CTA button
+      if (timeSlotButtons.length > 0) {
+        emailPayload.ctaButtons = timeSlotButtons;
+      } else if (pendingCtaUrl && pendingCtaLabel) {
         emailPayload.ctaUrl = pendingCtaUrl;
         emailPayload.ctaLabel = pendingCtaLabel;
       } else {
