@@ -408,6 +408,9 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
     setActiveTemplateId(tmpl.id);
     setTemplatePickerOpen(false);
     setShowNewThread(true);
+    setTimeSlots([]); // Reset time slots when switching templates
+    setPendingCtaUrl("");
+    setPendingCtaLabel("");
   };
 
   const firstName = customerName.trim().split(/\s+/)[0] || "there";
