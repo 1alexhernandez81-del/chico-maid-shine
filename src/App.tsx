@@ -12,6 +12,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import ConfirmAppointment from "./pages/ConfirmAppointment";
 import ApproveQuote from "./pages/ApproveQuote";
+import PickTime from "./pages/PickTime";
 import NotFound from "./pages/NotFound";
 import Refer from "./pages/Refer";
 import LandingAds from "./pages/LandingAds";
