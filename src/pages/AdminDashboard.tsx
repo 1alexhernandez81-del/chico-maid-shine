@@ -55,6 +55,42 @@ const AdminDashboard = () => {
     });
   }, []);
 
+  // Realtime: notify admin when a payment comes in
+  useEffect(() => {
+    if (!authorized) return;
+    const channel = supabase
+      .channel("payment-notifications")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "bookings" },
+        (payload) => {
+          const oldStatus = (payload.old as any)?.payment_status;
+          const newStatus = (payload.new as any)?.payment_status;
+          const name = (payload.new as any)?.name || "A customer";
+          const amount = (payload.new as any)?.total_paid;
+
+          if (oldStatus !== "paid" && newStatus === "paid") {
+            toast({
+              title: "💰 Payment Received!",
+              description: `${name} just paid${amount ? ` $${Number(amount).toFixed(2)}` : ""}. Job marked as completed.`,
+              duration: 10000,
+            });
+          } else if (oldStatus !== "partially_paid" && newStatus === "partially_paid") {
+            toast({
+              title: "💳 Partial Payment Received",
+              description: `${name} made a partial payment${amount ? ` ($${Number(amount).toFixed(2)} so far)` : ""}.`,
+              duration: 8000,
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [authorized, toast]);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/admin/login");
