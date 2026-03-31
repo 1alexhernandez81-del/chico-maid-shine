@@ -213,11 +213,13 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
       setShowNewThread(true);
       setNewSubject(initialSubject);
       setNewBody(initialBody);
+      if (initialCtaUrl) setPendingCtaUrl(initialCtaUrl);
+      if (initialCtaLabel) setPendingCtaLabel(initialCtaLabel);
       const matchedTemplateId = templates.find((tmpl) => tmpl.subject === initialSubject && tmpl.body === initialBody)?.id ?? null;
       setActiveTemplateId(matchedTemplateId);
       onInitialConsumed?.();
     }
-  }, [initialSubject, initialBody, templates, onInitialConsumed]);
+  }, [initialSubject, initialBody, initialCtaUrl, initialCtaLabel, templates, onInitialConsumed]);
 
   // Group into threads
   const threads: Thread[] = useMemo(() => {
