@@ -462,6 +462,10 @@ const translations: Record<string, Record<Lang, string>> = {
   "admin.template.reschedule_notice": { en: "Reschedule Notice", es: "Aviso de Reprogramación" },
   "admin.template.thank_you": { en: "Thank You / Post-Clean", es: "Gracias / Post-Limpieza" },
   "admin.template.general_followup": { en: "General Follow-Up", es: "Seguimiento General" },
+  "admin.template.offer_times": { en: "Offer available times (optional — buttons will appear in the email)", es: "Ofrecer horarios disponibles (opcional — aparecerán como botones en el correo)" },
+  "admin.template.add_time_slot": { en: "Add Time Slot", es: "Agregar Horario" },
+  "admin.template.time_slot_info": { en: "Customer will receive clickable buttons — when they pick a time, it auto-confirms the estimate and sends calendar invites.", es: "El cliente recibirá botones — al elegir un horario, se confirma automáticamente el estimado y se envían invitaciones de calendario." },
+  "admin.template.time_label": { en: "Time", es: "Hora" },
 
   // Jobs Board
   "admin.job.all": { en: "All", es: "Todos" },

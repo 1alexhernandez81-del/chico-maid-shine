@@ -572,7 +572,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
               )}
               {timeSlots.length > 0 && timeSlots.some(s => s.date && s.time) && (
                 <p className="text-[10px] text-muted-foreground">
-                  ✅ Customer will receive clickable buttons — when they pick a time, it auto-confirms the estimate and sends calendar invites.
+                  ✅ {t("admin.template.time_slot_info")}
                 </p>
               )}
             </div>
