@@ -86,6 +86,8 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
   const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
   const [approveQuoteUrl, setApproveQuoteUrl] = useState<string | null>(null);
+  const [pendingCtaUrl, setPendingCtaUrl] = useState<string>("");
+  const [pendingCtaLabel, setPendingCtaLabel] = useState<string>("");
 
   // Translation
   const [translations, setTranslations] = useState<Record<string, string>>({});
