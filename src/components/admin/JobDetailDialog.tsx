@@ -156,6 +156,13 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
         subject: "Following Up — Maid for Chico",
         body: `We wanted to follow up on your recent service. We'd love to help get your home cleaned again!\n\nIs there anything we can answer or help with? We're happy to work around your schedule.\n\nFeel free to reply to this email or call us at (530) 966-0752.\n\nLooking forward to hearing from you!\nBetty & the Maid for Chico Team`,
       },
+      {
+        id: "payment-reminder",
+        name: "💸 Payment Reminder",
+        color: "text-orange-500",
+        subject: "Friendly Payment Reminder — Maid for Chico",
+        body: `We hope you enjoyed your recent cleaning! This is a friendly reminder that your payment is still outstanding.\n\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n📅 Date: ${booking.scheduled_date || booking.preferred_date}\n\nPlease send your payment at your earliest convenience. Here are your payment options:\n\n✅ Zelle (preferred — no fees): (530) 966-0752\n🏦 ACH Bank Transfer: Reply and we'll send a secure link\n💳 Credit Card: Available upon request (3% fee applies)\n\nIf you've already sent payment, please disregard this message. If you have any questions, feel free to reply or call us at (530) 966-0752.\n\nThank you!\nBetty & the Maid for Chico Team`,
+      },
     ];
   };
 
