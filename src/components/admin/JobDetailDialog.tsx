@@ -472,7 +472,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
 
       setPendingTemplateSubject(`Cleaning Receipt — ${schedDate}`);
       setPendingTemplateBody(
-        `Hi ${firstName},\n\nThank you for choosing Maid for Chico! Here's your receipt:\n\n📅 Date: ${schedDate}\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n\n${pricingBlock}\n\nThank you for your business!\nBetty & the Maid for Chico Team`
+        `Thank you for choosing Maid for Chico! Here's your receipt:\n\n📅 Date: ${schedDate}\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n\n${pricingBlock}\n\nThank you for your business!\nBetty & the Maid for Chico Team`
       );
     }
 
