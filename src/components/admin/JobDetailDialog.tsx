@@ -404,8 +404,10 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
 
       setPendingTemplateSubject(`${methodLabel} Link — Maid for Chico`);
       setPendingTemplateBody(
-        `Hi ${firstName},\n\nAs requested, here is your secure ${paymentMethod === "ach" ? "ACH" : "credit card"} payment link:\n\nItemized Services:\n${itemizedLines}\n\nSubtotal: $${subtotal.toFixed(2)}\nDeposit Collected: -$${depositAmount.toFixed(2)}\nBalance Due: $${bal}\nProcessing Fee ${paymentMethod === "card" ? "(3%)" : "(0%)"}: $${fee}\nTotal to Pay: $${totalPay}\n\n👉 Pay Now: ${stripeData.checkoutUrl}\n\nThis link will expire in 24 hours. If you have any questions, feel free to reply to this email or call us at (530) 966-0752.\n\nThank you!\nBetty & the Maid for Chico Team`
+        `As requested, here is your secure ${paymentMethod === "ach" ? "ACH" : "credit card"} payment link:\n\nItemized Services:\n${itemizedLines}\n\nSubtotal: $${subtotal.toFixed(2)}\nDeposit Collected: -$${depositAmount.toFixed(2)}\nBalance Due: $${bal}\nProcessing Fee ${paymentMethod === "card" ? "(3%)" : "(0%)"}: $${fee}\nTotal to Pay: $${totalPay}\n\nThis link will expire in 24 hours. If you have any questions, feel free to reply to this email or call us at (530) 966-0752.\n\nThank you!\nBetty & the Maid for Chico Team`
       );
+      setPendingCtaUrl(stripeData.checkoutUrl);
+      setPendingCtaLabel(paymentMethod === "ach" ? "🏦 Pay by ACH" : "💳 Pay Here");
       setDialogTab("messages");
       toast({ title: `💳 ${methodLabel} ready!`, description: "Review the email in the Messages tab before sending." });
     } catch (err) {
