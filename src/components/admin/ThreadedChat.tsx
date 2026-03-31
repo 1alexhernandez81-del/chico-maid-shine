@@ -540,7 +540,7 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
                     }}
                     className="text-xs border border-input rounded-md px-2 py-1.5 bg-background"
                   >
-                    <option value="">Time</option>
+                    <option value="">{t("admin.template.time_label")}</option>
                     {Array.from({ length: 19 }, (_, i) => {
                       const hour = Math.floor(i / 2) + 8;
                       const min = i % 2 === 0 ? "00" : "30";
