@@ -186,7 +186,8 @@ const JobsBoard = ({ userRole = "admin" as UserRole, prefillJob }: { userRole?: 
       b.phone.includes(search);
     const matchesCleaner = cleanerFilter === "all" ||
       (Array.isArray(b.assigned_cleaners) && b.assigned_cleaners.includes(cleanerFilter));
-    return matchesStatus && matchesSearch && matchesCleaner;
+    const matchesPayment = paymentFilter === "all" || b.payment_status === paymentFilter;
+    return matchesStatus && matchesSearch && matchesCleaner && matchesPayment;
   });
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
