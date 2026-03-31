@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LogOut, Inbox, Briefcase, Users, Activity, UserCheck, Sparkles, Loader2, Clock } from "lucide-react";
@@ -25,6 +26,7 @@ const AdminDashboard = () => {
   const [prefillJob, setPrefillJob] = useState<PrefillJob>(null);
   const navigate = useNavigate();
   const { lang, toggleLang, t } = useLanguage();
+  const { toast } = useToast();
 
   const isAdmin = userRole === "admin";
 
@@ -52,6 +54,42 @@ const AdminDashboard = () => {
         });
     });
   }, []);
+
+  // Realtime: notify admin when a payment comes in
+  useEffect(() => {
+    if (!authorized) return;
+    const channel = supabase
+      .channel("payment-notifications")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "bookings" },
+        (payload) => {
+          const oldStatus = (payload.old as any)?.payment_status;
+          const newStatus = (payload.new as any)?.payment_status;
+          const name = (payload.new as any)?.name || "A customer";
+          const amount = (payload.new as any)?.total_paid;
+
+          if (oldStatus !== "paid" && newStatus === "paid") {
+            toast({
+              title: "💰 Payment Received!",
+              description: `${name} just paid${amount ? ` $${Number(amount).toFixed(2)}` : ""}. Job marked as completed.`,
+              duration: 10000,
+            });
+          } else if (oldStatus !== "partially_paid" && newStatus === "partially_paid") {
+            toast({
+              title: "💳 Partial Payment Received",
+              description: `${name} made a partial payment${amount ? ` ($${Number(amount).toFixed(2)} so far)` : ""}.`,
+              duration: 8000,
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [authorized, toast]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
