@@ -765,8 +765,29 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
               </div>
               {/* Email body */}
               <div className="border border-border rounded-lg p-6 bg-background min-h-[200px]">
-                <p className="whitespace-pre-wrap text-sm leading-relaxed">{previewMessage.body}</p>
+                <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                  {translations[`preview-${previewMessage.id}`] || previewMessage.body}
+                </p>
+                {translations[`preview-${previewMessage.id}`] && (
+                  <p className="text-[9px] text-muted-foreground italic mt-2">{t("admin.translate.auto")}</p>
+                )}
               </div>
+              {previewMessage.body && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-3 text-xs gap-1.5 text-muted-foreground hover:text-foreground"
+                  onClick={() => translateText(`preview-${previewMessage.id}`, previewMessage.body!)}
+                  disabled={translating[`preview-${previewMessage.id}`]}
+                >
+                  {translating[`preview-${previewMessage.id}`] ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Languages className="w-3 h-3" />
+                  )}
+                  {translations[`preview-${previewMessage.id}`] ? t("admin.translate.original") : t("admin.translate.btn")}
+                </Button>
+              )}
               {/* Footer */}
               <div className="text-center text-xs text-muted-foreground border-t border-border pt-3">
                 {previewMessage.direction === "inbound" ? "📥 Received" : "📧 Sent"} · {new Date(previewMessage.created_at).toLocaleString("en-US")}
