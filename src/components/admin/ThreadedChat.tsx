@@ -89,6 +89,10 @@ const ThreadedChat = ({ bookingId, bookingIds, customerId, customerName, custome
   const [pendingCtaUrl, setPendingCtaUrl] = useState<string>("");
   const [pendingCtaLabel, setPendingCtaLabel] = useState<string>("");
 
+  // Time slot picker for estimate-reschedule template
+  const [timeSlots, setTimeSlots] = useState<Array<{ date: string; time: string }>>([]);
+  const showTimeSlotPicker = activeTemplateId === "estimate-reschedule";
+
   // Translation
   const [translations, setTranslations] = useState<Record<string, string>>({});
   const [translating, setTranslating] = useState<Record<string, boolean>>({});
