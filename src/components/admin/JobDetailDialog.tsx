@@ -1194,7 +1194,9 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                   templates={getJobEmailTemplates()}
                   initialSubject={pendingTemplateSubject}
                   initialBody={pendingTemplateBody}
-                  onInitialConsumed={() => { setPendingTemplateSubject(""); setPendingTemplateBody(""); }}
+                  initialCtaUrl={pendingCtaUrl}
+                  initialCtaLabel={pendingCtaLabel}
+                  onInitialConsumed={() => { setPendingTemplateSubject(""); setPendingTemplateBody(""); setPendingCtaUrl(""); setPendingCtaLabel(""); }}
                 />
               </TabsContent>
             )}
