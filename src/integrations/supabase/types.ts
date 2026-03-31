@@ -543,6 +543,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      select_estimate_time: {
+        Args: { _date: string; _time: string; _token: string }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
