@@ -66,10 +66,15 @@ async function getAccessToken(serviceAccountJson: string): Promise<string> {
 
 // Map frequency to RRULE
 function frequencyToRRule(frequency: string): string {
+  // Handle "every-N-weeks" pattern (every-2-weeks, every-4-weeks, etc.)
+  const everyNMatch = frequency.match(/^every-(\d+)-weeks$/);
+  if (everyNMatch) {
+    const interval = parseInt(everyNMatch[1]);
+    return `RRULE:FREQ=WEEKLY;INTERVAL=${interval}`;
+  }
   switch (frequency) {
     case "weekly": return "RRULE:FREQ=WEEKLY";
     case "bi-weekly": return "RRULE:FREQ=WEEKLY;INTERVAL=2";
-    case "every-3-weeks": return "RRULE:FREQ=WEEKLY;INTERVAL=3";
     case "monthly": return "RRULE:FREQ=MONTHLY";
     default: return "RRULE:FREQ=WEEKLY";
   }
