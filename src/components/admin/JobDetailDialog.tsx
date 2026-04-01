@@ -512,7 +512,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
       status: newStatus,
       admin_notes: adminNotes,
       line_items: cleanItems,
-      total_price: total,
+      total_price: subtotal,
       invoice_url: invoiceUrl,
       assigned_cleaners: assignedCleanerIds,
       deposit_override: persistedDeposit,
