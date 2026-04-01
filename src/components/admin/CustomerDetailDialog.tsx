@@ -198,20 +198,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
     toast({ title: t("admin.cd.noteadded") });
   };
 
-  const computeNextServiceDate = (preferredDay: string) => {
-    const dayMap: Record<string, number> = {
-      sunday: 0, monday: 1, tuesday: 2, wednesday: 3,
-      thursday: 4, friday: 5, saturday: 6,
-    };
-    const target = dayMap[preferredDay.toLowerCase()];
-    const now = new Date();
-    const current = now.getDay();
-    let daysUntil = target - current;
-    if (daysUntil <= 0) daysUntil += 7;
-    const next = new Date(now);
-    next.setDate(now.getDate() + daysUntil);
-    return next.toISOString().split("T")[0];
-  };
+  const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
   const addSchedule = async () => {
     setAddingSchedule(true);
