@@ -819,6 +819,11 @@ const translations: Record<string, Record<Lang, string>> = {
   "admin.cd.savenotes": { en: "Save Notes", es: "Guardar Notas" },
   "admin.cd.activitylog": { en: "Activity Log", es: "Registro de Actividad" },
   "admin.cd.pervisit": { en: "/visit", es: "/visita" },
+  "admin.cd.calpreview": { en: "Calendar Preview", es: "Vista Previa del Calendario" },
+  "admin.cd.upcomingdates": { en: "Upcoming dates:", es: "Próximas fechas:" },
+  "admin.cd.confirmSend": { en: "✓ Confirm & Send Calendar Invite", es: "✓ Confirmar y Enviar Invitación" },
+  "admin.cd.confirmUpdate": { en: "✓ Confirm & Update Calendar", es: "✓ Confirmar y Actualizar Calendario" },
+  "admin.cd.back": { en: "Back", es: "Atrás" },
 
   // Calendar sync toasts
   "admin.cal.synced": { en: "Calendar Synced", es: "Calendario Sincronizado" },
