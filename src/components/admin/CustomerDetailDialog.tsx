@@ -201,13 +201,18 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
   const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
   const addSchedule = async () => {
+    if (!newSchedule.start_date) {
+      toast({ title: t("admin.error"), description: "Please select a start date", variant: "destructive" });
+      return;
+    }
     setAddingSchedule(true);
-    const nextDate = computeNextServiceDate(newSchedule.preferred_day);
+    const nextDate = format(newSchedule.start_date, "yyyy-MM-dd");
+    const preferredDay = dayNames[newSchedule.start_date.getDay()];
     const { error } = await supabase.from("recurring_schedules").insert({
       customer_id: customer.id,
       service_type: newSchedule.service_type,
       frequency: newSchedule.frequency,
-      preferred_day: newSchedule.preferred_day,
+      preferred_day: preferredDay,
       preferred_time: newSchedule.preferred_time,
       street: customer.street,
       city: customer.city,
