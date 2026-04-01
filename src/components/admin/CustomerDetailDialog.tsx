@@ -105,6 +105,17 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
     price: "",
   });
 
+  // Edit schedule
+  const [editingScheduleId, setEditingScheduleId] = useState<string | null>(null);
+  const [editSchedule, setEditSchedule] = useState({
+    service_type: "",
+    frequency: "",
+    start_date: null as Date | null,
+    preferred_time: "",
+    price: "",
+  });
+  const [savingSchedule, setSavingSchedule] = useState(false);
+
   // Generate 30-min time slots from 8:00 AM to 5:00 PM
   const timeSlots = Array.from({ length: 19 }, (_, i) => {
     const totalMinutes = 8 * 60 + i * 30;
