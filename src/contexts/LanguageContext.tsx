@@ -486,6 +486,7 @@ const translations: Record<string, Record<Lang, string>> = {
   "admin.job.add.required": { en: "Please fill in name, email, phone, address, and date", es: "Complete nombre, correo, teléfono, dirección y fecha" },
   "admin.job.lineitems": { en: "Line Items", es: "Partidas" },
   "admin.job.additem": { en: "Add Item", es: "Agregar Partida" },
+  "admin.job.preset.house_cleaning": { en: "House Cleaning", es: "Limpieza de Casa" },
   "admin.job.preset.deep_clean": { en: "Deep Clean", es: "Limpieza Profunda" },
   "admin.job.preset.kitchen": { en: "Kitchen", es: "Cocina" },
   "admin.job.preset.bathroom": { en: "Bathroom", es: "Baño" },
