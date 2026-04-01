@@ -863,9 +863,22 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                       </span>
                     )}
                   </label>
-                  <Button variant="ghost" size="sm" onClick={addLineItem} className="h-7 text-xs gap-1">
-                    <Plus className="w-3 h-3" /> {t("admin.job.additem")}
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    {JSON.stringify(lineItems) !== initialRef.current.lineItems && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={saveChanges}
+                        disabled={saving}
+                        className="h-7 text-xs gap-1 text-green-400 border-green-500/30 hover:bg-green-500/10"
+                      >
+                        {saving ? t("admin.bookings.saving") : t("admin.bookings.save")}
+                      </Button>
+                    )}
+                    <Button variant="ghost" size="sm" onClick={addLineItem} className="h-7 text-xs gap-1">
+                      <Plus className="w-3 h-3" /> {t("admin.job.additem")}
+                    </Button>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   {lineItems.map((item, i) => (
