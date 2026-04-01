@@ -97,7 +97,7 @@ const PickTime = () => {
 
     try {
       await supabase.functions.invoke("send-job-email", {
-        body: { bookingId: result.booking_id, type: "scheduled" },
+        body: { bookingId: result.booking_id, type: "estimate-confirmed" },
       });
     } catch (err) {
       console.error("Email notification error (non-blocking):", err);

@@ -241,6 +241,24 @@ Deno.serve(async (req) => {
         bodyText = `Great news — your cleaning request has been approved! 🎉\n\n🏠 Service: ${serviceLabel}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n💰 Price: ${total}\n\nWe'll be in touch shortly to schedule your cleaning date. If you have any questions, call us at (530) 966-0752.\n\nBetty & the Maid for Chico Team`;
         break;
       }
+      case "estimate-confirmed": {
+        const estDate = booking.estimate_date || booking.preferred_date;
+        const estTime = formatTime12(booking.estimate_time || booking.preferred_time);
+        subject = `Your In-Home Estimate is Confirmed — ${estDate}`;
+        bodyText = `Great news — your in-home estimate visit is confirmed!\n\n📅 Date: ${estDate}\n🕐 Time: ${estTime}\n📍 Address: ${booking.street}, ${booking.city}, CA ${booking.zip}\n\nOur team will stop by to take a quick look at your home and provide you with a personalized quote. This is NOT a cleaning appointment — just a quick visit so we can give you an accurate price.\n\n💡 Good to know: If you decide to move forward after the estimate, a 25% deposit is required to secure your cleaning date. Please send the deposit via Zelle to (530) 966-0752. Once received, we'll finalize your booking. The remaining balance is due on the day of your cleaning.\n\nIf you need to reschedule, just reply to this email or give us a call at (530) 966-0752.\n\nSee you soon!\nBetty & the Maid for Chico Team`;
+
+        recipients = Array.from(new Set([booking.email, "info@maidforchico.com"].filter(Boolean)));
+
+        const estInviteIcs = buildCalendarInviteIcs(booking);
+        if (estInviteIcs) {
+          attachments = [{
+            filename: "maid-for-chico-estimate.ics",
+            content: btoa(estInviteIcs),
+            contentType: "text/calendar; charset=utf-8; method=REQUEST",
+          }];
+        }
+        break;
+      }
       case "scheduled": {
         const schedDate = booking.scheduled_date || booking.preferred_date;
         const schedTime = formatTime12(booking.scheduled_time || booking.preferred_time);
