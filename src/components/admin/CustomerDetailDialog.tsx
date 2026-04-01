@@ -711,12 +711,45 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
                       placeholder="150"
                     />
                   </div>
-                  <div className="flex gap-2">
-                    <Button onClick={addSchedule} disabled={addingSchedule} className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90">
-                      {addingSchedule ? t("admin.cd.adding") : t("admin.cd.addschedule")}
-                    </Button>
-                    <Button variant="outline" onClick={() => setShowAddSchedule(false)}>{t("admin.cd.cancel")}</Button>
-                  </div>
+                  {showConfirmPreview === "add" && newSchedule.start_date ? (
+                    <div className="border border-accent/30 rounded-lg p-3 bg-accent/5 space-y-2">
+                      <p className="text-sm font-medium flex items-center gap-1.5">📅 Calendar Preview</p>
+                      <p className="text-xs text-muted-foreground">
+                        <span className="capitalize">{newSchedule.service_type.replace("-", " ")}</span> · {getFrequencyLabel(newSchedule.frequency)} · {formatTimeDisplay(newSchedule.preferred_time)}
+                        {newSchedule.price && <> · ${newSchedule.price}/visit</>}
+                      </p>
+                      <p className="text-xs font-medium mt-1">Upcoming dates:</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {getUpcomingDates(newSchedule.start_date, newSchedule.frequency).map((d, i) => (
+                          <Badge key={i} variant="outline" className="text-xs border-accent/40">
+                            {format(d, "EEE, MMM d, yyyy")}
+                          </Badge>
+                        ))}
+                      </div>
+                      <div className="flex gap-2 pt-1">
+                        <Button onClick={addSchedule} disabled={addingSchedule} className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90">
+                          {addingSchedule ? t("admin.cd.adding") : "✓ Confirm & Send Calendar Invite"}
+                        </Button>
+                        <Button variant="outline" onClick={() => setShowConfirmPreview(null)}>Back</Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => {
+                          if (!newSchedule.start_date) {
+                            toast({ title: t("admin.error"), description: "Please select a start date", variant: "destructive" });
+                            return;
+                          }
+                          setShowConfirmPreview("add");
+                        }}
+                        className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90"
+                      >
+                        {t("admin.cd.addschedule")}
+                      </Button>
+                      <Button variant="outline" onClick={() => { setShowAddSchedule(false); setShowConfirmPreview(null); }}>{t("admin.cd.cancel")}</Button>
+                    </div>
+                  )}
                 </div>
               )}
             </TabsContent>
