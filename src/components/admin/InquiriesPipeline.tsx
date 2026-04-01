@@ -137,6 +137,7 @@ const InquiriesPipeline = () => {
       setPendingTemplateSubject("");
       setPendingTemplateBody("");
       setDetailTab("details");
+      setDepositOverride(booking.deposit_override != null ? String(booking.deposit_override) : "");
       console.log("[InquiriesPipeline] openDetail completed successfully");
     } catch (err) {
       console.error("[InquiriesPipeline] openDetail error:", err);
