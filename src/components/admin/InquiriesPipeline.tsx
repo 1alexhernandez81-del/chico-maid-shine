@@ -460,7 +460,7 @@ const InquiriesPipeline = () => {
                   <CalendarCheck className="w-3.5 h-3.5" /> {t("admin.inquiry.estimatevisit")}
                 </TabsTrigger>
                 <TabsTrigger value="deposit" className="gap-1.5 text-xs">
-                  <DollarSign className="w-3.5 h-3.5" /> Collect Deposit
+                  <DollarSign className="w-3.5 h-3.5" /> {t("admin.deposit.tab")}
                 </TabsTrigger>
                 <TabsTrigger value="messages" className="gap-1.5 text-xs">
                   <MessageSquare className="w-3.5 h-3.5" /> {t("admin.inquiry.messages")}
@@ -789,20 +789,20 @@ const InquiriesPipeline = () => {
                       {/* Quote summary */}
                       <div className="p-4 rounded-lg border border-border bg-secondary/30 space-y-3">
                         <h4 className="text-sm font-medium flex items-center gap-2">
-                          <DollarSign className="w-4 h-4 text-emerald-400" /> Deposit Calculator
+                          <DollarSign className="w-4 h-4 text-emerald-400" /> {t("admin.deposit.calculator")}
                         </h4>
                         {quoteTotal <= 0 ? (
                           <div className="p-3 rounded border border-amber-500/30 bg-amber-500/5">
-                            <p className="text-sm text-amber-400">⚠️ No quote amount set. Enter a quote in the Estimate tab first, or enter a custom deposit below.</p>
+                            <p className="text-sm text-amber-400">⚠️ {t("admin.deposit.noquote")}</p>
                           </div>
                         ) : (
                           <div className="space-y-2 text-sm">
                             <div className="flex items-center justify-between">
-                              <span className="text-muted-foreground">Quote Total</span>
+                              <span className="text-muted-foreground">{t("admin.deposit.quotetotal")}</span>
                               <span className="font-medium">${quoteTotal.toFixed(2)}</span>
                             </div>
                             <div className="flex items-center justify-between">
-                              <span className="text-muted-foreground">25% Deposit</span>
+                              <span className="text-muted-foreground">{t("admin.deposit.25pct")}</span>
                               <span className="font-medium">${defaultDep.toFixed(2)}</span>
                             </div>
                           </div>
@@ -810,7 +810,7 @@ const InquiriesPipeline = () => {
 
                         {/* Editable deposit amount */}
                         <div className="pt-2 border-t border-border">
-                          <label className="text-xs uppercase tracking-wider text-muted-foreground mb-1.5 block">Custom Deposit Amount</label>
+                          <label className="text-xs uppercase tracking-wider text-muted-foreground mb-1.5 block">{t("admin.deposit.customamt")}</label>
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium">$</span>
                             <Input
@@ -828,12 +828,12 @@ const InquiriesPipeline = () => {
                                 className="h-8 text-xs text-muted-foreground"
                                 onClick={() => setDepositOverride("")}
                               >
-                                Reset
+                                {t("admin.deposit.reset")}
                               </Button>
                             )}
                           </div>
                           {depositOverride !== "" && parseFloat(depositOverride) !== defaultDep && (
-                            <p className="text-xs text-amber-400/80 mt-1">Custom amount overrides the default 25%</p>
+                            <p className="text-xs text-amber-400/80 mt-1">{t("admin.deposit.customoverride")}</p>
                           )}
                         </div>
                       </div>
@@ -841,18 +841,18 @@ const InquiriesPipeline = () => {
                       {/* Payment breakdown */}
                       {effectiveDeposit > 0 && (
                         <div className="p-4 rounded-lg border border-emerald-500/30 bg-emerald-500/5 space-y-3">
-                          <h4 className="text-sm font-medium text-emerald-400">Payment Breakdown</h4>
+                          <h4 className="text-sm font-medium text-emerald-400">{t("admin.deposit.breakdown")}</h4>
                           <div className="space-y-1.5 text-sm">
                             <div className="flex items-center justify-between">
-                              <span className="text-muted-foreground">Deposit</span>
+                              <span className="text-muted-foreground">{t("admin.deposit.deposit")}</span>
                               <span>${effectiveDeposit.toFixed(2)}</span>
                             </div>
                             <div className="flex items-center justify-between">
-                              <span className="text-muted-foreground">CC Processing Fee (3%)</span>
+                              <span className="text-muted-foreground">{t("admin.deposit.ccfee")}</span>
                               <span>${ccFee.toFixed(2)}</span>
                             </div>
                             <div className="flex items-center justify-between border-t border-border pt-2 font-semibold">
-                              <span>Customer Pays</span>
+                              <span>{t("admin.deposit.customerpays")}</span>
                               <span>${customerTotal.toFixed(2)}</span>
                             </div>
                           </div>
@@ -861,14 +861,14 @@ const InquiriesPipeline = () => {
 
                       {/* Payment options */}
                       <div className="space-y-3">
-                        <h4 className="text-xs uppercase tracking-wider text-muted-foreground">Payment Options</h4>
+                        <h4 className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.deposit.paymentoptions")}</h4>
                         
                         {/* Zelle info */}
                         <div className="p-3 rounded-lg border border-purple-500/30 bg-purple-500/5">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm font-medium text-purple-400">✅ Zelle (preferred — no fees)</span>
+                            <span className="text-sm font-medium text-purple-400">✅ {t("admin.deposit.zelle")}</span>
                           </div>
-                          <p className="text-xs text-muted-foreground">Customer sends ${effectiveDeposit.toFixed(2)} to (530) 966-0752</p>
+                          <p className="text-xs text-muted-foreground">{t("admin.deposit.zellesend")} ${effectiveDeposit.toFixed(2)} {t("admin.deposit.zelleto")} (530) 966-0752</p>
                         </div>
 
                         {/* CC link button */}
@@ -889,20 +889,20 @@ const InquiriesPipeline = () => {
                           }}
                         >
                           <CreditCard className="w-4 h-4" />
-                          {sendingDepositLink ? "Creating link..." : `Send CC Deposit Link ($${customerTotal.toFixed(2)})`}
+                          {sendingDepositLink ? t("admin.deposit.creatinglink") : `${t("admin.deposit.sendcclink")} ($${customerTotal.toFixed(2)})`}
                         </Button>
                       </div>
 
                       {/* Move to Approved */}
                       <div className="border-t border-border pt-4">
-                        <p className="text-xs text-muted-foreground mb-3">Once deposit is collected (via Zelle or CC), move this inquiry to approved:</p>
+                        <p className="text-xs text-muted-foreground mb-3">{t("admin.deposit.moveapproved")}</p>
                         <Button
                           onClick={() => updateStatus("approved")}
                           disabled={saving}
                           className="w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90"
                         >
                           <CheckCircle className="w-4 h-4" />
-                          Deposit Collected — Move to Approved
+                          {t("admin.deposit.collected")}
                         </Button>
                       </div>
                     </>

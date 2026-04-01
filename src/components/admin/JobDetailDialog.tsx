@@ -67,7 +67,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
   const fileInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   const isAdmin = userRole === "admin";
 
@@ -1276,7 +1276,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                       className="gap-1.5 text-xs bg-green-600 hover:bg-green-700 text-white"
                     >
                       <CreditCard className="w-3 h-3" />
-                      {sendingEmail === "deposit-payment" ? t("admin.job.sending") : "Send Deposit CC Link"}
+                      {sendingEmail === "deposit-payment" ? t("admin.job.sending") : t("admin.deposit.sendcclink")}
                     </Button>
                   </div>
                 )}
@@ -1341,7 +1341,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                 <span>${subtotal.toFixed(2)}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Deposit collected</span>
+                <span className="text-muted-foreground">{t("admin.job.deposit")}</span>
                 <span>-${depositAmount.toFixed(2)}</span>
               </div>
               <div className="flex items-center justify-between">
@@ -1386,35 +1386,35 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
       <AlertDialog open={showDepositConfirm} onOpenChange={setShowDepositConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>💳 Send Deposit CC Link</AlertDialogTitle>
+            <AlertDialogTitle>💳 {t("admin.deposit.sendcclink")}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will create a Stripe payment link for the 25% deposit and prepare an email draft.
+              {lang === "es" ? "Esto creará un enlace de pago de Stripe para el depósito del 25% y preparará un borrador de correo." : "This will create a Stripe payment link for the 25% deposit and prepare an email draft."}
             </AlertDialogDescription>
           </AlertDialogHeader>
 
           <div className="space-y-2 rounded-md border border-border bg-secondary/20 p-3 text-sm">
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Subtotal</span>
+                <span className="text-muted-foreground">{t("admin.job.subtotal")}</span>
                 <span>${subtotal.toFixed(2)}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">25% Deposit</span>
+                <span className="text-muted-foreground">{t("admin.deposit.25pct")}</span>
                 <span>${depositAmount.toFixed(2)}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">CC Processing Fee (3%)</span>
+                <span className="text-muted-foreground">{t("admin.deposit.ccfee")}</span>
                 <span>${(Math.round(depositAmount * 0.03 * 100) / 100).toFixed(2)}</span>
               </div>
               <div className="flex items-center justify-between border-t border-border pt-2 font-semibold">
-                <span>Customer pays</span>
+                <span>{t("admin.deposit.customerpays")}</span>
                 <span>${(depositAmount + Math.round(depositAmount * 0.03 * 100) / 100).toFixed(2)}</span>
               </div>
             </div>
           </div>
 
           <AlertDialogFooter>
-            <AlertDialogCancel>Back</AlertDialogCancel>
+            <AlertDialogCancel>{lang === "es" ? "Volver" : "Back"}</AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
                 setShowDepositConfirm(false);
