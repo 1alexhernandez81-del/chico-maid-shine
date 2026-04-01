@@ -833,7 +833,7 @@ const InquiriesPipeline = () => {
                             )}
                           </div>
                           {depositOverride !== "" && parseFloat(depositOverride) !== defaultDep && (
-                            <p className="text-xs text-amber-400/80 mt-1">Custom amount overrides the default 25%</p>
+                            <p className="text-xs text-amber-400/80 mt-1">{t("admin.deposit.customoverride")}</p>
                           )}
                         </div>
                       </div>
