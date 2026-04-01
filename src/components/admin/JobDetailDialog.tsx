@@ -234,7 +234,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
     } else {
       toast({ title: t("admin.bookings.updated"), description: t("admin.job.info.updated") });
       setEditingInfo(false);
-      onUpdated({ ...booking, ...editInfo, status: newStatus, admin_notes: adminNotes, line_items: lineItems, total_price: total });
+      onUpdated({ ...booking, ...editInfo, status: newStatus, admin_notes: adminNotes, line_items: lineItems, total_price: subtotal });
     }
     setSavingInfo(false);
   };
@@ -500,11 +500,12 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
     const cleanItems = lineItems.filter((item) => item.description.trim() !== "");
     const statusChanged = newStatus !== booking.status;
     const isNewlyApproved = statusChanged && newStatus === "approved";
-    const isNewlyScheduled = statusChanged && newStatus === "scheduled";
+    // Treat as newly scheduled if status changed OR if explicitly sending scheduled email
+    const isNewlyScheduled = (statusChanged && newStatus === "scheduled") || (opts.sendScheduledEmail && newStatus === "scheduled");
     const isNewlyCompleted = statusChanged && newStatus === "completed";
     const isNewlyCancelled = statusChanged && newStatus === "cancelled";
     const isRescheduled = booking.status === "scheduled" && newStatus === "scheduled" &&
-      (scheduledDate !== booking.scheduled_date || scheduledTime !== booking.scheduled_time);
+      (scheduledDate !== booking.scheduled_date || scheduledTime !== booking.scheduled_time) && !opts.sendScheduledEmail;
 
     const persistedDeposit = customDeposit ?? (booking.deposit_override ?? null);
 
@@ -512,7 +513,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
       status: newStatus,
       admin_notes: adminNotes,
       line_items: cleanItems,
-      total_price: total,
+      total_price: subtotal,
       invoice_url: invoiceUrl,
       assigned_cleaners: assignedCleanerIds,
       deposit_override: persistedDeposit,
@@ -863,9 +864,22 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                       </span>
                     )}
                   </label>
-                  <Button variant="ghost" size="sm" onClick={addLineItem} className="h-7 text-xs gap-1">
-                    <Plus className="w-3 h-3" /> {t("admin.job.additem")}
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    {JSON.stringify(lineItems) !== initialRef.current.lineItems && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={saveChanges}
+                        disabled={saving}
+                        className="h-7 text-xs gap-1 text-green-400 border-green-500/30 hover:bg-green-500/10"
+                      >
+                        {saving ? t("admin.bookings.saving") : t("admin.bookings.save")}
+                      </Button>
+                    )}
+                    <Button variant="ghost" size="sm" onClick={addLineItem} className="h-7 text-xs gap-1">
+                      <Plus className="w-3 h-3" /> {t("admin.job.additem")}
+                    </Button>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   {lineItems.map((item, i) => (
@@ -1055,6 +1069,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                   {scheduledDate && scheduledTime && (
                     <Button
                       onClick={() => {
+                        setNewStatus("scheduled");
                         setShowScheduleConfirm(true);
                       }}
                       disabled={saving || sendingEmail !== null}
