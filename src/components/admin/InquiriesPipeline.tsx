@@ -861,7 +861,7 @@ const InquiriesPipeline = () => {
 
                       {/* Payment options */}
                       <div className="space-y-3">
-                        <h4 className="text-xs uppercase tracking-wider text-muted-foreground">Payment Options</h4>
+                        <h4 className="text-xs uppercase tracking-wider text-muted-foreground">{t("admin.deposit.paymentoptions")}</h4>
                         
                         {/* Zelle info */}
                         <div className="p-3 rounded-lg border border-purple-500/30 bg-purple-500/5">
