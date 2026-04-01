@@ -895,14 +895,14 @@ const InquiriesPipeline = () => {
 
                       {/* Move to Approved */}
                       <div className="border-t border-border pt-4">
-                        <p className="text-xs text-muted-foreground mb-3">Once deposit is collected (via Zelle or CC), move this inquiry to approved:</p>
+                        <p className="text-xs text-muted-foreground mb-3">{t("admin.deposit.moveapproved")}</p>
                         <Button
                           onClick={() => updateStatus("approved")}
                           disabled={saving}
                           className="w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90"
                         >
                           <CheckCircle className="w-4 h-4" />
-                          Deposit Collected — Move to Approved
+                          {t("admin.deposit.collected")}
                         </Button>
                       </div>
                     </>
