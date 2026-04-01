@@ -956,6 +956,96 @@ const InquiriesPipeline = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Deposit CC Link Confirmation */}
+      {selected && (
+        <AlertDialog open={showDepositConfirm} onOpenChange={setShowDepositConfirm}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>💳 Send Deposit CC Link</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will create a Stripe payment link for the deposit and prepare an email draft.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+
+            {(() => {
+              const quoteTotal = selected.total_price || (quoteAmount ? parseFloat(quoteAmount) : 0);
+              const defaultDep = quoteTotal > 0 ? quoteTotal * 0.25 : 0;
+              const customDep = depositOverride !== "" ? parseFloat(depositOverride) : null;
+              const effectiveDeposit = customDep !== null && !isNaN(customDep) ? customDep : defaultDep;
+              const ccFee = Math.round(effectiveDeposit * 0.03 * 100) / 100;
+              const customerTotal = effectiveDeposit + ccFee;
+
+              return (
+                <div className="space-y-2 rounded-md border border-border bg-secondary/20 p-3 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Deposit</span>
+                    <span>${effectiveDeposit.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">CC Processing Fee (3%)</span>
+                    <span>${ccFee.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-border pt-2 font-semibold">
+                    <span>Customer pays</span>
+                    <span>${customerTotal.toFixed(2)}</span>
+                  </div>
+                </div>
+              );
+            })()}
+
+            <AlertDialogFooter>
+              <AlertDialogCancel>Back</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  setShowDepositConfirm(false);
+                  setSendingDepositLink(true);
+
+                  try {
+                    const { data, error } = await supabase.functions.invoke("create-deposit-payment", {
+                      body: { bookingId: selected.id },
+                    });
+
+                    const stripeData = typeof data === "string"
+                      ? (() => { try { return JSON.parse(data); } catch { return null; } })()
+                      : data;
+
+                    if (error) throw new Error((error as any)?.message || "Failed to create deposit link");
+                    if (!stripeData?.checkoutUrl) throw new Error(stripeData?.error || "Payment link not returned");
+
+                    const firstName = (selected.name ?? "").trim().split(/\s+/)[0] || "there";
+                    const depAmt = Number(stripeData.depositAmount || 0).toFixed(2);
+                    const fee = Number(stripeData.fee || 0).toFixed(2);
+                    const totalPay = Number(stripeData.totalWithFee || 0).toFixed(2);
+
+                    setPendingTemplateSubject("Deposit Payment Link — Maid for Chico");
+                    setPendingTemplateBody(
+                      `Hi ${firstName},\n\nThank you for approving your cleaning quote! To secure your appointment, please submit your 25% deposit using the link below.\n\nDeposit Amount: $${depAmt}\nCC Processing Fee (3%): $${fee}\nTotal to Pay: $${totalPay}\n\nThis link will expire in 24 hours. If you have any questions, feel free to reply to this email or call us at (530) 966-0752.\n\nThank you!\nBetty & the Maid for Chico Team`
+                    );
+                    setDetailTab("messages");
+                    toast({ title: "💳 Deposit link ready!", description: "Review the email in the Messages tab before sending." });
+                  } catch (err) {
+                    const message = err instanceof Error ? err.message : "Failed to create deposit link";
+                    console.error("Deposit link error:", err);
+                    toast({ title: t("admin.error"), description: message, variant: "destructive" });
+                  }
+
+                  setSendingDepositLink(false);
+                }}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                {sendingDepositLink ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> Creating...
+                  </span>
+                ) : (
+                  "Create Deposit Link"
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+
       {/* Estimate Invite Approval */}
       <AlertDialog open={showInviteApproval} onOpenChange={(open) => {
         if (!open) {
