@@ -1386,9 +1386,9 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
       <AlertDialog open={showDepositConfirm} onOpenChange={setShowDepositConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>💳 Send Deposit CC Link</AlertDialogTitle>
+            <AlertDialogTitle>💳 {t("admin.deposit.sendcclink")}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will create a Stripe payment link for the 25% deposit and prepare an email draft.
+              {lang === "es" ? "Esto creará un enlace de pago de Stripe para el depósito del 25% y preparará un borrador de correo." : "This will create a Stripe payment link for the 25% deposit and prepare an email draft."}
             </AlertDialogDescription>
           </AlertDialogHeader>
 
