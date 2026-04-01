@@ -431,6 +431,49 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
     setSendingEmail(null);
   };
 
+  const prepareDepositEmailDraft = async () => {
+    setSendingEmail("deposit-payment");
+
+    try {
+      const { data, error } = await supabase.functions.invoke("create-deposit-payment", {
+        body: { bookingId: booking.id },
+      });
+
+      const stripeData = typeof data === "string"
+        ? (() => { try { return JSON.parse(data); } catch { return null; } })()
+        : data;
+
+      if (error) {
+        const message = (error as any)?.message || "Failed to create deposit payment link";
+        throw new Error(message);
+      }
+
+      if (!stripeData?.checkoutUrl) {
+        throw new Error(stripeData?.error || "Payment link was not returned");
+      }
+
+      const firstName = (booking.name ?? "").trim().split(/\s+/)[0] || "there";
+      const depAmt = Number(stripeData.depositAmount || 0).toFixed(2);
+      const fee = Number(stripeData.fee || 0).toFixed(2);
+      const totalPay = Number(stripeData.totalWithFee || 0).toFixed(2);
+
+      setPendingTemplateSubject("Deposit Payment Link — Maid for Chico");
+      setPendingTemplateBody(
+        `Hi ${firstName},\n\nThank you for approving your cleaning quote! To secure your appointment, please submit your 25% deposit using the link below.\n\nDeposit Amount: $${depAmt}\nCC Processing Fee (3%): $${fee}\nTotal to Pay: $${totalPay}\n\nThis link will expire in 24 hours. If you have any questions, feel free to reply to this email or call us at (530) 966-0752.\n\nThank you!\nBetty & the Maid for Chico Team`
+      );
+      setPendingCtaUrl(stripeData.checkoutUrl);
+      setPendingCtaLabel("💳 Pay Deposit");
+      setDialogTab("messages");
+      toast({ title: "💳 Deposit link ready!", description: "Review the email in the Messages tab before sending." });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to create deposit link";
+      console.error("Deposit payment draft error:", err);
+      toast({ title: t("admin.error"), description: message, variant: "destructive" });
+    }
+
+    setSendingEmail(null);
+  };
+
   const handleSendEmail = async (type: "quote" | "receipt" | "invoice") => {
     // For invoice and receipt, show preview dialog first
     if (type === "invoice" || type === "receipt") {
