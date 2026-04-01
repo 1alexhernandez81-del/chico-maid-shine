@@ -798,7 +798,7 @@ const InquiriesPipeline = () => {
                         ) : (
                           <div className="space-y-2 text-sm">
                             <div className="flex items-center justify-between">
-                              <span className="text-muted-foreground">Quote Total</span>
+                              <span className="text-muted-foreground">{t("admin.deposit.quotetotal")}</span>
                               <span className="font-medium">${quoteTotal.toFixed(2)}</span>
                             </div>
                             <div className="flex items-center justify-between">
