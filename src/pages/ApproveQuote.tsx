@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { CheckCircle2, Loader2, AlertCircle, DollarSign } from "lucide-react";
+import { CheckCircle2, Loader2, AlertCircle, DollarSign, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const ApproveQuote = () => {
@@ -10,6 +10,7 @@ const ApproveQuote = () => {
   const [status, setStatus] = useState<"loading" | "found" | "approved" | "already" | "expired" | "error">("loading");
   const [booking, setBooking] = useState<any>(null);
   const [approving, setApproving] = useState(false);
+  const [creatingPayment, setCreatingPayment] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -59,10 +60,36 @@ const ApproveQuote = () => {
     setApproving(false);
   };
 
+  const handlePayDeposit = async () => {
+    setCreatingPayment(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-deposit-payment", {
+        body: { token },
+      });
+
+      const stripeData = typeof data === "string"
+        ? (() => { try { return JSON.parse(data); } catch { return null; } })()
+        : data;
+
+      if (error || !stripeData?.checkoutUrl) {
+        throw new Error(stripeData?.error || "Failed to create payment link");
+      }
+
+      window.location.href = stripeData.checkoutUrl;
+    } catch (err) {
+      console.error("Payment link error:", err);
+      setCreatingPayment(false);
+    }
+  };
+
   const formatPrice = (price: number | null) => {
     if (!price) return null;
     return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(price);
   };
+
+  const depositAmount = booking?.total_price ? booking.total_price * 0.25 : 0;
+  const ccFee = Math.round(depositAmount * 0.03 * 100) / 100;
+  const depositWithFee = depositAmount + ccFee;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a1a1a] to-[#0d0d0d] flex items-center justify-center p-4">
@@ -147,11 +174,24 @@ const ApproveQuote = () => {
               </div>
             </div>
 
+            {/* Deposit info */}
+            {booking.total_price && (
+              <div className="bg-secondary/50 rounded-xl p-4 text-left space-y-2 text-sm border border-border">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">25% Deposit Required</p>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Deposit</span>
+                  <span className="font-medium">{formatPrice(depositAmount)}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">The remaining balance is due on the day of your cleaning.</p>
+              </div>
+            )}
+
             {/* Disclaimer */}
             <p className="text-xs text-amber-300/80 text-left leading-relaxed">
-              ⚠️ This is an estimate and is subject to change depending on additional services requested or removed at the time of cleaning. A 25% deposit is required to secure your cleaning date.
+              ⚠️ This is an estimate and is subject to change depending on additional services requested or removed at the time of cleaning.
             </p>
 
+            {/* Approve button */}
             <Button
               onClick={handleApprove}
               disabled={approving}
@@ -160,7 +200,7 @@ const ApproveQuote = () => {
               {approving ? (
                 <><Loader2 className="w-5 h-5 animate-spin mr-2" /> Approving...</>
               ) : (
-                "✅ Approve Estimate & Book Cleaning"
+                "✅ Approve Estimate"
               )}
             </Button>
 
@@ -180,8 +220,8 @@ const ApproveQuote = () => {
               </h2>
               <p className="text-muted-foreground text-sm mt-2">
                 {status === "approved"
-                  ? `Thanks ${booking.name}! Your estimate has been approved. We'll be in touch shortly to collect the deposit and schedule your cleaning!`
-                  : `This estimate was already approved. We'll be in touch to finalize your cleaning date!`}
+                  ? `Thanks ${booking.name}! Your estimate has been approved. Secure your spot by paying the deposit below.`
+                  : `This estimate was already approved. You can still pay your deposit below if you haven't already.`}
               </p>
             </div>
 
@@ -192,16 +232,49 @@ const ApproveQuote = () => {
               </div>
             )}
 
-            <div className="bg-secondary/50 rounded-xl p-4 text-left space-y-2.5 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">🏠 Service</span>
-                <span className="font-medium text-foreground capitalize">{(booking.service_type || "").replace("-", " ")}</span>
+            {/* Payment Options */}
+            {booking.total_price && depositAmount > 0 && (
+              <div className="space-y-4">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">Pay Your 25% Deposit</p>
+                
+                {/* Deposit breakdown */}
+                <div className="bg-secondary/50 rounded-xl p-4 text-left space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Deposit (25%)</span>
+                    <span className="font-medium">{formatPrice(depositAmount)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">CC processing fee (3%)</span>
+                    <span>{formatPrice(ccFee)}</span>
+                  </div>
+                  <div className="flex justify-between border-t border-border pt-2 font-semibold">
+                    <span>Total</span>
+                    <span>{formatPrice(depositWithFee)}</span>
+                  </div>
+                </div>
+
+                {/* Pay with CC */}
+                <Button
+                  onClick={handlePayDeposit}
+                  disabled={creatingPayment}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-5 text-base font-semibold rounded-xl gap-2"
+                >
+                  {creatingPayment ? (
+                    <><Loader2 className="w-5 h-5 animate-spin" /> Creating payment link...</>
+                  ) : (
+                    <><CreditCard className="w-5 h-5" /> 💳 Pay Deposit — {formatPrice(depositWithFee)}</>
+                  )}
+                </Button>
+
+                {/* Zelle option */}
+                <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4 text-left">
+                  <p className="text-sm font-medium text-purple-400 mb-1">✅ Pay by Zelle (no fees!)</p>
+                  <p className="text-xs text-muted-foreground">
+                    Send <span className="font-semibold text-foreground">{formatPrice(depositAmount)}</span> via Zelle to <span className="font-semibold text-foreground">(530) 966-0752</span>
+                  </p>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">📍 Address</span>
-                <span className="font-medium text-foreground text-right">{booking.street}, {booking.city}</span>
-              </div>
-            </div>
+            )}
 
             <div className="border-t border-border pt-4">
               <p className="text-muted-foreground text-sm">
