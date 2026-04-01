@@ -460,7 +460,7 @@ const InquiriesPipeline = () => {
                   <CalendarCheck className="w-3.5 h-3.5" /> {t("admin.inquiry.estimatevisit")}
                 </TabsTrigger>
                 <TabsTrigger value="deposit" className="gap-1.5 text-xs">
-                  <DollarSign className="w-3.5 h-3.5" /> Collect Deposit
+                  <DollarSign className="w-3.5 h-3.5" /> {t("admin.deposit.tab")}
                 </TabsTrigger>
                 <TabsTrigger value="messages" className="gap-1.5 text-xs">
                   <MessageSquare className="w-3.5 h-3.5" /> {t("admin.inquiry.messages")}

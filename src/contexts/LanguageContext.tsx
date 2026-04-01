@@ -908,6 +908,28 @@ const translations: Record<string, Record<Lang, string>> = {
   "admin.job.clone": { en: "Clone Job", es: "Clonar Trabajo" },
   "admin.job.info.updated": { en: "Customer info updated on this job", es: "Info del cliente actualizada en este trabajo" },
   "admin.cd.createjob": { en: "Create Job", es: "Crear Trabajo" },
+
+  // Collect Deposit tab
+  "admin.deposit.tab": { en: "Collect Deposit", es: "Cobrar Depósito" },
+  "admin.deposit.calculator": { en: "Deposit Calculator", es: "Calculadora de Depósito" },
+  "admin.deposit.noquote": { en: "No quote amount set. Enter a quote in the Estimate tab first, or enter a custom deposit below.", es: "No se ha establecido monto de cotización. Ingrese una cotización en la pestaña Estimado primero, o ingrese un depósito personalizado abajo." },
+  "admin.deposit.quotetotal": { en: "Quote Total", es: "Total de Cotización" },
+  "admin.deposit.25pct": { en: "25% Deposit", es: "Depósito 25%" },
+  "admin.deposit.customamt": { en: "Custom Deposit Amount", es: "Monto de Depósito Personalizado" },
+  "admin.deposit.reset": { en: "Reset", es: "Restablecer" },
+  "admin.deposit.customoverride": { en: "Custom amount overrides the default 25%", es: "El monto personalizado reemplaza el 25% predeterminado" },
+  "admin.deposit.breakdown": { en: "Payment Breakdown", es: "Desglose de Pago" },
+  "admin.deposit.deposit": { en: "Deposit", es: "Depósito" },
+  "admin.deposit.ccfee": { en: "CC Processing Fee (3%)", es: "Tarifa de Procesamiento CC (3%)" },
+  "admin.deposit.customerpays": { en: "Customer Pays", es: "El Cliente Paga" },
+  "admin.deposit.paymentoptions": { en: "Payment Options", es: "Opciones de Pago" },
+  "admin.deposit.zelle": { en: "Zelle (preferred — no fees)", es: "Zelle (preferido — sin cargos)" },
+  "admin.deposit.zellesend": { en: "Customer sends", es: "El cliente envía" },
+  "admin.deposit.zelleto": { en: "to", es: "a" },
+  "admin.deposit.sendcclink": { en: "Send CC Deposit Link", es: "Enviar Enlace de Depósito CC" },
+  "admin.deposit.creatinglink": { en: "Creating link...", es: "Creando enlace..." },
+  "admin.deposit.moveapproved": { en: "Once deposit is collected (via Zelle or CC), move this inquiry to approved:", es: "Una vez cobrado el depósito (vía Zelle o CC), mover esta consulta a aprobada:" },
+  "admin.deposit.collected": { en: "Deposit Collected — Move to Approved", es: "Depósito Cobrado — Mover a Aprobado" },
 };
 
 const fallbackLanguageContext: LanguageContextType = {
