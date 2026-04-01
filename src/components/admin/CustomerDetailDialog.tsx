@@ -116,6 +116,39 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
   });
   const [savingSchedule, setSavingSchedule] = useState(false);
 
+  // Confirmation preview
+  const [showConfirmPreview, setShowConfirmPreview] = useState<"add" | "edit" | null>(null);
+
+  const getUpcomingDates = (startDate: Date, frequency: string, count: number = 5): Date[] => {
+    const dates: Date[] = [new Date(startDate)];
+    for (let i = 1; i < count; i++) {
+      const prev = new Date(dates[i - 1]);
+      const everyN = frequency.match(/^every-(\d+)-weeks$/);
+      if (everyN) {
+        prev.setDate(prev.getDate() + parseInt(everyN[1]) * 7);
+      } else if (frequency === "weekly") {
+        prev.setDate(prev.getDate() + 7);
+      } else if (frequency === "bi-weekly") {
+        prev.setDate(prev.getDate() + 14);
+      } else if (frequency === "monthly") {
+        prev.setMonth(prev.getMonth() + 1);
+      } else {
+        prev.setDate(prev.getDate() + 7);
+      }
+      dates.push(prev);
+    }
+    return dates;
+  };
+
+  const getFrequencyLabel = (freq: string) => {
+    const m = freq.match(/^every-(\d+)-weeks$/);
+    if (m) return t("admin.cd.everyXweeks").replace("{x}", m[1]);
+    if (freq === "weekly") return t("admin.cd.weekly");
+    if (freq === "bi-weekly") return t("admin.cd.everyXweeks").replace("{x}", "2");
+    if (freq === "monthly") return t("admin.cd.monthly");
+    return freq.replace("-", " ");
+  };
+
   // Generate 30-min time slots from 8:00 AM to 5:00 PM
   const timeSlots = Array.from({ length: 19 }, (_, i) => {
     const totalMinutes = 8 * 60 + i * 30;
@@ -550,12 +583,45 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
                           placeholder="150"
                         />
                       </div>
-                      <div className="flex gap-2">
-                        <Button onClick={saveScheduleEdit} disabled={savingSchedule} className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 gap-1.5">
-                          <Save className="w-3.5 h-3.5" /> {savingSchedule ? t("admin.cd.saving") : t("admin.cd.save")}
-                        </Button>
-                        <Button variant="outline" onClick={() => setEditingScheduleId(null)}>{t("admin.cd.cancel")}</Button>
-                      </div>
+                      {showConfirmPreview === "edit" && editSchedule.start_date ? (
+                        <div className="border border-accent/30 rounded-lg p-3 bg-accent/5 space-y-2">
+                          <p className="text-sm font-medium flex items-center gap-1.5">📅 Calendar Preview</p>
+                          <p className="text-xs text-muted-foreground">
+                            <span className="capitalize">{editSchedule.service_type.replace("-", " ")}</span> · {getFrequencyLabel(editSchedule.frequency)} · {formatTimeDisplay(editSchedule.preferred_time)}
+                            {editSchedule.price && <> · ${editSchedule.price}/visit</>}
+                          </p>
+                          <p className="text-xs font-medium mt-1">Upcoming dates:</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {getUpcomingDates(editSchedule.start_date, editSchedule.frequency).map((d, i) => (
+                              <Badge key={i} variant="outline" className="text-xs border-accent/40">
+                                {format(d, "EEE, MMM d, yyyy")}
+                              </Badge>
+                            ))}
+                          </div>
+                          <div className="flex gap-2 pt-1">
+                            <Button onClick={saveScheduleEdit} disabled={savingSchedule} className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 gap-1.5">
+                              <Save className="w-3.5 h-3.5" /> {savingSchedule ? t("admin.cd.saving") : "✓ Confirm & Update Calendar"}
+                            </Button>
+                            <Button variant="outline" onClick={() => setShowConfirmPreview(null)}>Back</Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => {
+                              if (!editSchedule.start_date) {
+                                toast({ title: t("admin.error"), description: "Please select a start date", variant: "destructive" });
+                                return;
+                              }
+                              setShowConfirmPreview("edit");
+                            }}
+                            className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 gap-1.5"
+                          >
+                            <Save className="w-3.5 h-3.5" /> {t("admin.cd.save")}
+                          </Button>
+                          <Button variant="outline" onClick={() => { setEditingScheduleId(null); setShowConfirmPreview(null); }}>{t("admin.cd.cancel")}</Button>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     /* ── Display Mode ── */
@@ -678,12 +744,45 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
                       placeholder="150"
                     />
                   </div>
-                  <div className="flex gap-2">
-                    <Button onClick={addSchedule} disabled={addingSchedule} className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90">
-                      {addingSchedule ? t("admin.cd.adding") : t("admin.cd.addschedule")}
-                    </Button>
-                    <Button variant="outline" onClick={() => setShowAddSchedule(false)}>{t("admin.cd.cancel")}</Button>
-                  </div>
+                  {showConfirmPreview === "add" && newSchedule.start_date ? (
+                    <div className="border border-accent/30 rounded-lg p-3 bg-accent/5 space-y-2">
+                      <p className="text-sm font-medium flex items-center gap-1.5">📅 Calendar Preview</p>
+                      <p className="text-xs text-muted-foreground">
+                        <span className="capitalize">{newSchedule.service_type.replace("-", " ")}</span> · {getFrequencyLabel(newSchedule.frequency)} · {formatTimeDisplay(newSchedule.preferred_time)}
+                        {newSchedule.price && <> · ${newSchedule.price}/visit</>}
+                      </p>
+                      <p className="text-xs font-medium mt-1">Upcoming dates:</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {getUpcomingDates(newSchedule.start_date, newSchedule.frequency).map((d, i) => (
+                          <Badge key={i} variant="outline" className="text-xs border-accent/40">
+                            {format(d, "EEE, MMM d, yyyy")}
+                          </Badge>
+                        ))}
+                      </div>
+                      <div className="flex gap-2 pt-1">
+                        <Button onClick={addSchedule} disabled={addingSchedule} className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90">
+                          {addingSchedule ? t("admin.cd.adding") : "✓ Confirm & Send Calendar Invite"}
+                        </Button>
+                        <Button variant="outline" onClick={() => setShowConfirmPreview(null)}>Back</Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => {
+                          if (!newSchedule.start_date) {
+                            toast({ title: t("admin.error"), description: "Please select a start date", variant: "destructive" });
+                            return;
+                          }
+                          setShowConfirmPreview("add");
+                        }}
+                        className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90"
+                      >
+                        {t("admin.cd.addschedule")}
+                      </Button>
+                      <Button variant="outline" onClick={() => { setShowAddSchedule(false); setShowConfirmPreview(null); }}>{t("admin.cd.cancel")}</Button>
+                    </div>
+                  )}
                 </div>
               )}
             </TabsContent>
