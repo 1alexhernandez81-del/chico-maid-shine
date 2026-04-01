@@ -29,7 +29,7 @@ const DashboardStats = ({ onNavigate }: { onNavigate?: (tab: string) => void }) 
 
     const { data: bookings, error } = await supabase
       .from("bookings")
-      .select("status, total_paid, processing_fee, created_at");
+      .select("status, payment_status, total_paid, processing_fee, created_at");
 
     if (error) {
       console.error("Stats fetch error:", error);
