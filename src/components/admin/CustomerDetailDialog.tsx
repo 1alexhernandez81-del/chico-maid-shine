@@ -425,7 +425,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
                           if (f === "bi-weekly") return t("admin.cd.everyXweeks").replace("{x}", "2");
                           if (f === "monthly") return t("admin.cd.monthly");
                           return f.replace("-", " ");
-                        })()} · {s.preferred_day || "Flexible"} · {formatTimeDisplay(s.preferred_time)}
+                        })()} · {s.next_service_date ? format(new Date(s.next_service_date + "T00:00:00"), "MM/dd/yyyy") : (s.preferred_day || "Flexible")} · {formatTimeDisplay(s.preferred_time)}
                       </p>
                       {s.price && <p className="text-accent font-medium text-sm mt-1">${s.price}{t("admin.cd.pervisit")}</p>}
                       {s.active && (
