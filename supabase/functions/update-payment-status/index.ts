@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { bookingId, paymentMethod, amount, fee } = await req.json();
+    const { bookingId, paymentMethod, amount, fee, paymentType } = await req.json();
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -57,9 +57,12 @@ Deno.serve(async (req) => {
       payment_reference: combinedRef,
     };
 
-    // When fully paid, also mark the job status as completed
+    // When fully paid, mark the job status as completed
+    // When a deposit payment comes in, move to approved
     if (newStatus === "paid") {
       updateData.status = "completed";
+    } else if (paymentType === "deposit") {
+      updateData.status = "approved";
     }
 
     const { error: updateErr } = await supabase
