@@ -61,6 +61,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
   const [showRescheduleConfirm, setShowRescheduleConfirm] = useState(false);
   const [confirmEmailPreview, setConfirmEmailPreview] = useState<"invoice" | "receipt" | null>(null);
   const [confirmPaymentMethod, setConfirmPaymentMethod] = useState<"card" | "ach" | null>(null);
+  const [showDepositConfirm, setShowDepositConfirm] = useState(false);
   const [cleaners, setCleaners] = useState<Cleaner[]>([]);
   const [assignedCleanerIds, setAssignedCleanerIds] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
