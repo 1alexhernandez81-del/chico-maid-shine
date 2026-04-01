@@ -517,15 +517,25 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
                       </Select>
                     </div>
                     <div>
-                      <Label className="text-xs text-muted-foreground">{t("admin.cd.day")}</Label>
-                      <Select value={newSchedule.preferred_day} onValueChange={(v) => setNewSchedule({ ...newSchedule, preferred_day: v })}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"].map((d) => (
-                            <SelectItem key={d} value={d}>{t(`admin.day.${d}`)}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Label className="text-xs text-muted-foreground">{t("admin.cd.startdate")}</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !newSchedule.start_date && "text-muted-foreground")}>
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {newSchedule.start_date ? format(newSchedule.start_date, "MM/dd/yyyy") : t("admin.cd.pickdate")}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <CalendarWidget
+                            mode="single"
+                            selected={newSchedule.start_date || undefined}
+                            onSelect={(d) => setNewSchedule({ ...newSchedule, start_date: d || null })}
+                            disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                            initialFocus
+                            className={cn("p-3 pointer-events-auto")}
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </div>
                     <div>
                       <Label className="text-xs text-muted-foreground">{t("admin.cd.time")}</Label>
