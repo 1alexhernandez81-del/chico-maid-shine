@@ -452,14 +452,17 @@ const InquiriesPipeline = () => {
           </DialogHeader>
           {selected && (
             <Tabs value={detailTab} onValueChange={setDetailTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="details" className="gap-1.5">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="details" className="gap-1.5 text-xs">
                   <Eye className="w-3.5 h-3.5" /> {t("admin.inquiry.details.tab")}
                 </TabsTrigger>
-                <TabsTrigger value="estimate" className="gap-1.5">
+                <TabsTrigger value="estimate" className="gap-1.5 text-xs">
                   <CalendarCheck className="w-3.5 h-3.5" /> {t("admin.inquiry.estimatevisit")}
                 </TabsTrigger>
-                <TabsTrigger value="messages" className="gap-1.5">
+                <TabsTrigger value="deposit" className="gap-1.5 text-xs">
+                  <DollarSign className="w-3.5 h-3.5" /> Collect Deposit
+                </TabsTrigger>
+                <TabsTrigger value="messages" className="gap-1.5 text-xs">
                   <MessageSquare className="w-3.5 h-3.5" /> {t("admin.inquiry.messages")}
                 </TabsTrigger>
               </TabsList>
