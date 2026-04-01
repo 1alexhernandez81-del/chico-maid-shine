@@ -1407,7 +1407,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                 <span>${(Math.round(depositAmount * 0.03 * 100) / 100).toFixed(2)}</span>
               </div>
               <div className="flex items-center justify-between border-t border-border pt-2 font-semibold">
-                <span>Customer pays</span>
+                <span>{t("admin.deposit.customerpays")}</span>
                 <span>${(depositAmount + Math.round(depositAmount * 0.03 * 100) / 100).toFixed(2)}</span>
               </div>
             </div>
