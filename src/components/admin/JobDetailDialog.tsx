@@ -881,6 +881,37 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                     </Button>
                   </div>
                 </div>
+                {/* Quick-add preset buttons */}
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { label: t("admin.job.preset.deep_clean"), desc: "Deep Clean" },
+                    { label: t("admin.job.preset.kitchen"), desc: "Kitchen" },
+                    { label: t("admin.job.preset.bathroom"), desc: "Bathroom" },
+                    { label: t("admin.job.preset.oven"), desc: "Oven Cleaning" },
+                    { label: t("admin.job.preset.fridge"), desc: "Fridge Cleaning" },
+                    { label: t("admin.job.preset.windows"), desc: "Windows" },
+                    { label: t("admin.job.preset.laundry"), desc: "Laundry" },
+                    { label: t("admin.job.preset.baseboards"), desc: "Baseboards" },
+                    { label: t("admin.job.preset.organizing"), desc: "Organizing" },
+                  ].map((preset) => (
+                    <Button
+                      key={preset.desc}
+                      variant="outline"
+                      size="sm"
+                      className="h-6 text-[10px] px-2 rounded-full border-border hover:border-accent hover:text-accent"
+                      onClick={() => {
+                        const emptyIdx = lineItems.findIndex((item) => item.description.trim() === "" && !item.amount);
+                        if (emptyIdx >= 0) {
+                          updateLineItem(emptyIdx, "description", preset.desc);
+                        } else {
+                          setLineItems((prev) => [...prev, { description: preset.desc, amount: 0 }]);
+                        }
+                      }}
+                    >
+                      + {preset.label}
+                    </Button>
+                  ))}
+                </div>
                 <div className="space-y-2">
                   {lineItems.map((item, i) => (
                     <div key={i} className="flex gap-2 items-center">
