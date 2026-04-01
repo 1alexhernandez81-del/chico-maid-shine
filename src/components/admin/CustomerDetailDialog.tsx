@@ -105,6 +105,17 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
     price: "",
   });
 
+  // Edit schedule
+  const [editingScheduleId, setEditingScheduleId] = useState<string | null>(null);
+  const [editSchedule, setEditSchedule] = useState({
+    service_type: "",
+    frequency: "",
+    start_date: null as Date | null,
+    preferred_time: "",
+    price: "",
+  });
+  const [savingSchedule, setSavingSchedule] = useState(false);
+
   // Generate 30-min time slots from 8:00 AM to 5:00 PM
   const timeSlots = Array.from({ length: 19 }, (_, i) => {
     const totalMinutes = 8 * 60 + i * 30;
@@ -254,6 +265,60 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
   const toggleScheduleActive = async (scheduleId: string, active: boolean) => {
     await supabase.from("recurring_schedules").update({ active: !active }).eq("id", scheduleId);
     setSchedules((prev) => prev.map((s) => s.id === scheduleId ? { ...s, active: !active } : s));
+  };
+
+  const startEditSchedule = (s: RecurringSchedule) => {
+    setEditingScheduleId(s.id);
+    setEditSchedule({
+      service_type: s.service_type,
+      frequency: s.frequency,
+      start_date: s.next_service_date ? new Date(s.next_service_date + "T00:00:00") : null,
+      preferred_time: s.preferred_time || "09:00",
+      price: s.price ? String(s.price) : "",
+    });
+  };
+
+  const saveScheduleEdit = async () => {
+    if (!editingScheduleId) return;
+    setSavingSchedule(true);
+    const nextDate = editSchedule.start_date ? format(editSchedule.start_date, "yyyy-MM-dd") : null;
+    const preferredDay = editSchedule.start_date ? dayNames[editSchedule.start_date.getDay()] : null;
+
+    const { error } = await supabase.from("recurring_schedules").update({
+      service_type: editSchedule.service_type,
+      frequency: editSchedule.frequency,
+      preferred_day: preferredDay,
+      preferred_time: editSchedule.preferred_time,
+      price: editSchedule.price ? parseFloat(editSchedule.price) : null,
+      next_service_date: nextDate,
+    }).eq("id", editingScheduleId);
+
+    if (error) {
+      toast({ title: t("admin.error"), description: "Failed to update schedule", variant: "destructive" });
+    } else {
+      setSchedules(prev => prev.map(s => s.id === editingScheduleId ? {
+        ...s,
+        service_type: editSchedule.service_type,
+        frequency: editSchedule.frequency,
+        preferred_day: preferredDay,
+        preferred_time: editSchedule.preferred_time,
+        price: editSchedule.price ? parseFloat(editSchedule.price) : null,
+        next_service_date: nextDate,
+      } : s));
+
+      // Update recurring GCal event
+      try {
+        await supabase.functions.invoke("sync-google-calendar", {
+          body: { scheduleId: editingScheduleId, action: "create-recurring" },
+        });
+        toast({ title: t("admin.cd.saved"), description: "Calendar event updated" });
+      } catch (e) {
+        console.error("GCal update error:", e);
+        toast({ title: t("admin.cd.saved"), description: "Schedule saved (calendar sync failed)" });
+      }
+      setEditingScheduleId(null);
+    }
+    setSavingSchedule(false);
   };
 
   const deleteSchedule = async (scheduleId: string) => {
@@ -413,76 +478,131 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
 
               {schedules.map((s) => (
                 <div key={s.id} className={`p-4 rounded-lg border ${s.active ? "border-accent/30 bg-accent/5" : "border-border bg-secondary/30 opacity-60"}`}>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-medium text-sm capitalize">{s.service_type.replace("-", " ")}</p>
-                      <p className="text-xs text-muted-foreground capitalize mt-0.5">
-                        {(() => {
-                          const f = s.frequency;
-                          const m = f.match(/^every-(\d+)-weeks$/);
-                          if (m) return t("admin.cd.everyXweeks").replace("{x}", m[1]);
-                          if (f === "weekly") return t("admin.cd.weekly");
-                          if (f === "bi-weekly") return t("admin.cd.everyXweeks").replace("{x}", "2");
-                          if (f === "monthly") return t("admin.cd.monthly");
-                          return f.replace("-", " ");
-                        })()} · {s.next_service_date ? format(new Date(s.next_service_date + "T00:00:00"), "MM/dd/yyyy") : (s.preferred_day || "Flexible")} · {formatTimeDisplay(s.preferred_time)}
-                      </p>
-                      {s.price && <p className="text-accent font-medium text-sm mt-1">${s.price}{t("admin.cd.pervisit")}</p>}
-                      {s.active && (
-                        <div className="flex items-center gap-1 mt-1">
-                          <span className="text-xs text-muted-foreground">📅 {t("admin.cd.next")}</span>
+                  {editingScheduleId === s.id ? (
+                    /* ── Inline Edit Form ── */
+                    <div className="space-y-3">
+                      <p className="text-sm font-medium">{t("admin.cd.edit")} {t("admin.cd.tab.schedule")}</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">{t("admin.cd.servicelabel")}</Label>
+                          <Select value={editSchedule.service_type} onValueChange={(v) => setEditSchedule({ ...editSchedule, service_type: v })}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="residential">{t("admin.cd.residential")}</SelectItem>
+                              <SelectItem value="commercial">{t("admin.cd.commercial")}</SelectItem>
+                              <SelectItem value="construction">{t("admin.cd.construction")}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">{t("admin.cd.frequency")}</Label>
+                          <Select value={editSchedule.frequency} onValueChange={(v) => setEditSchedule({ ...editSchedule, frequency: v })}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="weekly">{t("admin.cd.weekly")}</SelectItem>
+                              {[2,3,4,5,6,7,8,9].map((n) => (
+                                <SelectItem key={n} value={`every-${n}-weeks`}>
+                                  {t("admin.cd.everyXweeks").replace("{x}", String(n))}
+                                </SelectItem>
+                              ))}
+                              <SelectItem value="monthly">{t("admin.cd.monthly")}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">{t("admin.cd.startdate")}</Label>
                           <Popover>
                             <PopoverTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-6 px-1.5 text-xs text-muted-foreground hover:text-foreground gap-1">
-                                {s.next_service_date
-                                  ? new Date(s.next_service_date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
-                                  : t("admin.cd.setdate")}
-                                <Pencil className="w-3 h-3" />
+                              <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !editSchedule.start_date && "text-muted-foreground")}>
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {editSchedule.start_date ? format(editSchedule.start_date, "MM/dd/yyyy") : t("admin.cd.pickdate")}
                               </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0" align="start">
                               <CalendarWidget
                                 mode="single"
-                                selected={s.next_service_date ? new Date(s.next_service_date + "T00:00:00") : undefined}
-                                onSelect={async (date) => {
-                                  if (!date) return;
-                                  const iso = format(date, "yyyy-MM-dd");
-                                  await supabase.from("recurring_schedules").update({ next_service_date: iso }).eq("id", s.id);
-                                  setSchedules(prev => prev.map(sc => sc.id === s.id ? { ...sc, next_service_date: iso } : sc));
-                                  // Update recurring GCal event
-                                  try {
-                                    await supabase.functions.invoke("sync-google-calendar", {
-                                      body: { scheduleId: s.id, action: "create-recurring" },
-                                    });
-                                  } catch (e) { console.error("GCal update error:", e); }
-                                  toast({ title: t("admin.cd.dateupdated") });
-                                }}
+                                selected={editSchedule.start_date || undefined}
+                                onSelect={(d) => setEditSchedule({ ...editSchedule, start_date: d || null })}
+                                initialFocus
                                 className={cn("p-3 pointer-events-auto")}
                               />
                             </PopoverContent>
                           </Popover>
                         </div>
-                      )}
+                        <div>
+                          <Label className="text-xs text-muted-foreground">{t("admin.cd.time")}</Label>
+                          <Select value={editSchedule.preferred_time} onValueChange={(v) => setEditSchedule({ ...editSchedule, preferred_time: v })}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent className="max-h-60">
+                              {timeSlots.map((slot) => (
+                                <SelectItem key={slot.value} value={slot.value}>{slot.label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-xs text-muted-foreground">{t("admin.cd.pricepervisit")}</Label>
+                        <Input
+                          type="number"
+                          value={editSchedule.price}
+                          onChange={(e) => setEditSchedule({ ...editSchedule, price: e.target.value })}
+                          placeholder="150"
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button onClick={saveScheduleEdit} disabled={savingSchedule} className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 gap-1.5">
+                          <Save className="w-3.5 h-3.5" /> {savingSchedule ? t("admin.cd.saving") : t("admin.cd.save")}
+                        </Button>
+                        <Button variant="outline" onClick={() => setEditingScheduleId(null)}>{t("admin.cd.cancel")}</Button>
+                      </div>
                     </div>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => toggleScheduleActive(s.id, s.active)}
-                        className="h-8 text-xs"
-                      >
-                        {s.active ? t("admin.cd.pause") : t("admin.cd.resume")}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteSchedule(s.id)}
-                        className="h-8 text-xs text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
+                  ) : (
+                    /* ── Display Mode ── */
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-medium text-sm capitalize">{s.service_type.replace("-", " ")}</p>
+                        <p className="text-xs text-muted-foreground capitalize mt-0.5">
+                          {(() => {
+                            const f = s.frequency;
+                            const m = f.match(/^every-(\d+)-weeks$/);
+                            if (m) return t("admin.cd.everyXweeks").replace("{x}", m[1]);
+                            if (f === "weekly") return t("admin.cd.weekly");
+                            if (f === "bi-weekly") return t("admin.cd.everyXweeks").replace("{x}", "2");
+                            if (f === "monthly") return t("admin.cd.monthly");
+                            return f.replace("-", " ");
+                          })()} · {s.next_service_date ? format(new Date(s.next_service_date + "T00:00:00"), "MM/dd/yyyy") : (s.preferred_day || "Flexible")} · {formatTimeDisplay(s.preferred_time)}
+                        </p>
+                        {s.price && <p className="text-accent font-medium text-sm mt-1">${s.price}{t("admin.cd.pervisit")}</p>}
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => startEditSchedule(s)}
+                          className="h-8 text-xs gap-1"
+                        >
+                          <Pencil className="w-3.5 h-3.5" /> {t("admin.cd.edit")}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleScheduleActive(s.id, s.active)}
+                          className="h-8 text-xs"
+                        >
+                          {s.active ? t("admin.cd.pause") : t("admin.cd.resume")}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteSchedule(s.id)}
+                          className="h-8 text-xs text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               ))}
 
