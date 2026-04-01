@@ -928,6 +928,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                 {/* Quick-add preset buttons */}
                 <div className="flex flex-wrap gap-1.5">
                   {[
+                    { label: t("admin.job.preset.house_cleaning"), desc: "House Cleaning" },
                     { label: t("admin.job.preset.deep_clean"), desc: "Deep Clean" },
                     { label: t("admin.job.preset.kitchen"), desc: "Kitchen" },
                     { label: t("admin.job.preset.bathroom"), desc: "Bathroom" },
