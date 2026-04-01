@@ -5,7 +5,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const CC_FEE_PERCENT = 0.03; // 3% credit card processing fee
+const CC_FEE_PERCENT = 0.03;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { bookingId } = await req.json();
+    const { bookingId, token } = await req.json();
 
     const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
     if (!STRIPE_SECRET_KEY) throw new Error("STRIPE_SECRET_KEY not set");
@@ -22,25 +22,44 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { data: booking, error: fetchErr } = await supabase
-      .from("bookings")
-      .select("*")
-      .eq("id", bookingId)
-      .single();
+    let booking: any;
 
-    if (fetchErr || !booking) throw new Error("Booking not found");
+    if (token) {
+      // Customer-facing: look up by confirmation_token
+      const { data, error } = await supabase
+        .from("bookings")
+        .select("*")
+        .eq("confirmation_token", token)
+        .single();
+      if (error || !data) throw new Error("Booking not found");
+      booking = data;
+    } else if (bookingId) {
+      // Admin-facing: look up by ID
+      const { data, error } = await supabase
+        .from("bookings")
+        .select("*")
+        .eq("id", bookingId)
+        .single();
+      if (error || !data) throw new Error("Booking not found");
+      booking = data;
+    } else {
+      throw new Error("bookingId or token required");
+    }
 
     // Calculate deposit amount
     const rawItems: Array<{ description: string; amount: number }> = Array.isArray(booking.line_items) ? booking.line_items : [];
     const serviceItems = rawItems.filter((i) => !(i.description || "").toLowerCase().includes("deposit"));
     const subtotal = serviceItems.reduce((sum, i) => sum + Number(i.amount || 0), 0);
+    
+    // Use total_price as subtotal if no line items
+    const effectiveSubtotal = subtotal > 0 ? subtotal : (Number(booking.total_price) || 0);
+    
     const depositAmt = (booking.deposit_override !== null && booking.deposit_override !== undefined)
       ? Number(booking.deposit_override)
-      : (subtotal > 0 ? subtotal * 0.25 : 0);
+      : (effectiveSubtotal > 0 ? effectiveSubtotal * 0.25 : 0);
 
     if (depositAmt <= 0) throw new Error("No deposit amount to collect");
 
-    // CC: 3% fee on deposit
     const feeRounded = Math.round(depositAmt * CC_FEE_PERCENT * 100) / 100;
     const totalWithFee = depositAmt + feeRounded;
     const totalCents = Math.round(totalWithFee * 100);
@@ -49,7 +68,7 @@ Deno.serve(async (req) => {
 
     const successParams = new URLSearchParams({
       payment: "success",
-      booking_id: bookingId,
+      booking_id: booking.id,
       method: "credit_card",
       amount: totalWithFee.toFixed(2),
       fee: feeRounded.toFixed(2),
@@ -65,11 +84,11 @@ Deno.serve(async (req) => {
     params.append("customer_email", booking.email);
     params.append("payment_method_types[0]", "card");
     params.append("line_items[0][price_data][currency]", "usd");
-    params.append("line_items[0][price_data][product_data][name]", `Deposit — ${customerName}`);
-    params.append("line_items[0][price_data][product_data][description]", `25% Deposit for Cleaning Service + CC fee (3%)`);
+    params.append("line_items[0][price_data][product_data][name]", `25% Deposit — ${customerName}`);
+    params.append("line_items[0][price_data][product_data][description]", `Deposit for Cleaning Service + CC fee (3%)`);
     params.append("line_items[0][price_data][unit_amount]", String(totalCents));
     params.append("line_items[0][quantity]", "1");
-    params.append("metadata[booking_id]", bookingId);
+    params.append("metadata[booking_id]", booking.id);
     params.append("metadata[deposit_amount]", depositAmt.toFixed(2));
     params.append("metadata[fee]", feeRounded.toFixed(2));
     params.append("metadata[payment_method]", "card");
