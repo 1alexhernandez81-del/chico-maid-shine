@@ -848,7 +848,7 @@ const InquiriesPipeline = () => {
                               <span>${effectiveDeposit.toFixed(2)}</span>
                             </div>
                             <div className="flex items-center justify-between">
-                              <span className="text-muted-foreground">CC Processing Fee (3%)</span>
+                              <span className="text-muted-foreground">{t("admin.deposit.ccfee")}</span>
                               <span>${ccFee.toFixed(2)}</span>
                             </div>
                             <div className="flex items-center justify-between border-t border-border pt-2 font-semibold">
