@@ -810,7 +810,7 @@ const InquiriesPipeline = () => {
 
                         {/* Editable deposit amount */}
                         <div className="pt-2 border-t border-border">
-                          <label className="text-xs uppercase tracking-wider text-muted-foreground mb-1.5 block">Custom Deposit Amount</label>
+                          <label className="text-xs uppercase tracking-wider text-muted-foreground mb-1.5 block">{t("admin.deposit.customamt")}</label>
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium">$</span>
                             <Input
