@@ -18,6 +18,12 @@ function advanceDate(currentDate: string, frequency: string): string {
     case "every-3-weeks":
       d.setDate(d.getDate() + 21);
       break;
+    case "every-4-weeks":
+      d.setDate(d.getDate() + 28);
+      break;
+    case "every-5-weeks":
+      d.setDate(d.getDate() + 35);
+      break;
     case "monthly":
       d.setMonth(d.getMonth() + 1);
       break;
