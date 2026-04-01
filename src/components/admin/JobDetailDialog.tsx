@@ -234,7 +234,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
     } else {
       toast({ title: t("admin.bookings.updated"), description: t("admin.job.info.updated") });
       setEditingInfo(false);
-      onUpdated({ ...booking, ...editInfo, status: newStatus, admin_notes: adminNotes, line_items: lineItems, total_price: total });
+      onUpdated({ ...booking, ...editInfo, status: newStatus, admin_notes: adminNotes, line_items: lineItems, total_price: subtotal });
     }
     setSavingInfo(false);
   };
