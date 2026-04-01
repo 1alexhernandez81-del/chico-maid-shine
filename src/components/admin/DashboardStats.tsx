@@ -29,7 +29,7 @@ const DashboardStats = ({ onNavigate }: { onNavigate?: (tab: string) => void }) 
 
     const { data: bookings, error } = await supabase
       .from("bookings")
-      .select("status, total_price, total_paid, created_at");
+      .select("status, total_paid, processing_fee, created_at");
 
     if (error) {
       console.error("Stats fetch error:", error);
@@ -46,7 +46,7 @@ const DashboardStats = ({ onNavigate }: { onNavigate?: (tab: string) => void }) 
         pending: bookings.filter((b) => b.status === "pending").length,
         approved: bookings.filter((b) => ["approved", "scheduled", "in-progress"].includes(b.status)).length,
         completed: bookings.filter((b) => b.status === "completed").length,
-        totalRevenue: bookings.reduce((sum, b) => sum + (Number(b.total_paid) || 0), 0),
+        totalRevenue: bookings.reduce((sum, b) => sum + (Number(b.total_paid) || 0) - (Number(b.processing_fee) || 0), 0),
         thisMonthBookings: bookings.filter((b) => b.created_at >= monthStart).length,
       });
     }

@@ -80,7 +80,7 @@ const CustomerManagement = ({ onCreateJob }: { onCreateJob?: (data: { name: stri
 
     const { data: bookings } = await supabase
       .from("bookings")
-      .select("customer_id, total_price, total_paid, status, preferred_date")
+      .select("customer_id, total_paid, processing_fee, status, preferred_date")
       .not("customer_id", "is", null);
 
     const enriched = (custData || []).map((c: any) => {
@@ -89,7 +89,7 @@ const CustomerManagement = ({ onCreateJob }: { onCreateJob?: (data: { name: stri
       return {
         ...c,
         booking_count: custBookings.length,
-        total_spent: custBookings.reduce((sum: number, b: any) => sum + (Number(b.total_paid) || 0), 0),
+        total_spent: custBookings.reduce((sum: number, b: any) => sum + (Number(b.total_paid) || 0) - (Number(b.processing_fee) || 0), 0),
         last_service: completed.length > 0
           ? completed.sort((a: any, b: any) => b.preferred_date.localeCompare(a.preferred_date))[0]?.preferred_date
           : null,
