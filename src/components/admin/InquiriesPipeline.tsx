@@ -802,7 +802,7 @@ const InquiriesPipeline = () => {
                               <span className="font-medium">${quoteTotal.toFixed(2)}</span>
                             </div>
                             <div className="flex items-center justify-between">
-                              <span className="text-muted-foreground">25% Deposit</span>
+                              <span className="text-muted-foreground">{t("admin.deposit.25pct")}</span>
                               <span className="font-medium">${defaultDep.toFixed(2)}</span>
                             </div>
                           </div>
