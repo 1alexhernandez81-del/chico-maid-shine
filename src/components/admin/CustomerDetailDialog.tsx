@@ -116,6 +116,39 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
   });
   const [savingSchedule, setSavingSchedule] = useState(false);
 
+  // Confirmation preview
+  const [showConfirmPreview, setShowConfirmPreview] = useState<"add" | "edit" | null>(null);
+
+  const getUpcomingDates = (startDate: Date, frequency: string, count: number = 5): Date[] => {
+    const dates: Date[] = [new Date(startDate)];
+    for (let i = 1; i < count; i++) {
+      const prev = new Date(dates[i - 1]);
+      const everyN = frequency.match(/^every-(\d+)-weeks$/);
+      if (everyN) {
+        prev.setDate(prev.getDate() + parseInt(everyN[1]) * 7);
+      } else if (frequency === "weekly") {
+        prev.setDate(prev.getDate() + 7);
+      } else if (frequency === "bi-weekly") {
+        prev.setDate(prev.getDate() + 14);
+      } else if (frequency === "monthly") {
+        prev.setMonth(prev.getMonth() + 1);
+      } else {
+        prev.setDate(prev.getDate() + 7);
+      }
+      dates.push(prev);
+    }
+    return dates;
+  };
+
+  const getFrequencyLabel = (freq: string) => {
+    const m = freq.match(/^every-(\d+)-weeks$/);
+    if (m) return t("admin.cd.everyXweeks").replace("{x}", m[1]);
+    if (freq === "weekly") return t("admin.cd.weekly");
+    if (freq === "bi-weekly") return t("admin.cd.everyXweeks").replace("{x}", "2");
+    if (freq === "monthly") return t("admin.cd.monthly");
+    return freq.replace("-", " ");
+  };
+
   // Generate 30-min time slots from 8:00 AM to 5:00 PM
   const timeSlots = Array.from({ length: 19 }, (_, i) => {
     const totalMinutes = 8 * 60 + i * 30;
