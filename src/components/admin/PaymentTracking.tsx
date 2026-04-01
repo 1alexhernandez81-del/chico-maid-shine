@@ -340,10 +340,9 @@ const PaymentTracking = ({ booking, balanceDue, onUpdated }: PaymentTrackingProp
           {/* Manual payment button / form */}
           {paymentStatus !== "paid" && !showManualForm && (
             <Button
-              variant="outline"
               size="sm"
               onClick={() => setShowManualForm(true)}
-              className="w-full gap-1.5 text-xs"
+              className="w-full gap-1.5 text-xs bg-accent hover:bg-accent/90 text-accent-foreground"
             >
               <Plus className="w-3 h-3" /> {t("admin.payment.record")}
             </Button>
