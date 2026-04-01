@@ -841,7 +841,7 @@ const InquiriesPipeline = () => {
                       {/* Payment breakdown */}
                       {effectiveDeposit > 0 && (
                         <div className="p-4 rounded-lg border border-emerald-500/30 bg-emerald-500/5 space-y-3">
-                          <h4 className="text-sm font-medium text-emerald-400">Payment Breakdown</h4>
+                          <h4 className="text-sm font-medium text-emerald-400">{t("admin.deposit.breakdown")}</h4>
                           <div className="space-y-1.5 text-sm">
                             <div className="flex items-center justify-between">
                               <span className="text-muted-foreground">Deposit</span>
