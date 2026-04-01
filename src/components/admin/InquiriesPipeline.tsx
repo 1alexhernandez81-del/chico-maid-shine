@@ -844,7 +844,7 @@ const InquiriesPipeline = () => {
                           <h4 className="text-sm font-medium text-emerald-400">{t("admin.deposit.breakdown")}</h4>
                           <div className="space-y-1.5 text-sm">
                             <div className="flex items-center justify-between">
-                              <span className="text-muted-foreground">Deposit</span>
+                              <span className="text-muted-foreground">{t("admin.deposit.deposit")}</span>
                               <span>${effectiveDeposit.toFixed(2)}</span>
                             </div>
                             <div className="flex items-center justify-between">
