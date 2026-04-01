@@ -585,12 +585,12 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
                       </div>
                       {showConfirmPreview === "edit" && editSchedule.start_date ? (
                         <div className="border border-accent/30 rounded-lg p-3 bg-accent/5 space-y-2">
-                          <p className="text-sm font-medium flex items-center gap-1.5">📅 Calendar Preview</p>
+                          <p className="text-sm font-medium flex items-center gap-1.5">📅 {t("admin.cd.calpreview")}</p>
                           <p className="text-xs text-muted-foreground">
                             <span className="capitalize">{editSchedule.service_type.replace("-", " ")}</span> · {getFrequencyLabel(editSchedule.frequency)} · {formatTimeDisplay(editSchedule.preferred_time)}
-                            {editSchedule.price && <> · ${editSchedule.price}/visit</>}
+                            {editSchedule.price && <> · ${editSchedule.price}{t("admin.cd.pervisit")}</>}
                           </p>
-                          <p className="text-xs font-medium mt-1">Upcoming dates:</p>
+                          <p className="text-xs font-medium mt-1">{t("admin.cd.upcomingdates")}</p>
                           <div className="flex flex-wrap gap-1.5">
                             {getUpcomingDates(editSchedule.start_date, editSchedule.frequency).map((d, i) => (
                               <Badge key={i} variant="outline" className="text-xs border-accent/40">
@@ -600,9 +600,9 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
                           </div>
                           <div className="flex gap-2 pt-1">
                             <Button onClick={saveScheduleEdit} disabled={savingSchedule} className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 gap-1.5">
-                              <Save className="w-3.5 h-3.5" /> {savingSchedule ? t("admin.cd.saving") : "✓ Confirm & Update Calendar"}
+                              <Save className="w-3.5 h-3.5" /> {savingSchedule ? t("admin.cd.saving") : t("admin.cd.confirmUpdate")}
                             </Button>
-                            <Button variant="outline" onClick={() => setShowConfirmPreview(null)}>Back</Button>
+                            <Button variant="outline" onClick={() => setShowConfirmPreview(null)}>{t("admin.cd.back")}</Button>
                           </div>
                         </div>
                       ) : (
