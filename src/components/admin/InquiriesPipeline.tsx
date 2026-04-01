@@ -889,7 +889,7 @@ const InquiriesPipeline = () => {
                           }}
                         >
                           <CreditCard className="w-4 h-4" />
-                          {sendingDepositLink ? "Creating link..." : `Send CC Deposit Link ($${customerTotal.toFixed(2)})`}
+                          {sendingDepositLink ? t("admin.deposit.creatinglink") : `${t("admin.deposit.sendcclink")} ($${customerTotal.toFixed(2)})`}
                         </Button>
                       </div>
 
