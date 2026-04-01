@@ -267,6 +267,60 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
     setSchedules((prev) => prev.map((s) => s.id === scheduleId ? { ...s, active: !active } : s));
   };
 
+  const startEditSchedule = (s: RecurringSchedule) => {
+    setEditingScheduleId(s.id);
+    setEditSchedule({
+      service_type: s.service_type,
+      frequency: s.frequency,
+      start_date: s.next_service_date ? new Date(s.next_service_date + "T00:00:00") : null,
+      preferred_time: s.preferred_time || "09:00",
+      price: s.price ? String(s.price) : "",
+    });
+  };
+
+  const saveScheduleEdit = async () => {
+    if (!editingScheduleId) return;
+    setSavingSchedule(true);
+    const nextDate = editSchedule.start_date ? format(editSchedule.start_date, "yyyy-MM-dd") : null;
+    const preferredDay = editSchedule.start_date ? dayNames[editSchedule.start_date.getDay()] : null;
+
+    const { error } = await supabase.from("recurring_schedules").update({
+      service_type: editSchedule.service_type,
+      frequency: editSchedule.frequency,
+      preferred_day: preferredDay,
+      preferred_time: editSchedule.preferred_time,
+      price: editSchedule.price ? parseFloat(editSchedule.price) : null,
+      next_service_date: nextDate,
+    }).eq("id", editingScheduleId);
+
+    if (error) {
+      toast({ title: t("admin.error"), description: "Failed to update schedule", variant: "destructive" });
+    } else {
+      setSchedules(prev => prev.map(s => s.id === editingScheduleId ? {
+        ...s,
+        service_type: editSchedule.service_type,
+        frequency: editSchedule.frequency,
+        preferred_day: preferredDay,
+        preferred_time: editSchedule.preferred_time,
+        price: editSchedule.price ? parseFloat(editSchedule.price) : null,
+        next_service_date: nextDate,
+      } : s));
+
+      // Update recurring GCal event
+      try {
+        await supabase.functions.invoke("sync-google-calendar", {
+          body: { scheduleId: editingScheduleId, action: "create-recurring" },
+        });
+        toast({ title: t("admin.cd.saved"), description: "Calendar event updated" });
+      } catch (e) {
+        console.error("GCal update error:", e);
+        toast({ title: t("admin.cd.saved"), description: "Schedule saved (calendar sync failed)" });
+      }
+      setEditingScheduleId(null);
+    }
+    setSavingSchedule(false);
+  };
+
   const deleteSchedule = async (scheduleId: string) => {
     // Delete recurring GCal event first
     try {
