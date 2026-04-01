@@ -246,7 +246,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
       }
 
       setShowAddSchedule(false);
-      setNewSchedule({ service_type: "residential", frequency: "weekly", preferred_day: "monday", preferred_time: "09:00", price: "" });
+      setNewSchedule({ service_type: "residential", frequency: "weekly", start_date: null, preferred_time: "09:00", price: "" });
     }
     setAddingSchedule(false);
   };
