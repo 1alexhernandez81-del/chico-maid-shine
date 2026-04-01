@@ -100,7 +100,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
   const [newSchedule, setNewSchedule] = useState({
     service_type: "residential",
     frequency: "weekly",
-    preferred_day: "monday",
+    start_date: null as Date | null,
     preferred_time: "09:00",
     price: "",
   });
@@ -198,29 +198,21 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
     toast({ title: t("admin.cd.noteadded") });
   };
 
-  const computeNextServiceDate = (preferredDay: string) => {
-    const dayMap: Record<string, number> = {
-      sunday: 0, monday: 1, tuesday: 2, wednesday: 3,
-      thursday: 4, friday: 5, saturday: 6,
-    };
-    const target = dayMap[preferredDay.toLowerCase()];
-    const now = new Date();
-    const current = now.getDay();
-    let daysUntil = target - current;
-    if (daysUntil <= 0) daysUntil += 7;
-    const next = new Date(now);
-    next.setDate(now.getDate() + daysUntil);
-    return next.toISOString().split("T")[0];
-  };
+  const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
   const addSchedule = async () => {
+    if (!newSchedule.start_date) {
+      toast({ title: t("admin.error"), description: "Please select a start date", variant: "destructive" });
+      return;
+    }
     setAddingSchedule(true);
-    const nextDate = computeNextServiceDate(newSchedule.preferred_day);
+    const nextDate = format(newSchedule.start_date, "yyyy-MM-dd");
+    const preferredDay = dayNames[newSchedule.start_date.getDay()];
     const { error } = await supabase.from("recurring_schedules").insert({
       customer_id: customer.id,
       service_type: newSchedule.service_type,
       frequency: newSchedule.frequency,
-      preferred_day: newSchedule.preferred_day,
+      preferred_day: preferredDay,
       preferred_time: newSchedule.preferred_time,
       street: customer.street,
       city: customer.city,
@@ -254,7 +246,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
       }
 
       setShowAddSchedule(false);
-      setNewSchedule({ service_type: "residential", frequency: "weekly", preferred_day: "monday", preferred_time: "09:00", price: "" });
+      setNewSchedule({ service_type: "residential", frequency: "weekly", start_date: null, preferred_time: "09:00", price: "" });
     }
     setAddingSchedule(false);
   };
@@ -433,7 +425,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
                           if (f === "bi-weekly") return t("admin.cd.everyXweeks").replace("{x}", "2");
                           if (f === "monthly") return t("admin.cd.monthly");
                           return f.replace("-", " ");
-                        })()} · {s.preferred_day || "Flexible"} · {formatTimeDisplay(s.preferred_time)}
+                        })()} · {s.next_service_date ? format(new Date(s.next_service_date + "T00:00:00"), "MM/dd/yyyy") : (s.preferred_day || "Flexible")} · {formatTimeDisplay(s.preferred_time)}
                       </p>
                       {s.price && <p className="text-accent font-medium text-sm mt-1">${s.price}{t("admin.cd.pervisit")}</p>}
                       {s.active && (
@@ -525,15 +517,25 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
                       </Select>
                     </div>
                     <div>
-                      <Label className="text-xs text-muted-foreground">{t("admin.cd.day")}</Label>
-                      <Select value={newSchedule.preferred_day} onValueChange={(v) => setNewSchedule({ ...newSchedule, preferred_day: v })}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"].map((d) => (
-                            <SelectItem key={d} value={d}>{t(`admin.day.${d}`)}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Label className="text-xs text-muted-foreground">{t("admin.cd.startdate")}</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !newSchedule.start_date && "text-muted-foreground")}>
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {newSchedule.start_date ? format(newSchedule.start_date, "MM/dd/yyyy") : t("admin.cd.pickdate")}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <CalendarWidget
+                            mode="single"
+                            selected={newSchedule.start_date || undefined}
+                            onSelect={(d) => setNewSchedule({ ...newSchedule, start_date: d || null })}
+                            disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                            initialFocus
+                            className={cn("p-3 pointer-events-auto")}
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </div>
                     <div>
                       <Label className="text-xs text-muted-foreground">{t("admin.cd.time")}</Label>

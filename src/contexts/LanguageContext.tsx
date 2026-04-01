@@ -799,6 +799,8 @@ const translations: Record<string, Record<Lang, string>> = {
   "admin.cd.servicelabel": { en: "Service", es: "Servicio" },
   "admin.cd.frequency": { en: "Frequency", es: "Frecuencia" },
   "admin.cd.day": { en: "Day", es: "Día" },
+  "admin.cd.startdate": { en: "Start Date", es: "Fecha de Inicio" },
+  "admin.cd.pickdate": { en: "Pick a date", es: "Seleccionar fecha" },
   "admin.cd.time": { en: "Time", es: "Hora" },
   "admin.cd.pricepervisit": { en: "Price per Visit ($)", es: "Precio por Visita ($)" },
   "admin.cd.adding": { en: "Adding...", es: "Agregando..." },
