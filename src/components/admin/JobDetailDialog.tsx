@@ -1055,6 +1055,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                   {scheduledDate && scheduledTime && (
                     <Button
                       onClick={() => {
+                        setNewStatus("scheduled");
                         setShowScheduleConfirm(true);
                       }}
                       disabled={saving || sendingEmail !== null}
