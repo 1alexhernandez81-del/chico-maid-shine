@@ -852,7 +852,7 @@ const InquiriesPipeline = () => {
                               <span>${ccFee.toFixed(2)}</span>
                             </div>
                             <div className="flex items-center justify-between border-t border-border pt-2 font-semibold">
-                              <span>Customer Pays</span>
+                              <span>{t("admin.deposit.customerpays")}</span>
                               <span>${customerTotal.toFixed(2)}</span>
                             </div>
                           </div>
