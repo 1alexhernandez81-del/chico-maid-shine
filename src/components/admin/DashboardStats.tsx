@@ -46,9 +46,7 @@ const DashboardStats = ({ onNavigate }: { onNavigate?: (tab: string) => void }) 
         pending: bookings.filter((b) => b.status === "pending").length,
         approved: bookings.filter((b) => ["approved", "scheduled", "in-progress"].includes(b.status)).length,
         completed: bookings.filter((b) => b.status === "completed").length,
-        totalRevenue: bookings
-          .filter((b) => b.status === "completed")
-          .reduce((sum, b) => sum + (Number(b.total_price) || 0), 0),
+        totalRevenue: bookings.reduce((sum, b) => sum + (Number(b.total_paid) || 0), 0),
         thisMonthBookings: bookings.filter((b) => b.created_at >= monthStart).length,
       });
     }
