@@ -1276,7 +1276,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
                       className="gap-1.5 text-xs bg-green-600 hover:bg-green-700 text-white"
                     >
                       <CreditCard className="w-3 h-3" />
-                      {sendingEmail === "deposit-payment" ? t("admin.job.sending") : "Send Deposit CC Link"}
+                      {sendingEmail === "deposit-payment" ? t("admin.job.sending") : t("admin.deposit.sendcclink")}
                     </Button>
                   </div>
                 )}
