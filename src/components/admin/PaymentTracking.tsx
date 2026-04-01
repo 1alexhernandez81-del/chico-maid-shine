@@ -99,6 +99,11 @@ const PaymentTracking = ({ booking, balanceDue, onUpdated }: PaymentTrackingProp
       payment_reference: combinedRef,
     };
 
+    // When fully paid, also mark job as completed
+    if (newStatus === "paid") {
+      updatePayload.status = "completed";
+    }
+
     const { error } = await supabase
       .from("bookings")
       .update(updatePayload as any)
@@ -115,6 +120,7 @@ const PaymentTracking = ({ booking, balanceDue, onUpdated }: PaymentTrackingProp
         total_paid: newTotalPaid,
         paid_at: new Date().toISOString(),
         payment_reference: combinedRef,
+        ...(newStatus === "paid" ? { status: "completed" } : {}),
       });
       setShowManualForm(false);
       setManualMethod("");
@@ -149,6 +155,11 @@ const PaymentTracking = ({ booking, balanceDue, onUpdated }: PaymentTrackingProp
       payment_reference: editReference || null,
     };
 
+    // When fully paid, also mark job as completed
+    if (editStatus === "paid") {
+      updatePayload.status = "completed";
+    }
+
     const { error } = await supabase
       .from("bookings")
       .update(updatePayload as any)
@@ -166,6 +177,7 @@ const PaymentTracking = ({ booking, balanceDue, onUpdated }: PaymentTrackingProp
         processing_fee: newFee || null,
         paid_at: editPaidAt ? new Date(editPaidAt).toISOString() : null,
         payment_reference: editReference || null,
+        ...(editStatus === "paid" ? { status: "completed" } : {}),
       });
       setShowEditForm(false);
     }
