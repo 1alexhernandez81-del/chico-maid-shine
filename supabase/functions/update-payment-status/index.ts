@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { bookingId, paymentMethod, amount, fee } = await req.json();
+    const { bookingId, paymentMethod, amount, fee, paymentType } = await req.json();
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;

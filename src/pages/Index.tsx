@@ -22,6 +22,7 @@ const Index = () => {
     const method = searchParams.get("method");
     const amount = searchParams.get("amount");
     const fee = searchParams.get("fee");
+    const paymentType = searchParams.get("type");
 
     if (paymentStatus === "success" && bookingId) {
       // Call update-payment-status to record the payment
@@ -31,6 +32,7 @@ const Index = () => {
           paymentMethod: method || "credit_card",
           amount: amount || "0",
           fee: fee || "0",
+          paymentType: paymentType || "",
         },
       }).then(() => {
         // Clean up URL params
