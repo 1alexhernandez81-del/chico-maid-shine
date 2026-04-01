@@ -789,7 +789,7 @@ const InquiriesPipeline = () => {
                       {/* Quote summary */}
                       <div className="p-4 rounded-lg border border-border bg-secondary/30 space-y-3">
                         <h4 className="text-sm font-medium flex items-center gap-2">
-                          <DollarSign className="w-4 h-4 text-emerald-400" /> Deposit Calculator
+                          <DollarSign className="w-4 h-4 text-emerald-400" /> {t("admin.deposit.calculator")}
                         </h4>
                         {quoteTotal <= 0 ? (
                           <div className="p-3 rounded border border-amber-500/30 bg-amber-500/5">
