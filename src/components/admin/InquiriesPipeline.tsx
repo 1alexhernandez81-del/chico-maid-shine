@@ -20,7 +20,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Search, RefreshCw, ChevronLeft, ChevronRight, Eye, CheckCircle, XCircle, Clock, Trash2, Send, MessageSquare, CalendarCheck, Loader2, Home, DollarSign, Sparkles, RotateCcw, Heart, FileText, Languages } from "lucide-react";
+import { Search, RefreshCw, ChevronLeft, ChevronRight, Eye, CheckCircle, XCircle, Clock, Trash2, Send, MessageSquare, CalendarCheck, Loader2, Home, DollarSign, Sparkles, RotateCcw, Heart, FileText, Languages, CreditCard } from "lucide-react";
 import ThreadedChat from "@/components/admin/ThreadedChat";
 import { formatTime12, toDateInputValue, toTimeInputValue, formatLabel, STATUS_COLORS } from "./shared/utils";
 import { getEmailTemplates } from "./shared/emailTemplates";
