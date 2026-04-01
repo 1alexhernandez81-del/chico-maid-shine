@@ -20,7 +20,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Search, RefreshCw, ChevronLeft, ChevronRight, Eye, CheckCircle, XCircle, Clock, Trash2, Send, MessageSquare, CalendarCheck, Loader2, Home, DollarSign, Sparkles, RotateCcw, Heart, FileText, Languages } from "lucide-react";
+import { Search, RefreshCw, ChevronLeft, ChevronRight, Eye, CheckCircle, XCircle, Clock, Trash2, Send, MessageSquare, CalendarCheck, Loader2, Home, DollarSign, Sparkles, RotateCcw, Heart, FileText, Languages, CreditCard } from "lucide-react";
 import ThreadedChat from "@/components/admin/ThreadedChat";
 import { formatTime12, toDateInputValue, toTimeInputValue, formatLabel, STATUS_COLORS } from "./shared/utils";
 import { getEmailTemplates } from "./shared/emailTemplates";
@@ -55,6 +55,11 @@ const InquiriesPipeline = () => {
   const [pendingTemplateBody, setPendingTemplateBody] = useState("");
   const [quoteAmount, setQuoteAmount] = useState("");
   const [detailTab, setDetailTab] = useState("details");
+
+  // Deposit collection
+  const [depositOverride, setDepositOverride] = useState<string>("");
+  const [sendingDepositLink, setSendingDepositLink] = useState(false);
+  const [showDepositConfirm, setShowDepositConfirm] = useState(false);
 
   // Translation state
   const [translations, setTranslations] = useState<Record<string, string>>({});
@@ -132,6 +137,7 @@ const InquiriesPipeline = () => {
       setPendingTemplateSubject("");
       setPendingTemplateBody("");
       setDetailTab("details");
+      setDepositOverride(booking.deposit_override != null ? String(booking.deposit_override) : "");
       console.log("[InquiriesPipeline] openDetail completed successfully");
     } catch (err) {
       console.error("[InquiriesPipeline] openDetail error:", err);
@@ -446,14 +452,17 @@ const InquiriesPipeline = () => {
           </DialogHeader>
           {selected && (
             <Tabs value={detailTab} onValueChange={setDetailTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="details" className="gap-1.5">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="details" className="gap-1.5 text-xs">
                   <Eye className="w-3.5 h-3.5" /> {t("admin.inquiry.details.tab")}
                 </TabsTrigger>
-                <TabsTrigger value="estimate" className="gap-1.5">
+                <TabsTrigger value="estimate" className="gap-1.5 text-xs">
                   <CalendarCheck className="w-3.5 h-3.5" /> {t("admin.inquiry.estimatevisit")}
                 </TabsTrigger>
-                <TabsTrigger value="messages" className="gap-1.5">
+                <TabsTrigger value="deposit" className="gap-1.5 text-xs">
+                  <DollarSign className="w-3.5 h-3.5" /> Collect Deposit
+                </TabsTrigger>
+                <TabsTrigger value="messages" className="gap-1.5 text-xs">
                   <MessageSquare className="w-3.5 h-3.5" /> {t("admin.inquiry.messages")}
                 </TabsTrigger>
               </TabsList>
@@ -765,6 +774,142 @@ const InquiriesPipeline = () => {
                 </div>
               </TabsContent>
 
+              {/* Collect Deposit Tab */}
+              <TabsContent value="deposit" className="space-y-5 mt-4">
+                {(() => {
+                  const quoteTotal = selected.total_price || (quoteAmount ? parseFloat(quoteAmount) : 0);
+                  const defaultDep = quoteTotal > 0 ? quoteTotal * 0.25 : 0;
+                  const customDep = depositOverride !== "" ? parseFloat(depositOverride) : null;
+                  const effectiveDeposit = customDep !== null && !isNaN(customDep) ? customDep : defaultDep;
+                  const ccFee = Math.round(effectiveDeposit * 0.03 * 100) / 100;
+                  const customerTotal = effectiveDeposit + ccFee;
+
+                  return (
+                    <>
+                      {/* Quote summary */}
+                      <div className="p-4 rounded-lg border border-border bg-secondary/30 space-y-3">
+                        <h4 className="text-sm font-medium flex items-center gap-2">
+                          <DollarSign className="w-4 h-4 text-emerald-400" /> Deposit Calculator
+                        </h4>
+                        {quoteTotal <= 0 ? (
+                          <div className="p-3 rounded border border-amber-500/30 bg-amber-500/5">
+                            <p className="text-sm text-amber-400">⚠️ No quote amount set. Enter a quote in the Estimate tab first, or enter a custom deposit below.</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-2 text-sm">
+                            <div className="flex items-center justify-between">
+                              <span className="text-muted-foreground">Quote Total</span>
+                              <span className="font-medium">${quoteTotal.toFixed(2)}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-muted-foreground">25% Deposit</span>
+                              <span className="font-medium">${defaultDep.toFixed(2)}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Editable deposit amount */}
+                        <div className="pt-2 border-t border-border">
+                          <label className="text-xs uppercase tracking-wider text-muted-foreground mb-1.5 block">Custom Deposit Amount</label>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium">$</span>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder={defaultDep > 0 ? defaultDep.toFixed(2) : "0.00"}
+                              value={depositOverride}
+                              onChange={(e) => setDepositOverride(e.target.value)}
+                              className="h-8 text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            />
+                            {depositOverride !== "" && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 text-xs text-muted-foreground"
+                                onClick={() => setDepositOverride("")}
+                              >
+                                Reset
+                              </Button>
+                            )}
+                          </div>
+                          {depositOverride !== "" && parseFloat(depositOverride) !== defaultDep && (
+                            <p className="text-xs text-amber-400/80 mt-1">Custom amount overrides the default 25%</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Payment breakdown */}
+                      {effectiveDeposit > 0 && (
+                        <div className="p-4 rounded-lg border border-emerald-500/30 bg-emerald-500/5 space-y-3">
+                          <h4 className="text-sm font-medium text-emerald-400">Payment Breakdown</h4>
+                          <div className="space-y-1.5 text-sm">
+                            <div className="flex items-center justify-between">
+                              <span className="text-muted-foreground">Deposit</span>
+                              <span>${effectiveDeposit.toFixed(2)}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-muted-foreground">CC Processing Fee (3%)</span>
+                              <span>${ccFee.toFixed(2)}</span>
+                            </div>
+                            <div className="flex items-center justify-between border-t border-border pt-2 font-semibold">
+                              <span>Customer Pays</span>
+                              <span>${customerTotal.toFixed(2)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Payment options */}
+                      <div className="space-y-3">
+                        <h4 className="text-xs uppercase tracking-wider text-muted-foreground">Payment Options</h4>
+                        
+                        {/* Zelle info */}
+                        <div className="p-3 rounded-lg border border-purple-500/30 bg-purple-500/5">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-medium text-purple-400">✅ Zelle (preferred — no fees)</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">Customer sends ${effectiveDeposit.toFixed(2)} to (530) 966-0752</p>
+                        </div>
+
+                        {/* CC link button */}
+                        <Button
+                          className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white"
+                          disabled={effectiveDeposit <= 0 || sendingDepositLink}
+                          onClick={async () => {
+                            // Save deposit override first
+                            const depVal = customDep !== null && !isNaN(customDep) ? customDep : null;
+                            const savePricePayload: Record<string, unknown> = {};
+                            if (depVal !== null) savePricePayload.deposit_override = depVal;
+                            if (quoteTotal > 0 && !selected.total_price) savePricePayload.total_price = quoteTotal;
+                            
+                            if (Object.keys(savePricePayload).length > 0) {
+                              await supabase.from("bookings").update(savePricePayload).eq("id", selected.id);
+                            }
+                            setShowDepositConfirm(true);
+                          }}
+                        >
+                          <CreditCard className="w-4 h-4" />
+                          {sendingDepositLink ? "Creating link..." : `Send CC Deposit Link ($${customerTotal.toFixed(2)})`}
+                        </Button>
+                      </div>
+
+                      {/* Move to Approved */}
+                      <div className="border-t border-border pt-4">
+                        <p className="text-xs text-muted-foreground mb-3">Once deposit is collected (via Zelle or CC), move this inquiry to approved:</p>
+                        <Button
+                          onClick={() => updateStatus("approved")}
+                          disabled={saving}
+                          className="w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                          Deposit Collected — Move to Approved
+                        </Button>
+                      </div>
+                    </>
+                  );
+                })()}
+              </TabsContent>
+
               {/* Messages Tab */}
               <TabsContent value="messages" className="mt-4">
                 <ThreadedChat
@@ -810,6 +955,96 @@ const InquiriesPipeline = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Deposit CC Link Confirmation */}
+      {selected && (
+        <AlertDialog open={showDepositConfirm} onOpenChange={setShowDepositConfirm}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>💳 Send Deposit CC Link</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will create a Stripe payment link for the deposit and prepare an email draft.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+
+            {(() => {
+              const quoteTotal = selected.total_price || (quoteAmount ? parseFloat(quoteAmount) : 0);
+              const defaultDep = quoteTotal > 0 ? quoteTotal * 0.25 : 0;
+              const customDep = depositOverride !== "" ? parseFloat(depositOverride) : null;
+              const effectiveDeposit = customDep !== null && !isNaN(customDep) ? customDep : defaultDep;
+              const ccFee = Math.round(effectiveDeposit * 0.03 * 100) / 100;
+              const customerTotal = effectiveDeposit + ccFee;
+
+              return (
+                <div className="space-y-2 rounded-md border border-border bg-secondary/20 p-3 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Deposit</span>
+                    <span>${effectiveDeposit.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">CC Processing Fee (3%)</span>
+                    <span>${ccFee.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-border pt-2 font-semibold">
+                    <span>Customer pays</span>
+                    <span>${customerTotal.toFixed(2)}</span>
+                  </div>
+                </div>
+              );
+            })()}
+
+            <AlertDialogFooter>
+              <AlertDialogCancel>Back</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  setShowDepositConfirm(false);
+                  setSendingDepositLink(true);
+
+                  try {
+                    const { data, error } = await supabase.functions.invoke("create-deposit-payment", {
+                      body: { bookingId: selected.id },
+                    });
+
+                    const stripeData = typeof data === "string"
+                      ? (() => { try { return JSON.parse(data); } catch { return null; } })()
+                      : data;
+
+                    if (error) throw new Error((error as any)?.message || "Failed to create deposit link");
+                    if (!stripeData?.checkoutUrl) throw new Error(stripeData?.error || "Payment link not returned");
+
+                    const firstName = (selected.name ?? "").trim().split(/\s+/)[0] || "there";
+                    const depAmt = Number(stripeData.depositAmount || 0).toFixed(2);
+                    const fee = Number(stripeData.fee || 0).toFixed(2);
+                    const totalPay = Number(stripeData.totalWithFee || 0).toFixed(2);
+
+                    setPendingTemplateSubject("Deposit Payment Link — Maid for Chico");
+                    setPendingTemplateBody(
+                      `Hi ${firstName},\n\nThank you for approving your cleaning quote! To secure your appointment, please submit your 25% deposit using the link below.\n\nDeposit Amount: $${depAmt}\nCC Processing Fee (3%): $${fee}\nTotal to Pay: $${totalPay}\n\nThis link will expire in 24 hours. If you have any questions, feel free to reply to this email or call us at (530) 966-0752.\n\nThank you!\nBetty & the Maid for Chico Team`
+                    );
+                    setDetailTab("messages");
+                    toast({ title: "💳 Deposit link ready!", description: "Review the email in the Messages tab before sending." });
+                  } catch (err) {
+                    const message = err instanceof Error ? err.message : "Failed to create deposit link";
+                    console.error("Deposit link error:", err);
+                    toast({ title: t("admin.error"), description: message, variant: "destructive" });
+                  }
+
+                  setSendingDepositLink(false);
+                }}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                {sendingDepositLink ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> Creating...
+                  </span>
+                ) : (
+                  "Create Deposit Link"
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
 
       {/* Estimate Invite Approval */}
       <AlertDialog open={showInviteApproval} onOpenChange={(open) => {
