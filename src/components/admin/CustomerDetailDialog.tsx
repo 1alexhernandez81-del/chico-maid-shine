@@ -100,7 +100,7 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
   const [newSchedule, setNewSchedule] = useState({
     service_type: "residential",
     frequency: "weekly",
-    preferred_day: "monday",
+    start_date: null as Date | null,
     preferred_time: "09:00",
     price: "",
   });
