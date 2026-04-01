@@ -828,7 +828,7 @@ const InquiriesPipeline = () => {
                                 className="h-8 text-xs text-muted-foreground"
                                 onClick={() => setDepositOverride("")}
                               >
-                                Reset
+                                {t("admin.deposit.reset")}
                               </Button>
                             )}
                           </div>
