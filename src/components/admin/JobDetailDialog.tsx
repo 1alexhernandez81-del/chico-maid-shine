@@ -500,11 +500,12 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
     const cleanItems = lineItems.filter((item) => item.description.trim() !== "");
     const statusChanged = newStatus !== booking.status;
     const isNewlyApproved = statusChanged && newStatus === "approved";
-    const isNewlyScheduled = statusChanged && newStatus === "scheduled";
+    // Treat as newly scheduled if status changed OR if explicitly sending scheduled email
+    const isNewlyScheduled = (statusChanged && newStatus === "scheduled") || (opts.sendScheduledEmail && newStatus === "scheduled");
     const isNewlyCompleted = statusChanged && newStatus === "completed";
     const isNewlyCancelled = statusChanged && newStatus === "cancelled";
     const isRescheduled = booking.status === "scheduled" && newStatus === "scheduled" &&
-      (scheduledDate !== booking.scheduled_date || scheduledTime !== booking.scheduled_time);
+      (scheduledDate !== booking.scheduled_date || scheduledTime !== booking.scheduled_time) && !opts.sendScheduledEmail;
 
     const persistedDeposit = customDeposit ?? (booking.deposit_override ?? null);
 
