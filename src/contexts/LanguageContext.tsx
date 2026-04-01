@@ -811,6 +811,8 @@ const translations: Record<string, Record<Lang, string>> = {
   "admin.cd.weekly": { en: "Weekly", es: "Semanal" },
   "admin.cd.biweekly": { en: "Bi-Weekly", es: "Quincenal" },
   "admin.cd.every3weeks": { en: "Every 3 Weeks", es: "Cada 3 Semanas" },
+  "admin.cd.every4weeks": { en: "Every 4 Weeks", es: "Cada 4 Semanas" },
+  "admin.cd.every5weeks": { en: "Every 5 Weeks", es: "Cada 5 Semanas" },
   "admin.cd.monthly": { en: "Monthly", es: "Mensual" },
   "admin.cd.addnote": { en: "Add a quick note...", es: "Agregar una nota rápida..." },
   "admin.cd.internalnotes": { en: "Internal Notes", es: "Notas Internas" },

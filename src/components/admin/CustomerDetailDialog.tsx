@@ -509,6 +509,8 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
                           <SelectItem value="weekly">{t("admin.cd.weekly")}</SelectItem>
                           <SelectItem value="bi-weekly">{t("admin.cd.biweekly")}</SelectItem>
                           <SelectItem value="every-3-weeks">{t("admin.cd.every3weeks")}</SelectItem>
+                          <SelectItem value="every-4-weeks">{t("admin.cd.every4weeks")}</SelectItem>
+                          <SelectItem value="every-5-weeks">{t("admin.cd.every5weeks")}</SelectItem>
                           <SelectItem value="monthly">{t("admin.cd.monthly")}</SelectItem>
                         </SelectContent>
                       </Select>
