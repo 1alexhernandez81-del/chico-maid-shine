@@ -56,6 +56,11 @@ const InquiriesPipeline = () => {
   const [quoteAmount, setQuoteAmount] = useState("");
   const [detailTab, setDetailTab] = useState("details");
 
+  // Deposit collection
+  const [depositOverride, setDepositOverride] = useState<string>("");
+  const [sendingDepositLink, setSendingDepositLink] = useState(false);
+  const [showDepositConfirm, setShowDepositConfirm] = useState(false);
+
   // Translation state
   const [translations, setTranslations] = useState<Record<string, string>>({});
   const [translating, setTranslating] = useState<Record<string, boolean>>({});
