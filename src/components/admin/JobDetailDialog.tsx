@@ -1414,7 +1414,7 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
           </div>
 
           <AlertDialogFooter>
-            <AlertDialogCancel>Back</AlertDialogCancel>
+            <AlertDialogCancel>{lang === "es" ? "Volver" : "Back"}</AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
                 setShowDepositConfirm(false);
