@@ -8,27 +8,18 @@ const corsHeaders = {
 // Calculate the next service date based on frequency
 function advanceDate(currentDate: string, frequency: string): string {
   const d = new Date(currentDate + "T00:00:00");
-  switch (frequency) {
-    case "weekly":
-      d.setDate(d.getDate() + 7);
-      break;
-    case "bi-weekly":
-      d.setDate(d.getDate() + 14);
-      break;
-    case "every-3-weeks":
-      d.setDate(d.getDate() + 21);
-      break;
-    case "every-4-weeks":
-      d.setDate(d.getDate() + 28);
-      break;
-    case "every-5-weeks":
-      d.setDate(d.getDate() + 35);
-      break;
-    case "monthly":
-      d.setMonth(d.getMonth() + 1);
-      break;
-    default:
-      d.setDate(d.getDate() + 7);
+  // Handle "every-N-weeks" pattern
+  const everyNMatch = frequency.match(/^every-(\d+)-weeks$/);
+  if (everyNMatch) {
+    d.setDate(d.getDate() + parseInt(everyNMatch[1]) * 7);
+  } else if (frequency === "weekly") {
+    d.setDate(d.getDate() + 7);
+  } else if (frequency === "bi-weekly") {
+    d.setDate(d.getDate() + 14);
+  } else if (frequency === "monthly") {
+    d.setMonth(d.getMonth() + 1);
+  } else {
+    d.setDate(d.getDate() + 7);
   }
   return d.toISOString().split("T")[0];
 }

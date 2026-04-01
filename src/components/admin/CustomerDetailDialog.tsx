@@ -507,10 +507,11 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="weekly">{t("admin.cd.weekly")}</SelectItem>
-                          <SelectItem value="bi-weekly">{t("admin.cd.biweekly")}</SelectItem>
-                          <SelectItem value="every-3-weeks">{t("admin.cd.every3weeks")}</SelectItem>
-                          <SelectItem value="every-4-weeks">{t("admin.cd.every4weeks")}</SelectItem>
-                          <SelectItem value="every-5-weeks">{t("admin.cd.every5weeks")}</SelectItem>
+                          {[2,3,4,5,6,7,8,9].map((n) => (
+                            <SelectItem key={n} value={`every-${n}-weeks`}>
+                              {t("admin.cd.everyXweeks").replace("{x}", String(n))}
+                            </SelectItem>
+                          ))}
                           <SelectItem value="monthly">{t("admin.cd.monthly")}</SelectItem>
                         </SelectContent>
                       </Select>
