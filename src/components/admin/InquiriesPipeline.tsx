@@ -793,7 +793,7 @@ const InquiriesPipeline = () => {
                         </h4>
                         {quoteTotal <= 0 ? (
                           <div className="p-3 rounded border border-amber-500/30 bg-amber-500/5">
-                            <p className="text-sm text-amber-400">⚠️ No quote amount set. Enter a quote in the Estimate tab first, or enter a custom deposit below.</p>
+                            <p className="text-sm text-amber-400">⚠️ {t("admin.deposit.noquote")}</p>
                           </div>
                         ) : (
                           <div className="space-y-2 text-sm">
