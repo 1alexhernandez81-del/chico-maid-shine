@@ -866,9 +866,9 @@ const InquiriesPipeline = () => {
                         {/* Zelle info */}
                         <div className="p-3 rounded-lg border border-purple-500/30 bg-purple-500/5">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm font-medium text-purple-400">✅ Zelle (preferred — no fees)</span>
+                            <span className="text-sm font-medium text-purple-400">✅ {t("admin.deposit.zelle")}</span>
                           </div>
-                          <p className="text-xs text-muted-foreground">Customer sends ${effectiveDeposit.toFixed(2)} to (530) 966-0752</p>
+                          <p className="text-xs text-muted-foreground">{t("admin.deposit.zellesend")} ${effectiveDeposit.toFixed(2)} {t("admin.deposit.zelleto")} (530) 966-0752</p>
                         </div>
 
                         {/* CC link button */}
