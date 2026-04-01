@@ -425,7 +425,15 @@ const CustomerDetailDialog = ({ customer, onClose, onUpdated, onCreateJob }: Pro
                     <div>
                       <p className="font-medium text-sm capitalize">{s.service_type.replace("-", " ")}</p>
                       <p className="text-xs text-muted-foreground capitalize mt-0.5">
-                        {s.frequency.replace("-", " ")} · {s.preferred_day || "Flexible"} · {formatTimeDisplay(s.preferred_time)}
+                        {(() => {
+                          const f = s.frequency;
+                          const m = f.match(/^every-(\d+)-weeks$/);
+                          if (m) return t("admin.cd.everyXweeks").replace("{x}", m[1]);
+                          if (f === "weekly") return t("admin.cd.weekly");
+                          if (f === "bi-weekly") return t("admin.cd.everyXweeks").replace("{x}", "2");
+                          if (f === "monthly") return t("admin.cd.monthly");
+                          return f.replace("-", " ");
+                        })()} · {s.preferred_day || "Flexible"} · {formatTimeDisplay(s.preferred_time)}
                       </p>
                       {s.price && <p className="text-accent font-medium text-sm mt-1">${s.price}{t("admin.cd.pervisit")}</p>}
                       {s.active && (
