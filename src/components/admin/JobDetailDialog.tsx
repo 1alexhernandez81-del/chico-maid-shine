@@ -19,7 +19,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Trash2, Upload, FileText, DollarSign, Camera, X, Image, Sparkles, Send, MessageSquare, Loader2, CalendarCheck, CreditCard, Pencil, Copy } from "lucide-react";
+import { Plus, Trash2, Upload, FileText, DollarSign, Camera, X, Image, Sparkles, Send, MessageSquare, Loader2, CalendarCheck, CreditCard, Pencil, Copy, AlertTriangle } from "lucide-react";
 import AddressAutocomplete from "@/components/ui/address-autocomplete";
 import { Label } from "@/components/ui/label";
 import JobTimer from "@/components/admin/JobTimer";
@@ -1098,7 +1098,13 @@ const JobDetailDialog = ({ booking, onClose, onUpdated, userRole = "admin", onCl
             {/* Status + Notes + Save */}
             <div className="border-t border-border pt-4 space-y-4">
               <div>
-                <label className="text-xs uppercase tracking-wider text-muted-foreground mb-2 block">{t("admin.bookings.status")}</label>
+                <label className="flex items-center gap-2 text-sm uppercase tracking-wider font-bold text-accent mb-2">
+                  <AlertTriangle className="w-4 h-4 text-accent" />
+                  {t("admin.bookings.status")}
+                  <span className="text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-semibold normal-case tracking-normal">
+                    {t("admin.status.important")}
+                  </span>
+                </label>
                 <Select value={newStatus} onValueChange={setNewStatus}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>

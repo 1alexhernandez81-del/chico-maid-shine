@@ -527,6 +527,7 @@ const translations: Record<string, Record<Lang, string>> = {
   "admin.bookings.service": { en: "Service", es: "Servicio" },
   "admin.bookings.frequency": { en: "Frequency", es: "Frecuencia" },
   "admin.bookings.status": { en: "Status", es: "Estado" },
+  "admin.status.important": { en: "Important!", es: "¡Importante!" },
   "admin.bookings.loading": { en: "Loading...", es: "Cargando..." },
   "admin.bookings.none": { en: "No bookings found", es: "No se encontraron reservas" },
   "admin.bookings.page": { en: "Page", es: "Página" },
