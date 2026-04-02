@@ -470,7 +470,7 @@ const translations: Record<string, Record<Lang, string>> = {
   // Jobs Board
   "admin.job.all": { en: "All", es: "Todos" },
   "admin.job.approved": { en: "Approved", es: "Aprobado" },
-  "admin.job.scheduled": { en: "Scheduled", es: "Programado" },
+  "admin.job.scheduled": { en: "Cleaning Scheduled", es: "Limpieza Programada" },
   "admin.job.in-progress": { en: "In Progress", es: "En Progreso" },
   "admin.job.completed": { en: "Completed", es: "Completado" },
   "admin.job.none": { en: "No jobs found", es: "No se encontraron trabajos" },
